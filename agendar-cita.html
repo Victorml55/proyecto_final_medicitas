@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita | MediCitas SSL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="css/estilo-bootstrap.css">
+</head>
+<body class="cuerpo-pagina">
+
+    <nav class="top-navbar">
+        <a href="index.html" class="nav-brand">
+            <img src="img/logo.png" alt="Logo SSL" class="nav-logo">
+            <span>MediCitas <strong>SSL</strong></span>
+        </a>
+        <a href="inicio-usuario.html" class="btn-outline nav-back-btn">
+            <span class="material-symbols-outlined">arrow_back</span> Volver al Inicio
+        </a>
+    </nav>
+
+    <main class="contenido-pagina">
+
+        <h1 class="page-title">Agendar Cita</h1>
+        <p class="page-subtitle">Completa los pasos para reservar tu cita médica.</p>
+
+        <div class="steps-wrapper mb-2">
+            <div class="step-item active" id="step-ind-1">
+                <div class="step-circle" id="sc-1">1</div>
+                <span class="step-label">Especialidad</span>
+            </div>
+            <div class="step-item" id="step-ind-2">
+                <div class="step-circle" id="sc-2">2</div>
+                <span class="step-label">Médico</span>
+            </div>
+            <div class="step-item" id="step-ind-3">
+                <div class="step-circle" id="sc-3">3</div>
+                <span class="step-label">Fecha y Hora</span>
+            </div>
+            <div class="step-item" id="step-ind-4">
+                <div class="step-circle" id="sc-4">4</div>
+                <span class="step-label">Confirmación</span>
+            </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-wrapper">
+            <div class="progress-bar-label">
+                <span id="progress-label">Paso 1 de 4</span>
+                <span id="progress-pct">25%</span>
+            </div>
+            <div class="progress" role="progressbar">
+                <div class="progress-bar" id="progress-bar" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <!-- Tarjeta principal -->
+        <div class="form-card">
+
+            <!-- PASO 1: ESPECIALIDAD -->
+            <div class="booking-step active" id="step-1">
+                <div class="form-card-header">
+                    <h2>Selecciona una Especialidad</h2>
+                    <p>Elige el área médica que necesitas y describe brevemente tu motivo de consulta.</p>
+                </div>
+                <div class="form-card-body">
+
+                    <div class="search-box">
+                        <span class="material-symbols-outlined">search</span>
+                        <input type="text" id="buscar-especialidad" placeholder="Buscar especialidad…" oninput="filtrarEspecialidades(this.value)">
+                    </div>
+
+                    <div class="spec-grid" id="spec-grid">
+                        <div class="spec-card" data-spec="Cardiología" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">cardiology</span></div>
+                            <h3>Cardiología</h3>
+                        </div>
+                        <div class="spec-card" data-spec="Pediatría" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">child_care</span></div>
+                            <h3>Pediatría</h3>
+                        </div>
+                        <div class="spec-card" data-spec="Traumatología" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">orthopedics</span></div>
+                            <h3>Traumatología</h3>
+                        </div>
+                        <div class="spec-card" data-spec="Neurología" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">neurology</span></div>
+                            <h3>Neurología</h3>
+                        </div>
+                        <div class="spec-card" data-spec="Dermatología" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">dermatology</span></div>
+                            <h3>Dermatología</h3>
+                        </div>
+                        <div class="spec-card" data-spec="Oftalmología" onclick="seleccionarEspecialidad(this)">
+                            <div class="spec-icon"><span class="material-symbols-outlined">visibility</span></div>
+                            <h3>Oftalmología</h3>
+                        </div>
+                    </div>
+
+                    <div class="motivo-area">
+                        <label for="motivo">Motivo de consulta <span class="label-opcional">(opcional)</span></label>
+                        <textarea id="motivo" rows="3" placeholder="Describe brevemente tus síntomas o el motivo de tu visita…"></textarea>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <div></div>
+                        <button class="btn-nav-next" id="btn-next-1" onclick="irPaso(2)" disabled>
+                            Continuar <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: MÉDICO -->
+            <div class="booking-step" id="step-2">
+                <div class="form-card-header">
+                    <h2>Elige a tu Médico</h2>
+                    <p>Selecciona al especialista de tu preferencia.</p>
+                </div>
+                <div class="form-card-body">
+
+                    <div class="context-pill">
+                        <span class="material-symbols-outlined">stethoscope</span>
+                        <span id="pill-spec">Especialidad seleccionada</span>
+                    </div>
+
+                    <div class="doctor-list">
+                        <div class="doctor-card" data-doc="Dr. Roberto Sánchez" onclick="seleccionarDoctor(this)">
+                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
+                            <div class="doctor-card-info">
+                                <h3>Dr. Roberto Sánchez</h3>
+                                <p>Certificado por el Consejo Mexicano · 12 años de experiencia</p>
+                            </div>
+                            <button class="doc-select-btn">Seleccionar</button>
+                        </div>
+                        <div class="doctor-card" data-doc="Dra. Elena Medina" onclick="seleccionarDoctor(this)">
+                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
+                            <div class="doctor-card-info">
+                                <h3>Dra. Elena Medina</h3>
+                                <p>Especialista en diagnóstico avanzado · 15 años de experiencia</p>
+                            </div>
+                            <button class="doc-select-btn">Seleccionar</button>
+                        </div>
+                        <div class="doctor-card" data-doc="Dr. Luis Herrera" onclick="seleccionarDoctor(this)">
+                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
+                            <div class="doctor-card-info">
+                                <h3>Dr. Luis Herrera</h3>
+                                <p>Subespecialidad en medicina interna · 8 años de experiencia</p>
+                            </div>
+                            <button class="doc-select-btn">Seleccionar</button>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn-nav-back" onclick="irPaso(1)">
+                            <span class="material-symbols-outlined">arrow_back</span> Anterior
+                        </button>
+                        <button class="btn-nav-next" id="btn-next-2" onclick="irPaso(3)" disabled>
+                            Continuar <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: FECHA Y HORA -->
+            <div class="booking-step" id="step-3">
+                <div class="form-card-header">
+                    <h2>Selecciona Fecha y Hora</h2>
+                    <p>Elige el día y el horario que mejor te convenga.</p>
+                </div>
+                <div class="form-card-body">
+
+                    <div class="context-pills-row">
+                        <div class="context-pill">
+                            <span class="material-symbols-outlined">stethoscope</span>
+                            <span id="pill-spec-3"></span>
+                        </div>
+                        <div class="context-pill">
+                            <span class="material-symbols-outlined">person</span>
+                            <span id="pill-doc-3"></span>
+                        </div>
+                    </div>
+
+                    <div class="date-input-wrapper mt-3">
+                        <label for="appointment-date">Selecciona el día</label>
+                        <input type="date" id="appointment-date" onchange="verificarPaso3()">
+                    </div>
+
+                    <span class="time-section-label">Horarios disponibles</span>
+                    <div class="slots-grid">
+                        <button class="time-slot" onclick="selectTime(this,'08:00 AM')">08:00 AM</button>
+                        <button class="time-slot" onclick="selectTime(this,'09:00 AM')">09:00 AM</button>
+                        <button class="time-slot ocupado" disabled>10:00 AM</button>
+                        <button class="time-slot" onclick="selectTime(this,'10:30 AM')">10:30 AM</button>
+                        <button class="time-slot ocupado" disabled>11:00 AM</button>
+                        <button class="time-slot" onclick="selectTime(this,'12:00 PM')">12:00 PM</button>
+                        <button class="time-slot" onclick="selectTime(this,'03:00 PM')">03:00 PM</button>
+                        <button class="time-slot" onclick="selectTime(this,'04:00 PM')">04:00 PM</button>
+                        <button class="time-slot" onclick="selectTime(this,'05:30 PM')">05:30 PM</button>
+                    </div>
+                    <div class="slots-legend">
+                        <span><span class="legend-dot legend-available"></span> Disponible</span>
+                        <span><span class="legend-dot legend-unavailable"></span> No disponible</span>
+                        <span><span class="legend-dot legend-selected"></span> Seleccionado</span>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn-nav-back" onclick="irPaso(2)">
+                            <span class="material-symbols-outlined">arrow_back</span> Anterior
+                        </button>
+                        <button class="btn-nav-next" id="btn-next-3" onclick="irPaso(4)" disabled>
+                            Ver Resumen <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 4: CONFIRMACIÓN -->
+            <div class="booking-step" id="step-4">
+                <div class="form-card-header">
+                    <h2>Confirmar Cita</h2>
+                    <p>Revisa los detalles antes de confirmar tu cita.</p>
+                </div>
+                <div class="form-card-body">
+
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <div class="summary-icon"><span class="material-symbols-outlined">stethoscope</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Especialidad</div>
+                                <div class="val" id="sum-spec">—</div>
+                            </div>
+                        </div>
+                        <div class="summary-row">
+                            <div class="summary-icon"><span class="material-symbols-outlined">person</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Médico</div>
+                                <div class="val" id="sum-doc">—</div>
+                            </div>
+                        </div>
+                        <div class="summary-row">
+                            <div class="summary-icon"><span class="material-symbols-outlined">calendar_month</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Fecha</div>
+                                <div class="val" id="sum-date">—</div>
+                            </div>
+                        </div>
+                        <div class="summary-row">
+                            <div class="summary-icon"><span class="material-symbols-outlined">schedule</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Hora</div>
+                                <div class="val" id="sum-time">—</div>
+                            </div>
+                        </div>
+                        <div class="summary-row" id="sum-motivo-row" style="display:none;">
+                            <div class="summary-icon"><span class="material-symbols-outlined">description</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Motivo</div>
+                                <div class="val" id="sum-motivo">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirm-banner">
+                        <span class="material-symbols-outlined">info</span>
+                        <div>
+                            <strong>Recibirás una confirmación por correo</strong>
+                            <p>Presenta tu identificación el día de la cita con 10 minutos de anticipación.</p>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn-nav-back" onclick="irPaso(3)">
+                            <span class="material-symbols-outlined">arrow_back</span> Modificar
+                        </button>
+                        <button class="btn-confirm" onclick="confirmarCita()">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Confirmar y Agendar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /form-card -->
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const booking = { specialty: '', doctor: '', date: '', time: '', motivo: '' };
+        let currentStep = 1;
+        const TOTAL_STEPS = 4;
+
+        function updateProgress(step) {
+            const pct = Math.round((step / TOTAL_STEPS) * 100);
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('progress-pct').textContent = pct + '%';
+            document.getElementById('progress-label').textContent = `Paso ${step} de ${TOTAL_STEPS}`;
+
+            for (let i = 1; i <= TOTAL_STEPS; i++) {
+                const ind = document.getElementById(`step-ind-${i}`);
+                const sc  = document.getElementById(`sc-${i}`);
+                ind.classList.remove('active', 'done');
+                if (i < step) {
+                    ind.classList.add('done');
+                    sc.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span>';
+                } else if (i === step) {
+                    ind.classList.add('active');
+                    sc.textContent = i;
+                } else {
+                    sc.textContent = i;
+                }
+            }
+        }
+
+        function irPaso(step) {
+            document.getElementById(`step-${currentStep}`).classList.remove('active');
+            document.getElementById(`step-${step}`).classList.add('active');
+            currentStep = step;
+            updateProgress(step);
+            if (step === 4) llenarResumen();
+            document.querySelector('.steps-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function seleccionarEspecialidad(card) {
+            document.querySelectorAll('.spec-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            booking.specialty = card.dataset.spec;
+            document.getElementById('btn-next-1').disabled = false;
+        }
+
+        function filtrarEspecialidades(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('.spec-card').forEach(card => {
+                card.style.display = card.dataset.spec.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        function seleccionarDoctor(card) {
+            document.querySelectorAll('.doctor-card').forEach(c => {
+                c.classList.remove('selected');
+                c.querySelector('.doc-select-btn').textContent = 'Seleccionar';
+            });
+            card.classList.add('selected');
+            card.querySelector('.doc-select-btn').textContent = '✓ Seleccionado';
+            booking.doctor = card.dataset.doc;
+            document.getElementById('btn-next-2').disabled = false;
+        }
+
+        function selectTime(btn, time) {
+            document.querySelectorAll('.time-slot:not(.ocupado)').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            booking.time = time;
+            verificarPaso3();
+        }
+
+        function verificarPaso3() {
+            booking.date = document.getElementById('appointment-date').value;
+            document.getElementById('btn-next-3').disabled = !(booking.date && booking.time);
+        }
+
+        function llenarResumen() {
+            document.getElementById('sum-spec').textContent = booking.specialty || '—';
+            document.getElementById('sum-doc').textContent  = booking.doctor    || '—';
+            document.getElementById('sum-time').textContent = booking.time      || '—';
+
+            if (booking.date) {
+                const [y, m, d] = booking.date.split('-');
+                const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                document.getElementById('sum-date').textContent = `${d} ${meses[parseInt(m,10)-1]} ${y}`;
+            }
+
+            const motivo = document.getElementById('motivo').value.trim();
+            booking.motivo = motivo;
+            const motivoRow = document.getElementById('sum-motivo-row');
+            if (motivo) {
+                document.getElementById('sum-motivo').textContent = motivo;
+                motivoRow.style.display = 'flex';
+            } else {
+                motivoRow.style.display = 'none';
+            }
+
+            document.getElementById('pill-spec-3').textContent = booking.specialty;
+            document.getElementById('pill-doc-3').textContent  = booking.doctor;
+        }
+
+        document.getElementById('btn-next-1').addEventListener('click', () => {
+            document.getElementById('pill-spec').textContent = booking.specialty;
+        }, true);
+
+        function confirmarCita() {
+            const btn = document.querySelector('.btn-confirm');
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">hourglass_empty</span> Procesando…';
+            btn.disabled = true;
+            setTimeout(() => {
+                alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
+                window.location.href = 'inicio-usuario.html';
+            }, 1500);
+        }
+
+        document.getElementById('appointment-date').setAttribute('min', new Date().toISOString().split('T')[0]);
+    </script>
+</body>
+</html>

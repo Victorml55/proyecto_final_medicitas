@@ -1,0 +1,13 @@
+{
+    "name": "medicitas/proyecto-final",
+    "description": "Sistema de citas médicas MediCitas",
+    "require": {
+        "phpmailer/phpmailer": "^6.9",
+        "tecnickcom/tcpdf": "^6.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "admin/"
+        }
+    }
+}

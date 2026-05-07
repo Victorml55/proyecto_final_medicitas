@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios | MediCitas SSL</title>
+    <link rel="stylesheet" href="css/estilo.css"> </head>
+<body class="cuerpo-pagina">
+
+    <div id="nav-container"></div>
+
+    <main class="contenido-pagina">
+        <div class="section-header">
+            <h1>Nuestros Servicios</h1>
+            <h2>Infraestructura médica de primer nivel y tecnología de vanguardia para tu diagnóstico y tratamiento.</h2>
+        </div>
+
+        <div class="services-list">
+            
+            <div class="service-item">
+                
+                <div class="service-info">
+                    <h3>Laboratorio Clínico</h3>
+                    <p>Análisis de sangre, cultivos y pruebas especializadas con resultados precisos y entrega rápida en línea.</p>
+                </div>
+                <a href="#" class="btn-service">Ver Catálogo</a>
+            </div>
+
+            <div class="service-item">
+                
+                <div class="service-info">
+                    <h3>Imagenología y Rayos X</h3>
+                    <p>Tomografía, ultrasonido, mastografía y radiografías con equipos de última generación para diagnósticos certeros.</p>
+                </div>
+                <a href="#" class="btn-service">Agendar Estudio</a>
+            </div>
+
+            <div class="service-item">
+                
+                <div class="service-info">
+                    <h3>Farmacia 24 Hrs</h3>
+                    <p>Amplio surtido de medicamentos de patente y especialidad, material de curación y atención continua.</p>
+                </div>
+                <a href="#" class="btn-service">Consultar Surtido</a>
+            </div>
+
+            <div class="service-item">
+                
+                <div class="service-info">
+                    <h3>Urgencias y Traslados</h3>
+                    <p>Atención médica inmediata las 24 horas del día, los 365 días del año con personal altamente capacitado.</p>
+                </div>
+                <a href="#" class="btn-service">Llamar Ahora</a>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        fetch('nav.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-container').innerHTML = data;
+            });
+    </script>
+</body>
+</html>

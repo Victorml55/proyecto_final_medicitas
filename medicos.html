@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio Médico | MediCitas SSL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="cuerpo-pagina">
+
+    <div id="nav-container"></div>
+
+    <main class="contenido-pagina">
+        <div class="section-header">
+            <h1>Directorio Médico</h1>
+            <h2>Conoce a nuestro equipo de especialistas certificados.</h2>
+        </div>
+
+        <div class="search-bar-container">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" placeholder="Buscar por nombre o especialidad..." class="search-input">
+        </div>
+
+        <div class="directory-list">
+            
+            <div class="directory-card">
+                <div class="doc-avatar">
+                    
+                </div>
+                <div class="doc-info">
+                    <h3>Dr. Roberto Sánchez</h3>
+                    <span class="doc-badge">Cardiología</span>
+                    <p>Especialista en intervencionismo cardiovascular. Certificado por el Consejo Mexicano de Cardiología con más de 15 años de experiencia.</p>
+                </div>
+                <div class="doc-action">
+                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
+                </div>
+            </div>
+
+            <div class="directory-card">
+                <div class="doc-avatar">
+                    
+                </div>
+                <div class="doc-info">
+                    <h3>Dra. Elena Medina</h3>
+                    <span class="doc-badge">Pediatría</span>
+                    <p>Atención integral del recién nacido y adolescente. Subespecialidad en neonatología y cuidados intensivos pediátricos.</p>
+                </div>
+                <div class="doc-action">
+                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
+                </div>
+            </div>
+
+            <div class="directory-card">
+                <div class="doc-avatar">
+                    
+                </div>
+                <div class="doc-info">
+                    <h3>Dr. Alejandro Gómez</h3>
+                    <span class="doc-badge">Traumatología</span>
+                    <p>Experto en cirugía articular, medicina deportiva y reemplazos articulares. Miembro activo del Colegio Médico de Ortopedia.</p>
+                </div>
+                <div class="doc-action">
+                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        fetch('nav-user.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('nav-container').innerHTML = data;
+            });
+    </script>
+</body>
+</html>

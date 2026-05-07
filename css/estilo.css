@@ -1,0 +1,987 @@
+/*
+ÍNDICE
+1. Reset & Tipografía
+2. Utilidades & Botones
+3. Navegación
+4. Encabezados de sección
+5. Login
+6. Dashboard (Inicio usuario)
+7. Médicos
+8. Mis Citas
+9. Mi Perfil
+10. Especialidades
+11. Servicios
+12. Media Queries
+*/
+
+
+/*
+    1. RESET & TIPOGRAFÍA
+   */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3,
+.nav-brand span,
+.section-subtitle {
+    font-family: 'Merriweather', serif;
+    letter-spacing: -0.5px;
+}
+
+body {
+    background-color: #f4f4f4;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Páginas internas (no-login) */
+.cuerpo-pagina {
+    display: block;
+    height: auto;
+    background-color: #f4f4f4;
+}
+
+.contenido-pagina {
+    padding: 120px 50px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+/*
+   2. UTILIDADES & BOTONES
+   */
+
+/* Botón principal (blanco/azul invertido) */
+.btn-primary {
+    background-color: white;
+    color: #005f99;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover { background-color: #f4f4f4; }
+
+/* Botón con borde */
+.btn-outline {
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 2px solid #005f99;
+    color: #005f99;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-outline:hover {
+    background-color: #005f99;
+    color: white;
+}
+
+/* Botón de servicio */
+.btn-service {
+    padding: 12px 24px;
+    background-color: #f4f4f4;
+    color: #005f99;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+.btn-service:hover {
+    background-color: #005f99;
+    color: #ffffff;
+}
+
+/* Botón peligro (cancelar cita) */
+.btn-danger {
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+.btn-danger:hover {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* Badges de estado */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-confirmed  { background-color: #dcfce7; color: #166534; }
+.status-completed  { background-color: #f1f5f9; color: #475569; }
+
+
+/*
+    3. NAVEGACIÓN
+   */
+.top-navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    z-index: 100;
+    background-color: #c4ccea;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 100%;
+    text-decoration: none;
+}
+
+.nav-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.nav-brand span {
+    font-size: 1.3rem;
+    color: #005f99;
+    font-weight: 500;
+    line-height: 1;
+}
+.nav-brand span strong { font-weight: 800; }
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+.nav-links a:hover { color: #005f99; }
+
+
+/*
+    4. ENCABEZADOS DE SECCIÓN
+   */
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.section-header h1 {
+    font-size: 2.5rem;
+    color: #005f99;
+    margin-bottom: 10px;
+}
+.section-header h2 {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.section-subtitle {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+
+/*
+    5. LOGIN
+   */
+.login-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+/* Panel izquierdo: formulario */
+.login-side {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 80px;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.logo-area { margin-bottom: 40px; }
+.logo-area h2 {
+    color: #005f99;
+    font-size: 1.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+.form-header p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.input-group { margin-bottom: 20px; }
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+.input-group input:focus {
+    border-color: #005f99;
+    box-shadow: 0 0 0 3px rgba(0, 95, 153, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.forgot-password {
+    color: #005f99;
+    text-decoration: none;
+    font-weight: 500;
+}
+.forgot-password:hover { text-decoration: underline; }
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background-color: #005f99;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-login:hover { background-color: #004470; }
+
+.register-link {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+.register-link a {
+    color: #005f99;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Panel derecho: imagen */
+.image-side {
+    width: 60%;
+    position: relative;
+    background-image: url('/img/consultorio.png');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(1deg, rgba(0,0,0,0.5) 0%, rgba(20,25,30,0.5) 100%);
+    backdrop-filter: brightness(0.8) contrast(1.2);
+    display: flex;
+    align-items: flex-end;
+    padding: 60px;
+    z-index: 1;
+}
+
+.top-right-logo {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 140px;
+    z-index: 10;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+}
+
+.overlay-text {
+    position: relative;
+    z-index: 5;
+    color: white;
+    text-shadow: 0px 4px 15px rgba(0,0,0,0.5);
+}
+.overlay-text h2 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+.overlay-text p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+
+/*
+    6. DASHBOARD — INICIO USUARIO
+   */
+.dashboard-header { margin-bottom: 40px; }
+.dashboard-header h1 {
+    font-size: 2.2rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+.dashboard-header h2 {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Tarjeta próxima cita */
+.next-appointment-card {
+    background: linear-gradient(135deg, #005f99 0%, #004470 100%);
+    border-radius: 12px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    color: white;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 20px rgba(0, 95, 153, 0.2);
+}
+
+.appointment-icon {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.appointment-icon .material-symbols-outlined {
+    color: white;
+    font-size: 30px;
+}
+
+.appointment-details { flex: 1; }
+.appointment-details h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+.appointment-details p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.appointment-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem !important;
+    margin-top: 5px;
+}
+
+/* Accesos rápidos */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    background-color: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+.action-card .material-symbols-outlined {
+    font-size: 40px;
+    color: #005f99;
+    margin-bottom: 15px;
+}
+.action-card h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.action-card:hover {
+    border-color: #005f99;
+    box-shadow: 0 5px 15px rgba(0, 95, 153, 0.1);
+}
+
+
+/*
+    7. MÉDICOS
+   */
+.search-bar-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto 40px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 22px;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 14px 16px 14px 50px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #333;
+    background-color: #ffffff;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input::placeholder { color: #94a3b8; }
+
+.search-input:focus {
+    border-color: #005f99;
+    box-shadow: 0 0 0 3px rgba(0, 95, 153, 0.1);
+}
+
+.directory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.directory-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.doc-avatar {
+    width: 90px;
+    height: 90px;
+    background-color: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.doc-avatar .material-symbols-outlined {
+    font-size: 45px;
+    color: #94a3b8;
+}
+
+.doc-info { flex: 1; }
+.doc-info h3 {
+    font-size: 1.4rem;
+    color: #0f172a;
+    margin-bottom: 5px;
+}
+.doc-info p {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Etiqueta de especialidad */
+.doc-badge {
+    display: inline-block;
+    background-color: #e6f0f9;
+    color: #005f99;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.doc-action { flex-shrink: 0; }
+
+
+/* 
+    8. MIS CITAS
+   */
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 900px;
+}
+
+.appointment-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* Bloque de fecha */
+.date-block {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 15px;
+    min-width: 80px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.date-month {
+    color: #005f99;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+.date-day {
+    color: #0f172a;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.date-year {
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.appointment-info { flex: 1; }
+.appointment-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+.appointment-header h3 {
+    font-size: 1.3rem;
+    color: #0f172a;
+    margin: 0;
+}
+.appointment-spec {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+}
+.appointment-meta {
+    display: flex;
+    gap: 20px;
+    color: #475569;
+    font-size: 0.9rem;
+}
+.appointment-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.appointment-meta .material-symbols-outlined {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+.appointment-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 140px;
+}
+
+/* Citas pasadas */
+.past-appointment { background-color: #fafafa; }
+.past-appointment .date-block { opacity: 0.7; }
+
+
+/*
+    9. MI PERFIL
+   */
+.profile-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    max-width: 1000px;
+}
+
+/* Columna izquierda */
+.profile-sidebar {
+    width: 300px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    flex-shrink: 0;
+}
+
+.profile-avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 20px;
+}
+.profile-avatar {
+    width: 100%;
+    height: 100%;
+    background-color: #f1f5f9;
+    border: 3px solid #005f99;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.profile-avatar .material-symbols-outlined {
+    font-size: 60px;
+    color: #94a3b8;
+}
+
+.btn-edit-avatar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background-color: #005f99;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+}
+.btn-edit-avatar:hover { background-color: #004470; }
+.btn-edit-avatar .material-symbols-outlined { font-size: 18px; }
+
+.profile-name {
+    font-size: 1.4rem;
+    color: #0f172a;
+    margin-bottom: 5px;
+    font-family: 'Inter', sans-serif;
+}
+.profile-id {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+}
+.profile-quick-actions {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 20px;
+}
+
+/* Columna derecha */
+.profile-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 20px 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.card-header .material-symbols-outlined {
+    color: #005f99;
+    font-size: 24px;
+}
+.card-header h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    color: #333;
+    margin: 0;
+}
+
+.card-body { padding: 25px; }
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.info-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+.info-group p {
+    font-size: 1rem;
+    color: #0f172a;
+    font-weight: 500;
+}
+.highlight-value {
+    color: #005f99 !important;
+    font-weight: 600 !important;
+}
+
+
+/*
+    10. ESPECIALIDADES
+   */
+.specialties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.specialty-card {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-top: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+.specialty-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 95, 153, 0.15);
+    border-top-color: #005f99;
+}
+.specialty-card h2 {
+    color: #333;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+.specialty-card p {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Círculo del ícono */
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    transition: all 0.3s ease;
+}
+.specialty-card:hover .icon-circle {
+    background-color: #005f99;
+    border-color: #005f99;
+}
+.specialty-card:hover .material-symbols-outlined { color: #ffffff; }
+
+
+/*
+    11. SERVICIOS
+   */
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.service-item {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-left: 6px solid #005f99;
+    transition: box-shadow 0.3s ease;
+}
+.service-item:hover { box-shadow: 0 10px 25px rgba(0, 95, 153, 0.15); }
+
+.service-icon {
+    width: 70px;
+    height: 70px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+.service-item:hover .service-icon {
+    background-color: #005f99;
+    border-color: #005f99;
+}
+.service-item:hover .material-symbols-outlined { color: #ffffff; }
+
+.service-info { flex: 1; }
+.service-info h3 {
+    color: #333;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+.service-info p {
+    color: #666;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+
+/*
+    12. MEDIA QUERIES
+   */
+@media (max-width: 768px) {
+
+    /* Login */
+    .login-wrapper   { flex-direction: column; }
+    .image-side      { display: none; }
+    .login-side      { width: 100%; padding: 40px 20px; }
+
+    /* Navbar */
+    .top-navbar {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Dashboard */
+    .next-appointment-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    /* Servicios */
+    .service-item {
+        flex-direction: column;
+        text-align: center;
+        border-left: none;
+        border-top: 6px solid #005f99;
+        padding: 25px 20px;
+    }
+    .btn-service { width: 100%; }
+
+    /* Médicos */
+    .directory-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 20px;
+    }
+    .doc-action { width: 100%; margin-top: 15px; }
+    .doc-action .btn-primary {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Mis Citas */
+    .appointment-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 20px;
+    }
+    .date-block {
+        width: 100%;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 10px;
+        padding: 10px;
+    }
+    .appointment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .appointment-meta  { flex-direction: column; gap: 8px; }
+    .appointment-actions {
+        width: 100%;
+        flex-direction: row;
+    }
+    .appointment-actions button { flex: 1; }
+
+    /* Mi Perfil */
+    .profile-layout  { flex-direction: column; }
+    .profile-sidebar { width: 100%; }
+    .info-grid       { grid-template-columns: 1fr; }
+}
