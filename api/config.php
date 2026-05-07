@@ -10,9 +10,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+function cargarEnv(): void {
+    $path = dirname(__DIR__) . '/.env';
+    if (!file_exists($path)) return;
+    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        [$key, $val] = explode('=', $line, 2);
+        $_ENV[trim($key)] = trim($val);
+    }
+}
+cargarEnv();
+
 function conectarDB(): PDO {
-    $dsn = 'pgsql:host=postgres;port=5432;dbname=medicitas';
-    return new PDO($dsn, 'admin', 'admin123', [
+    $host = $_ENV['DB_HOST'] ?? 'postgres';
+    $port = $_ENV['DB_PORT'] ?? '5432';
+    $name = $_ENV['DB_NAME'] ?? 'medicitas';
+    $user = $_ENV['DB_USER'] ?? 'admin';
+    $pass = $_ENV['DB_PASSWORD'] ?? 'admin123';
+    $dsn = "pgsql:host=$host;port=$port;dbname=$name";
+    return new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
