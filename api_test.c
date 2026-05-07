@@ -1,10 +1,7 @@
 /*
- * Compilar (macOS/Linux con libcurl):
+ * Compilar y ejecutar:
  *   gcc api_test.c -o api_test -lcurl && ./api_test
  *
- * Instalar libcurl si falta:
- *   macOS : brew install curl
- *   Ubuntu: sudo apt install libcurl4-openssl-dev
  */
 
 #include <stdio.h>
@@ -12,7 +9,7 @@
 #include <string.h>
 #include <curl/curl.h>
 
-#define BASE_URL "http://localhost:8081/api"
+#define BASE_URL "https://medicitas.proyectosweb.celaya.tecnm.mx/api"
 
 /* Acumula la respuesta HTTP en un buffer dinámico */
 typedef struct { char *data; size_t size; } Buffer;

@@ -24,7 +24,9 @@
                     <p>Por favor, ingresa tus credenciales para acceder.</p>
                 </div>
 
-                <form action="login.php" method="POST" class="login-form">
+                <div id="login-error" class="login-error" style="display:none;"></div>
+
+                <form id="login-form" class="login-form">
                     <div class="input-group">
                         <label for="email">Correo Electrónico</label>
                         <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
@@ -43,7 +45,7 @@
                         <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
                     </div>
 
-                    <button type="submit" class="btn-login">Ingresar</button>
+                    <button type="submit" class="btn-login" id="btn-login">Ingresar</button>
                 </form>
 
                 <div class="register-link">
@@ -65,10 +67,46 @@
 
 <script>
         fetch('/nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
+            .then(r => r.text())
+            .then(data => { document.getElementById('nav-container').innerHTML = data; });
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const errorBox = document.getElementById('login-error');
+            const btn      = document.getElementById('btn-login');
+            errorBox.style.display = 'none';
+            btn.disabled   = true;
+            btn.textContent = 'Verificando...';
+
+            const body = JSON.stringify({
+                email:    document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value
             });
+
+            try {
+                const res  = await fetch('api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    window.location.href = 'inicio-usuario.html';
+                } else {
+                    errorBox.textContent   = data.error || 'Error al iniciar sesión.';
+                    errorBox.style.display = 'block';
+                    btn.disabled    = false;
+                    btn.textContent = 'Ingresar';
+                }
+            } catch {
+                errorBox.textContent   = 'No se pudo conectar con el servidor.';
+                errorBox.style.display = 'block';
+                btn.disabled    = false;
+                btn.textContent = 'Ingresar';
+            }
+        });
     </script>
 </body>
 </html>

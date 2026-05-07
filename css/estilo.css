@@ -249,6 +249,16 @@ body {
     margin-bottom: 30px;
 }
 
+.login-error {
+    background-color: #fde8e8;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 0.92rem;
+}
+
 .input-group { margin-bottom: 20px; }
 .input-group label {
     display: block;
