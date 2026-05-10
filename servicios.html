@@ -99,6 +99,80 @@
             font-size: 0.95rem;
             white-space: nowrap;
         }
+
+        /* Tabla farmacia */
+        .farmacia-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .farmacia-table thead th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .farmacia-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+        }
+        .farmacia-table tbody tr:hover { background-color: #f8fafc; }
+        .farmacia-table tbody td {
+            padding: 11px 14px;
+            color: #0f172a;
+            vertical-align: middle;
+        }
+        .farmacia-table .td-precio {
+            color: #005f99;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-disponible {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-si  { background: #dcfce7; color: #166534; }
+        .badge-no  { background: #fee2e2; color: #991b1b; }
+
+        .farmacia-filtro {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .farmacia-filtro input {
+            flex: 1;
+            min-width: 160px;
+            padding: 9px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .farmacia-filtro input:focus { border-color: #005f99; }
+        .farmacia-filtro select {
+            padding: 9px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            background: #fff;
+            cursor: pointer;
+        }
+        .farmacia-empty {
+            text-align: center;
+            padding: 30px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="cuerpo-pagina">
@@ -134,7 +208,7 @@
                     <h3>Farmacia 24 Hrs</h3>
                     <p>Amplio surtido de medicamentos de patente y especialidad, material de curación y atención continua.</p>
                 </div>
-                <a href="#" class="btn-service">Consultar Surtido</a>
+                <button class="btn-service" onclick="abrirFarmacia()">Consultar Surtido</button>
             </div>
 
             <div class="service-item">
@@ -147,6 +221,40 @@
 
         </div>
     </main>
+
+    <!-- Modal surtido farmacia -->
+    <div class="modal-overlay" id="modal-farmacia" onclick="cerrarFarmaciaSiFondo(event)">
+        <div class="modal" style="max-width: 750px;">
+            <div class="modal-header">
+                <h2>Surtido — Farmacia 24 Hrs</h2>
+                <button class="modal-close" onclick="cerrarFarmacia()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="farmacia-filtro">
+                    <input type="text" id="filtro-nombre" placeholder="Buscar medicamento..." oninput="filtrarFarmacia()">
+                    <select id="filtro-categoria" onchange="filtrarFarmacia()">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="farmacia-table" id="tabla-farmacia">
+                        <thead>
+                            <tr>
+                                <th>Medicamento</th>
+                                <th>Categoría</th>
+                                <th>Presentación</th>
+                                <th>Precio</th>
+                                <th>Disponible</th>
+                            </tr>
+                        </thead>
+                        <tbody id="farmacia-tbody">
+                            <tr><td colspan="5" class="farmacia-empty">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal inicio de sesión requerido -->
     <div class="modal-overlay" id="modal-login" onclick="cerrarModalLoginSiFondo(event)">
@@ -315,6 +423,79 @@
             .then(r => r.text())
             .then(data => { document.getElementById('nav-container').innerHTML = data; });
 
+        let farmaciaData = [];
+
+        async function abrirFarmacia() {
+            document.getElementById('modal-farmacia').classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            if (farmaciaData.length === 0) {
+                try {
+                    const res  = await fetch('api/farmacia.php');
+                    const json = await res.json();
+
+                    if (json.success) {
+                        farmaciaData = json.data;
+                        poblarCategorias();
+                        renderTabla(farmaciaData);
+                    } else {
+                        document.getElementById('farmacia-tbody').innerHTML =
+                            '<tr><td colspan="5" class="farmacia-empty">No se pudo cargar el catálogo.</td></tr>';
+                    }
+                } catch {
+                    document.getElementById('farmacia-tbody').innerHTML =
+                        '<tr><td colspan="5" class="farmacia-empty">Error de conexión.</td></tr>';
+                }
+            }
+        }
+
+        function poblarCategorias() {
+            const cats = [...new Set(farmaciaData.map(m => m.categoria))].sort();
+            const sel  = document.getElementById('filtro-categoria');
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                sel.appendChild(opt);
+            });
+        }
+
+        function renderTabla(datos) {
+            const tbody = document.getElementById('farmacia-tbody');
+            if (!datos.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="farmacia-empty">Sin resultados.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = datos.map(m => `
+                <tr>
+                    <td><strong>${m.nombre}</strong></td>
+                    <td>${m.categoria}</td>
+                    <td>${m.presentacion ?? '—'}</td>
+                    <td class="td-precio">${m.precio ? '$' + parseFloat(m.precio).toFixed(2) : '—'}</td>
+                    <td><span class="badge-disponible ${m.disponible === 't' || m.disponible === true ? 'badge-si' : 'badge-no'}">
+                        ${m.disponible === 't' || m.disponible === true ? 'Sí' : 'No'}
+                    </span></td>
+                </tr>`).join('');
+        }
+
+        function filtrarFarmacia() {
+            const texto = document.getElementById('filtro-nombre').value.toLowerCase();
+            const cat   = document.getElementById('filtro-categoria').value;
+            const filtrado = farmaciaData.filter(m =>
+                m.nombre.toLowerCase().includes(texto) &&
+                (cat === '' || m.categoria === cat)
+            );
+            renderTabla(filtrado);
+        }
+
+        function cerrarFarmacia() {
+            document.getElementById('modal-farmacia').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function cerrarFarmaciaSiFondo(e) {
+            if (e.target === document.getElementById('modal-farmacia')) cerrarFarmacia();
+        }
+
         function pedirLogin() {
             document.getElementById('modal-login').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -344,7 +525,7 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); }
+            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); cerrarFarmacia(); }
         });
     </script>
 </body>
