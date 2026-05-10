@@ -126,7 +126,7 @@
                     <h3>Imagenología y Rayos X</h3>
                     <p>Tomografía, ultrasonido, mastografía y radiografías con equipos de última generación para diagnósticos certeros.</p>
                 </div>
-                <a href="#" class="btn-service">Agendar Estudio</a>
+                <button class="btn-service" onclick="pedirLogin()">Agendar Estudio</button>
             </div>
 
             <div class="service-item">
@@ -147,6 +147,30 @@
 
         </div>
     </main>
+
+    <!-- Modal inicio de sesión requerido -->
+    <div class="modal-overlay" id="modal-login" onclick="cerrarModalLoginSiFondo(event)">
+        <div class="modal" style="max-width: 420px; text-align: center;">
+            <div class="modal-header" style="justify-content: flex-end; padding: 16px 20px 0; border: none;">
+                <button class="modal-close" onclick="cerrarModalLogin()">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 0 36px 36px;">
+                <div style="width:64px;height:64px;background:#e6f0f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#005f99" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                </div>
+                <h2 style="font-size:1.25rem;color:#0f172a;margin-bottom:10px;">Inicia sesión para continuar</h2>
+                <p style="color:#64748b;font-size:0.92rem;line-height:1.6;margin-bottom:28px;">
+                    Para agendar un estudio de imagenología necesitas tener una cuenta activa.
+                </p>
+                <a href="index.html" class="btn-login" style="display:block;text-decoration:none;padding:13px;">Iniciar sesión</a>
+                <a href="registro.html" style="display:block;margin-top:12px;color:#005f99;font-size:0.88rem;text-decoration:none;font-weight:500;">
+                    ¿No tienes cuenta? <u>Regístrate aquí</u>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal catálogo laboratorio -->
     <div class="modal-overlay" id="modal-catalogo" onclick="cerrarModalSiFondo(event)">
@@ -291,6 +315,20 @@
             .then(r => r.text())
             .then(data => { document.getElementById('nav-container').innerHTML = data; });
 
+        function pedirLogin() {
+            document.getElementById('modal-login').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarModalLogin() {
+            document.getElementById('modal-login').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function cerrarModalLoginSiFondo(e) {
+            if (e.target === document.getElementById('modal-login')) cerrarModalLogin();
+        }
+
         function abrirModal() {
             document.getElementById('modal-catalogo').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -306,7 +344,7 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') cerrarModal();
+            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); }
         });
     </script>
 </body>
