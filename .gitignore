@@ -1,4 +1,4 @@
 .env
 vendor/
-*.sql
+backup*.sql
 .DS_Store
