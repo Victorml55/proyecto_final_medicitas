@@ -4,7 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servicios | MediCitas SSL</title>
-    <link rel="stylesheet" href="css/estilo.css"> </head>
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 28px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: #005f99;
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            line-height: 1;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .modal-close:hover { color: #333; }
+
+        .modal-body {
+            overflow-y: auto;
+            padding: 20px 28px 28px;
+        }
+
+        .catalog-category {
+            margin-bottom: 24px;
+        }
+        .catalog-category h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .catalog-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid #f8fafc;
+            gap: 16px;
+        }
+        .catalog-item:last-child { border-bottom: none; }
+
+        .catalog-item-info { flex: 1; }
+        .catalog-item-info strong {
+            display: block;
+            color: #0f172a;
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+        .catalog-item-info span {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+        .catalog-item-price {
+            color: #005f99;
+            font-weight: 700;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+    </style>
+</head>
 <body class="cuerpo-pagina">
 
     <div id="nav-container"></div>
@@ -16,18 +112,16 @@
         </div>
 
         <div class="services-list">
-            
+
             <div class="service-item">
-                
                 <div class="service-info">
                     <h3>Laboratorio Clínico</h3>
                     <p>Análisis de sangre, cultivos y pruebas especializadas con resultados precisos y entrega rápida en línea.</p>
                 </div>
-                <a href="#" class="btn-service">Ver Catálogo</a>
+                <button class="btn-service" onclick="abrirModal()">Ver Catálogo</button>
             </div>
 
             <div class="service-item">
-                
                 <div class="service-info">
                     <h3>Imagenología y Rayos X</h3>
                     <p>Tomografía, ultrasonido, mastografía y radiografías con equipos de última generación para diagnósticos certeros.</p>
@@ -36,7 +130,6 @@
             </div>
 
             <div class="service-item">
-                
                 <div class="service-info">
                     <h3>Farmacia 24 Hrs</h3>
                     <p>Amplio surtido de medicamentos de patente y especialidad, material de curación y atención continua.</p>
@@ -45,7 +138,6 @@
             </div>
 
             <div class="service-item">
-                
                 <div class="service-info">
                     <h3>Urgencias y Traslados</h3>
                     <p>Atención médica inmediata las 24 horas del día, los 365 días del año con personal altamente capacitado.</p>
@@ -56,12 +148,166 @@
         </div>
     </main>
 
+    <!-- Modal catálogo laboratorio -->
+    <div class="modal-overlay" id="modal-catalogo" onclick="cerrarModalSiFondo(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Catálogo — Laboratorio Clínico</h2>
+                <button class="modal-close" onclick="cerrarModal()">✕</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="catalog-category">
+                    <h3>Hematología</h3>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Biometría Hemática Completa</strong>
+                            <span>Análisis de células sanguíneas: eritrocitos, leucocitos y plaquetas</span>
+                        </div>
+                        <span class="catalog-item-price">$180</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Grupo Sanguíneo y Rh</strong>
+                            <span>Determinación de tipo de sangre y factor Rh</span>
+                        </div>
+                        <span class="catalog-item-price">$120</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Velocidad de Sedimentación</strong>
+                            <span>Indicador de procesos inflamatorios o infecciosos</span>
+                        </div>
+                        <span class="catalog-item-price">$100</span>
+                    </div>
+                </div>
+
+                <div class="catalog-category">
+                    <h3>Química Sanguínea</h3>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Química Sanguínea 6 Elementos</strong>
+                            <span>Glucosa, urea, creatinina, ácido úrico, colesterol y triglicéridos</span>
+                        </div>
+                        <span class="catalog-item-price">$320</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Glucosa en Ayuno</strong>
+                            <span>Medición de nivel de glucosa en sangre</span>
+                        </div>
+                        <span class="catalog-item-price">$80</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Perfil Lipídico</strong>
+                            <span>Colesterol total, HDL, LDL y triglicéridos</span>
+                        </div>
+                        <span class="catalog-item-price">$250</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Hemoglobina Glucosilada (HbA1c)</strong>
+                            <span>Control glucémico de los últimos 3 meses</span>
+                        </div>
+                        <span class="catalog-item-price">$280</span>
+                    </div>
+                </div>
+
+                <div class="catalog-category">
+                    <h3>Orina y Coproscópico</h3>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Examen General de Orina</strong>
+                            <span>Análisis físico, químico y microscópico de orina</span>
+                        </div>
+                        <span class="catalog-item-price">$100</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Urocultivo</strong>
+                            <span>Cultivo bacteriológico de orina con antibiograma</span>
+                        </div>
+                        <span class="catalog-item-price">$350</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Coproscópico General</strong>
+                            <span>Análisis de heces para detección de parásitos</span>
+                        </div>
+                        <span class="catalog-item-price">$120</span>
+                    </div>
+                </div>
+
+                <div class="catalog-category">
+                    <h3>Hormonas y Tiroides</h3>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>TSH (Hormona Estimulante de Tiroides)</strong>
+                            <span>Evaluación de la función tiroidea</span>
+                        </div>
+                        <span class="catalog-item-price">$290</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>T3 y T4 Libre</strong>
+                            <span>Perfil tiroideo completo</span>
+                        </div>
+                        <span class="catalog-item-price">$420</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Prueba de Embarazo (Beta-HCG)</strong>
+                            <span>Detección cuantitativa de gonadotropina coriónica</span>
+                        </div>
+                        <span class="catalog-item-price">$200</span>
+                    </div>
+                </div>
+
+                <div class="catalog-category">
+                    <h3>Cultivos y Microbiología</h3>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Hemocultivo</strong>
+                            <span>Cultivo bacteriológico de sangre con antibiograma</span>
+                        </div>
+                        <span class="catalog-item-price">$480</span>
+                    </div>
+                    <div class="catalog-item">
+                        <div class="catalog-item-info">
+                            <strong>Cultivo Faríngeo</strong>
+                            <span>Detección de microorganismos en faringe</span>
+                        </div>
+                        <span class="catalog-item-price">$320</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
         fetch('nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
-            });
+            .then(r => r.text())
+            .then(data => { document.getElementById('nav-container').innerHTML = data; });
+
+        function abrirModal() {
+            document.getElementById('modal-catalogo').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-catalogo').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function cerrarModalSiFondo(e) {
+            if (e.target === document.getElementById('modal-catalogo')) cerrarModal();
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') cerrarModal();
+        });
     </script>
 </body>
 </html>

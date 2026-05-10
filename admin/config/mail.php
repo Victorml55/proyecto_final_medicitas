@@ -1,24 +1,20 @@
 <?php
 
-// ============================================================
-// Configuración de correo – PHPMailer
-// Sprint 06: Implementación de librería de envío de correos
-// ============================================================
+$envPath = dirname(__DIR__, 2) . '/.env';
+if (file_exists($envPath)) {
+    foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        if (!str_contains($line, '=')) continue;
+        [$key, $val] = explode('=', $line, 2);
+        $_ENV[trim($key)] = trim($val);
+    }
+}
 
-// --- Servidor SMTP ---
-define('MAIL_HOST',       'smtp.gmail.com');  // Cambia por tu servidor SMTP
-define('MAIL_PORT',       587);               // 587 = TLS, 465 = SSL
-define('MAIL_ENCRYPTION', 'tls');             // 'tls' o 'ssl'
-
-// --- Credenciales ---
-// Para Gmail: usa una "Contraseña de aplicación" (no tu contraseña normal)
-// https://myaccount.google.com/apppasswords
-define('MAIL_USERNAME',   'victorml7707@gmail.com');
-define('MAIL_PASSWORD',   'jjng myyj vtmp pmzy');
-
-// --- Remitente ---
-define('MAIL_FROM_EMAIL', 'victorml7707@gmail.com');
-define('MAIL_FROM_NAME',  'MediCitas Sistema');
-
-// --- Opciones adicionales ---
-define('MAIL_DEBUG',      0);  // 0=Sin debug | 1=Cliente | 2=Cliente+Servidor
+define('MAIL_HOST',       $_ENV['MAIL_HOST']       ?? 'smtp.gmail.com');
+define('MAIL_PORT',       (int)($_ENV['MAIL_PORT'] ?? 587));
+define('MAIL_ENCRYPTION', $_ENV['MAIL_ENCRYPTION'] ?? 'tls');
+define('MAIL_USERNAME',   $_ENV['MAIL_USERNAME']   ?? '');
+define('MAIL_PASSWORD',   $_ENV['MAIL_PASSWORD']   ?? '');
+define('MAIL_FROM_EMAIL', $_ENV['MAIL_FROM_EMAIL'] ?? '');
+define('MAIL_FROM_NAME',  $_ENV['MAIL_FROM_NAME']  ?? 'MediCitas');
+define('MAIL_DEBUG',      0);
