@@ -216,7 +216,7 @@
                     <h3>Urgencias y Traslados</h3>
                     <p>Atención médica inmediata las 24 horas del día, los 365 días del año con personal altamente capacitado.</p>
                 </div>
-                <a href="#" class="btn-service">Llamar Ahora</a>
+                <button class="btn-service" onclick="abrirUrgencias()">Llamar Ahora</button>
             </div>
 
         </div>
@@ -252,6 +252,65 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal urgencias -->
+    <div class="modal-overlay" id="modal-urgencias" onclick="cerrarUrgenciasSiFondo(event)">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                <h2 style="display:flex; align-items:center; gap:10px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#fee2e2;border-radius:50%;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                    </span>
+                    Urgencias y Traslados
+                </h2>
+                <button class="modal-close" onclick="cerrarUrgencias()">✕</button>
+            </div>
+            <div class="modal-body" style="padding-top: 16px;">
+
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">
+                    Contamos con atención médica inmediata las <strong>24 horas</strong>, los <strong>365 días</strong> del año.
+                </p>
+
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
+                        <span style="font-size:1.4rem;">📞</span>
+                        <div>
+                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Línea de urgencias</div>
+                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">(461) 123-4567</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
+                        <span style="font-size:1.4rem;">🚑</span>
+                        <div>
+                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Ambulancias</div>
+                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">Disponibles 24/7</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
+                        <span style="font-size:1.4rem;">📍</span>
+                        <div>
+                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Dirección</div>
+                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">Av. Constitución 100, Celaya</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <a href="tel:+524611234567" class="btn-login"
+                       style="flex:1; text-align:center; text-decoration:none; padding:13px; display:block;">
+                        📞 Llamar ahora
+                    </a>
+                    <a href="https://wa.me/524611234567?text=Necesito%20atenci%C3%B3n%20de%20urgencias"
+                       target="_blank"
+                       style="flex:1; text-align:center; text-decoration:none; padding:13px; display:block;
+                              background:#25d366; color:white; border-radius:8px; font-weight:600; font-size:1rem;">
+                        WhatsApp
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
@@ -496,6 +555,20 @@
             if (e.target === document.getElementById('modal-farmacia')) cerrarFarmacia();
         }
 
+        function abrirUrgencias() {
+            document.getElementById('modal-urgencias').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarUrgencias() {
+            document.getElementById('modal-urgencias').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function cerrarUrgenciasSiFondo(e) {
+            if (e.target === document.getElementById('modal-urgencias')) cerrarUrgencias();
+        }
+
         function pedirLogin() {
             document.getElementById('modal-login').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -525,7 +598,7 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); cerrarFarmacia(); }
+            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); cerrarFarmacia(); cerrarUrgencias(); }
         });
     </script>
 </body>
