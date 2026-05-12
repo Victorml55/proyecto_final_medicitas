@@ -57,7 +57,7 @@ static void post_paciente(void) {
 
     const char *body =
         "{"
-        "\"id_usuario\": 100,"
+        "\"id_usuario\": 5,"
         "\"numero_expediente\": \"EXP-2026-001\","
         "\"tipo_sangre\": \"O+\","
         "\"alergias\": \"Penicilina\","

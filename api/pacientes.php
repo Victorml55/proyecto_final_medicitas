@@ -54,25 +54,36 @@ switch ($metodo) {
         if (empty($d['id_usuario'])) {
             responder(422, ['error' => 'El campo id_usuario es requerido']);
         }
-        $stmt = $db->prepare(
-            "INSERT INTO pacientes
-                (id_usuario, numero_expediente, tipo_sangre, alergias,
-                 enfermedades_cronicas, contacto_emergencia_nombre,
-                 contacto_emergencia_telefono, seguro_medico, numero_poliza)
-             VALUES (?,?,?,?,?,?,?,?,?) RETURNING *"
-        );
-        $stmt->execute([
-            (int)$d['id_usuario'],
-            trim($d['numero_expediente']             ?? '') ?: null,
-            trim($d['tipo_sangre']                   ?? '') ?: null,
-            trim($d['alergias']                      ?? '') ?: null,
-            trim($d['enfermedades_cronicas']         ?? '') ?: null,
-            trim($d['contacto_emergencia_nombre']    ?? '') ?: null,
-            trim($d['contacto_emergencia_telefono']  ?? '') ?: null,
-            trim($d['seguro_medico']                 ?? '') ?: null,
-            trim($d['numero_poliza']                 ?? '') ?: null,
-        ]);
-        responder(201, $stmt->fetch());
+        try {
+            $stmt = $db->prepare(
+                "INSERT INTO pacientes
+                    (id_usuario, numero_expediente, tipo_sangre, alergias,
+                     enfermedades_cronicas, contacto_emergencia_nombre,
+                     contacto_emergencia_telefono, seguro_medico, numero_poliza)
+                 VALUES (?,?,?,?,?,?,?,?,?) RETURNING *"
+            );
+            $stmt->execute([
+                (int)$d['id_usuario'],
+                trim($d['numero_expediente']             ?? '') ?: null,
+                trim($d['tipo_sangre']                   ?? '') ?: null,
+                trim($d['alergias']                      ?? '') ?: null,
+                trim($d['enfermedades_cronicas']         ?? '') ?: null,
+                trim($d['contacto_emergencia_nombre']    ?? '') ?: null,
+                trim($d['contacto_emergencia_telefono']  ?? '') ?: null,
+                trim($d['seguro_medico']                 ?? '') ?: null,
+                trim($d['numero_poliza']                 ?? '') ?: null,
+            ]);
+            responder(201, $stmt->fetch());
+        } catch (\PDOException $e) {
+            $msg = $e->getMessage();
+            if (str_contains($msg, 'foreign key')) {
+                responder(422, ['error' => 'El id_usuario no existe']);
+            }
+            if (str_contains($msg, 'unique') || str_contains($msg, 'duplicate')) {
+                responder(409, ['error' => 'Ya existe un paciente con ese número de expediente']);
+            }
+            responder(500, ['error' => $msg]);
+        }
         break;
 
     case 'PUT':
