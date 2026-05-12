@@ -76,30 +76,7 @@
                     </div>
 
                     <div class="spec-grid" id="spec-grid">
-                        <div class="spec-card" data-spec="Cardiología" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">cardiology</span></div>
-                            <h3>Cardiología</h3>
-                        </div>
-                        <div class="spec-card" data-spec="Pediatría" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">child_care</span></div>
-                            <h3>Pediatría</h3>
-                        </div>
-                        <div class="spec-card" data-spec="Traumatología" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">orthopedics</span></div>
-                            <h3>Traumatología</h3>
-                        </div>
-                        <div class="spec-card" data-spec="Neurología" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">neurology</span></div>
-                            <h3>Neurología</h3>
-                        </div>
-                        <div class="spec-card" data-spec="Dermatología" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">dermatology</span></div>
-                            <h3>Dermatología</h3>
-                        </div>
-                        <div class="spec-card" data-spec="Oftalmología" onclick="seleccionarEspecialidad(this)">
-                            <div class="spec-icon"><span class="material-symbols-outlined">visibility</span></div>
-                            <h3>Oftalmología</h3>
-                        </div>
+                        <p style="color:#94a3b8;">Cargando especialidades...</p>
                     </div>
 
                     <div class="motivo-area">
@@ -129,31 +106,8 @@
                         <span id="pill-spec">Especialidad seleccionada</span>
                     </div>
 
-                    <div class="doctor-list">
-                        <div class="doctor-card" data-doc="Dr. Roberto Sánchez" onclick="seleccionarDoctor(this)">
-                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
-                            <div class="doctor-card-info">
-                                <h3>Dr. Roberto Sánchez</h3>
-                                <p>Certificado por el Consejo Mexicano · 12 años de experiencia</p>
-                            </div>
-                            <button class="doc-select-btn">Seleccionar</button>
-                        </div>
-                        <div class="doctor-card" data-doc="Dra. Elena Medina" onclick="seleccionarDoctor(this)">
-                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
-                            <div class="doctor-card-info">
-                                <h3>Dra. Elena Medina</h3>
-                                <p>Especialista en diagnóstico avanzado · 15 años de experiencia</p>
-                            </div>
-                            <button class="doc-select-btn">Seleccionar</button>
-                        </div>
-                        <div class="doctor-card" data-doc="Dr. Luis Herrera" onclick="seleccionarDoctor(this)">
-                            <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
-                            <div class="doctor-card-info">
-                                <h3>Dr. Luis Herrera</h3>
-                                <p>Subespecialidad en medicina interna · 8 años de experiencia</p>
-                            </div>
-                            <button class="doc-select-btn">Seleccionar</button>
-                        </div>
+                    <div class="doctor-list" id="doctor-list-container">
+                        <p style="color:#94a3b8;text-align:center;padding:20px;">Cargando médicos…</p>
                     </div>
 
                     <div class="nav-buttons">
@@ -192,16 +146,8 @@
                     </div>
 
                     <span class="time-section-label">Horarios disponibles</span>
-                    <div class="slots-grid">
-                        <button class="time-slot" onclick="selectTime(this,'08:00 AM')">08:00 AM</button>
-                        <button class="time-slot" onclick="selectTime(this,'09:00 AM')">09:00 AM</button>
-                        <button class="time-slot ocupado" disabled>10:00 AM</button>
-                        <button class="time-slot" onclick="selectTime(this,'10:30 AM')">10:30 AM</button>
-                        <button class="time-slot ocupado" disabled>11:00 AM</button>
-                        <button class="time-slot" onclick="selectTime(this,'12:00 PM')">12:00 PM</button>
-                        <button class="time-slot" onclick="selectTime(this,'03:00 PM')">03:00 PM</button>
-                        <button class="time-slot" onclick="selectTime(this,'04:00 PM')">04:00 PM</button>
-                        <button class="time-slot" onclick="selectTime(this,'05:30 PM')">05:30 PM</button>
+                    <div class="slots-grid" id="slots-grid">
+                        <p style="color:#94a3b8;grid-column:1/-1;">Selecciona médico y fecha primero.</p>
                     </div>
                     <div class="slots-legend">
                         <span><span class="legend-dot legend-available"></span> Disponible</span>
@@ -293,16 +239,56 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const booking = { specialty: '', doctor: '', date: '', time: '', motivo: '' };
-        let currentStep = 1;
+        const booking = {
+            specialty: '', specialtyId: null,
+            doctor: '',    doctorId: null,
+            date: '',      time: '',
+            motivo: ''
+        };
+        let currentStep  = 1;
+        let sesionUsuario = null;
         const TOTAL_STEPS = 4;
 
+        const iconosEspec = {
+            'Cardiología': 'cardiology', 'Pediatría': 'child_care',
+            'Traumatología': 'orthopedics', 'Neurología': 'neurology',
+            'Dermatología': 'dermatology', 'Oftalmología': 'visibility',
+            'Medicina General': 'stethoscope', 'Ginecología': 'female',
+            'Ortopedia': 'bone', 'Psiquiatría': 'psychology',
+        };
+
+        // Cargar sesión, especialidades y médicos al iniciar
+        (async function init() {
+            const auth = await fetch('/api/auth-status.php').then(r => r.json());
+            if (!auth.loggedIn) { window.location.replace('/index.html'); return; }
+            sesionUsuario = auth;
+
+            const [especResp, medicosResp] = await Promise.all([
+                fetch('/api/especialidades.php').then(r => r.json()),
+                fetch('/api/medicos.php').then(r => r.json()),
+            ]);
+
+            window._medicos = Array.isArray(medicosResp) ? medicosResp : [];
+
+            const specs = Array.isArray(especResp) ? especResp.filter(e => e.activo) : [];
+            const grid  = document.getElementById('spec-grid');
+            if (specs.length) {
+                grid.innerHTML = specs.map(e => `
+                    <div class="spec-card" data-spec="${e.nombre_especialidad}" data-spec-id="${e.id_especialidad}" onclick="seleccionarEspecialidad(this)">
+                        <div class="spec-icon"><span class="material-symbols-outlined">${iconosEspec[e.nombre_especialidad] ?? 'medical_services'}</span></div>
+                        <h3>${e.nombre_especialidad}</h3>
+                    </div>`).join('');
+            } else {
+                grid.innerHTML = '<p style="color:#94a3b8;">No hay especialidades disponibles.</p>';
+            }
+        })();
+
+        /* ── Navegación ─────────────────────────────────── */
         function updateProgress(step) {
             const pct = Math.round((step / TOTAL_STEPS) * 100);
             document.getElementById('progress-bar').style.width = pct + '%';
             document.getElementById('progress-pct').textContent = pct + '%';
             document.getElementById('progress-label').textContent = `Paso ${step} de ${TOTAL_STEPS}`;
-
             for (let i = 1; i <= TOTAL_STEPS; i++) {
                 const ind = document.getElementById(`step-ind-${i}`);
                 const sc  = document.getElementById(`sc-${i}`);
@@ -320,6 +306,7 @@
         }
 
         function irPaso(step) {
+            if (step === 2) cargarMedicos();
             document.getElementById(`step-${currentStep}`).classList.remove('active');
             document.getElementById(`step-${step}`).classList.add('active');
             currentStep = step;
@@ -328,10 +315,12 @@
             document.querySelector('.steps-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        /* ── Paso 1: Especialidad ───────────────────────── */
         function seleccionarEspecialidad(card) {
             document.querySelectorAll('.spec-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            booking.specialty = card.dataset.spec;
+            booking.specialty   = card.dataset.spec;
+            booking.specialtyId = card.dataset.specId ? parseInt(card.dataset.specId) : null;
             document.getElementById('btn-next-1').disabled = false;
         }
 
@@ -342,6 +331,35 @@
             });
         }
 
+        document.getElementById('btn-next-1').addEventListener('click', () => {
+            document.getElementById('pill-spec').textContent = booking.specialty;
+        }, true);
+
+        /* ── Paso 2: Médicos desde la API ───────────────── */
+        function cargarMedicos() {
+            const lista = document.getElementById('doctor-list-container');
+            if (!lista) return;
+            const todos = window._medicos || [];
+            const filtrados = booking.specialty
+                ? todos.filter(m => m.nombre_especialidad === booking.specialty && m.activo)
+                : todos.filter(m => m.activo);
+
+            if (!filtrados.length) {
+                lista.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">No hay médicos disponibles para esta especialidad.</p>';
+                return;
+            }
+
+            lista.innerHTML = filtrados.map(m => `
+                <div class="doctor-card" data-doc="${m.nombre_completo}" data-doc-id="${m.id_medico}" onclick="seleccionarDoctor(this)">
+                    <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
+                    <div class="doctor-card-info">
+                        <h3>Dr(a). ${m.nombre_completo}</h3>
+                        <p>${m.nombre_especialidad}${m.costo_consulta ? ' · $' + parseFloat(m.costo_consulta).toFixed(2) : ''}</p>
+                    </div>
+                    <button class="doc-select-btn">Seleccionar</button>
+                </div>`).join('');
+        }
+
         function seleccionarDoctor(card) {
             document.querySelectorAll('.doctor-card').forEach(c => {
                 c.classList.remove('selected');
@@ -349,33 +367,60 @@
             });
             card.classList.add('selected');
             card.querySelector('.doc-select-btn').textContent = '✓ Seleccionado';
-            booking.doctor = card.dataset.doc;
+            booking.doctor   = card.dataset.doc;
+            booking.doctorId = parseInt(card.dataset.docId);
+            booking.time     = '';
             document.getElementById('btn-next-2').disabled = false;
+            if (booking.date) verificarPaso3();
         }
 
+        /* ── Paso 3: Fecha y hora ───────────────────────── */
         function selectTime(btn, time) {
             document.querySelectorAll('.time-slot:not(.ocupado)').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             booking.time = time;
-            verificarPaso3();
+            document.getElementById('btn-next-3').disabled = false;
         }
 
-        function verificarPaso3() {
-            booking.date = document.getElementById('appointment-date').value;
-            document.getElementById('btn-next-3').disabled = !(booking.date && booking.time);
+        async function verificarPaso3() {
+            booking.date  = document.getElementById('appointment-date').value;
+            booking.time  = '';
+            document.getElementById('btn-next-3').disabled = true;
+            document.getElementById('pill-spec-3').textContent = booking.specialty;
+            document.getElementById('pill-doc-3').textContent  = booking.doctor;
+
+            const grid = document.getElementById('slots-grid');
+            if (!booking.date || !booking.doctorId) return;
+
+            grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">Cargando horarios...</p>';
+
+            const res  = await fetch(`/api/horarios.php?medico=${booking.doctorId}&fecha=${booking.date}`).then(r => r.json());
+            const slots = res.slots ?? [];
+
+            if (!slots.length) {
+                grid.innerHTML = `<p style="color:#94a3b8;grid-column:1/-1;">${res.mensaje ?? 'Sin horarios disponibles este día.'}</p>`;
+                return;
+            }
+
+            grid.innerHTML = slots.map(s => {
+                if (s.ocupado) return `<button class="time-slot ocupado" disabled>${s.label}</button>`;
+                return `<button class="time-slot" onclick="selectTime(this,'${s.hora}')">${s.label}</button>`;
+            }).join('');
         }
 
+        document.getElementById('appointment-date').setAttribute('min', new Date().toISOString().split('T')[0]);
+        document.getElementById('appointment-date').addEventListener('change', verificarPaso3);
+
+        /* ── Paso 4: Resumen ────────────────────────────── */
         function llenarResumen() {
             document.getElementById('sum-spec').textContent = booking.specialty || '—';
-            document.getElementById('sum-doc').textContent  = booking.doctor    || '—';
-            document.getElementById('sum-time').textContent = booking.time      || '—';
-
+            document.getElementById('sum-doc').textContent  = 'Dr(a). ' + (booking.doctor || '—');
+            document.getElementById('sum-time').textContent = booking.time || '—';
             if (booking.date) {
                 const [y, m, d] = booking.date.split('-');
                 const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                 document.getElementById('sum-date').textContent = `${d} ${meses[parseInt(m,10)-1]} ${y}`;
             }
-
             const motivo = document.getElementById('motivo').value.trim();
             booking.motivo = motivo;
             const motivoRow = document.getElementById('sum-motivo-row');
@@ -385,26 +430,67 @@
             } else {
                 motivoRow.style.display = 'none';
             }
-
-            document.getElementById('pill-spec-3').textContent = booking.specialty;
-            document.getElementById('pill-doc-3').textContent  = booking.doctor;
         }
 
-        document.getElementById('btn-next-1').addEventListener('click', () => {
-            document.getElementById('pill-spec').textContent = booking.specialty;
-        }, true);
+        /* ── Confirmar y guardar en BD ──────────────────── */
+        function timeToDb(t) {
+            // "08:00 AM" → "08:00:00" / "05:30 PM" → "17:30:00"
+            const [hhmm, ampm] = t.split(' ');
+            let [h, m] = hhmm.split(':').map(Number);
+            if (ampm === 'PM' && h !== 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+            const fin = h + 1 > 23 ? 23 : h + 1;
+            const pad = n => String(n).padStart(2, '0');
+            return { inicio: `${pad(h)}:${pad(m)}:00`, fin: `${pad(fin)}:${pad(m)}:00` };
+        }
 
-        function confirmarCita() {
+        async function confirmarCita() {
             const btn = document.querySelector('.btn-confirm');
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">hourglass_empty</span> Procesando…';
-            btn.disabled = true;
-            setTimeout(() => {
-                alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
-                window.location.href = 'inicio-usuario.html';
-            }, 1500);
-        }
 
-        document.getElementById('appointment-date').setAttribute('min', new Date().toISOString().split('T')[0]);
+            if (!sesionUsuario?.id_paciente) {
+                alert('Tu usuario no tiene un expediente de paciente. Contacta a recepción.');
+                return;
+            }
+            if (!booking.doctorId) {
+                alert('Selecciona un médico antes de confirmar.');
+                return;
+            }
+
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">hourglass_empty</span> Guardando…';
+            btn.disabled  = true;
+
+            const { inicio, fin } = timeToDb(booking.time);
+
+            try {
+                const res  = await fetch('/api/citas.php', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_paciente:     sesionUsuario.id_paciente,
+                        id_medico:       booking.doctorId,
+                        id_estado:       1,
+                        fecha_cita:      booking.date,
+                        hora_inicio:     inicio,
+                        hora_fin:        fin,
+                        motivo_consulta: booking.motivo || null,
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 Dr(a). ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
+                    window.location.href = 'mis-citas.html';
+                } else {
+                    alert('Error al guardar la cita: ' + (data.error || 'Error desconocido'));
+                    btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
+                    btn.disabled  = false;
+                }
+            } catch {
+                alert('No se pudo conectar con el servidor.');
+                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
+                btn.disabled  = false;
+            }
+        }
     </script>
 </body>
 </html>

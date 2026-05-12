@@ -38,8 +38,8 @@
                         <span class="material-symbols-outlined">photo_camera</span>
                     </button>
                 </div>
-                <h2 class="profile-name">Juan Pérez Martínez</h2>
-                <p class="profile-id">ID Paciente: #SSL-84729</p>
+                <h2 class="profile-name" id="p-nombre">—</h2>
+                <p class="profile-id" id="p-expediente">Cargando...</p>
                 
                 <div class="profile-quick-actions">
                     <button class="btn-outline" style="width: 100%;">Editar Perfil</button>
@@ -57,19 +57,19 @@
                     <div class="card-body info-grid">
                         <div class="info-group">
                             <label>Nombre Completo</label>
-                            <p>Juan Pérez Martínez</p>
+                            <p id="p-nombre-completo">—</p>
                         </div>
                         <div class="info-group">
                             <label>Fecha de Nacimiento</label>
-                            <p>15 de Agosto de 1985 (40 años)</p>
+                            <p id="p-nacimiento">—</p>
                         </div>
                         <div class="info-group">
                             <label>Género</label>
-                            <p>Masculino</p>
+                            <p id="p-genero">—</p>
                         </div>
                         <div class="info-group">
-                            <label>CURP / Documento</label>
-                            <p>PEMJ850815HDFRRN09</p>
+                            <label>Miembro desde</label>
+                            <p id="p-registro">—</p>
                         </div>
                     </div>
                 </div>
@@ -82,15 +82,11 @@
                     <div class="card-body info-grid">
                         <div class="info-group">
                             <label>Correo Electrónico</label>
-                            <p>juan.perez@email.com</p>
+                            <p id="p-email">—</p>
                         </div>
                         <div class="info-group">
-                            <label>Teléfono Móvil</label>
-                            <p>+52 55 1234 5678</p>
-                        </div>
-                        <div class="info-group" style="grid-column: 1 / -1;">
-                            <label>Dirección</label>
-                            <p>Av. Reforma 245, Int. 3B, Col. Centro, C.P. 06000</p>
+                            <label>Teléfono</label>
+                            <p id="p-telefono">—</p>
                         </div>
                     </div>
                 </div>
@@ -103,15 +99,23 @@
                     <div class="card-body info-grid">
                         <div class="info-group">
                             <label>Tipo de Sangre</label>
-                            <p class="highlight-value">O Positivo (+)</p>
+                            <p class="highlight-value" id="p-sangre">—</p>
                         </div>
                         <div class="info-group">
                             <label>Alergias Conocidas</label>
-                            <p>Penicilina, Ibuprofeno</p>
+                            <p id="p-alergias">—</p>
                         </div>
                         <div class="info-group" style="grid-column: 1 / -1;">
+                            <label>Enfermedades Crónicas</label>
+                            <p id="p-cronicas">—</p>
+                        </div>
+                        <div class="info-group">
                             <label>Contacto de Emergencia</label>
-                            <p>María Luisa Martínez (Madre) - 55 8765 4321</p>
+                            <p id="p-emergencia-nombre">—</p>
+                        </div>
+                        <div class="info-group">
+                            <label>Teléfono de Emergencia</label>
+                            <p id="p-emergencia-tel">—</p>
                         </div>
                     </div>
                 </div>
@@ -121,11 +125,44 @@
     </main>
 
     <script>
-        fetch('nav-user.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
-            });
+        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        const generoMap = { M: 'Masculino', F: 'Femenino', Otro: 'Otro' };
+
+        function edad(fechaStr) {
+            if (!fechaStr) return '';
+            const hoy = new Date(), nac = new Date(fechaStr);
+            let e = hoy.getFullYear() - nac.getFullYear();
+            if (hoy < new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate())) e--;
+            return e + ' años';
+        }
+
+        function formatFecha(f) {
+            if (!f) return '—';
+            const [y,m,d] = f.split('-');
+            return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
+        }
+
+        (async function () {
+            const p = await fetch('/api/perfil.php').then(r => r.json());
+            if (p.error) return;
+
+            const nombre = [p.nombre, p.apellido_paterno, p.apellido_materno].filter(Boolean).join(' ');
+            document.getElementById('p-nombre').textContent         = nombre;
+            document.getElementById('p-nombre-completo').textContent = nombre;
+            document.getElementById('p-expediente').textContent     = p.numero_expediente ? 'Exp: #' + p.numero_expediente : 'Sin expediente asignado';
+            document.getElementById('p-nacimiento').textContent     = p.fecha_nacimiento ? formatFecha(p.fecha_nacimiento) + ' (' + edad(p.fecha_nacimiento) + ')' : '—';
+            document.getElementById('p-genero').textContent         = generoMap[p.genero] ?? p.genero ?? '—';
+            document.getElementById('p-registro').textContent       = p.fecha_registro ? formatFecha(p.fecha_registro.split('T')[0]) : '—';
+            document.getElementById('p-email').textContent          = p.email ?? '—';
+            document.getElementById('p-telefono').textContent       = p.telefono ?? '—';
+            document.getElementById('p-sangre').textContent         = p.tipo_sangre ?? '—';
+            document.getElementById('p-alergias').textContent       = p.alergias ?? '—';
+            document.getElementById('p-cronicas').textContent       = p.enfermedades_cronicas ?? '—';
+            document.getElementById('p-emergencia-nombre').textContent = p.contacto_emergencia_nombre ?? '—';
+            document.getElementById('p-emergencia-tel').textContent    = p.contacto_emergencia_telefono ?? '—';
+        })();
     </script>
 </body>
 </html>

@@ -28,95 +28,96 @@
         </div>
 
         <h2 class="section-subtitle">Próximas Citas</h2>
-        <div class="appointments-list">
-            
-            <div class="appointment-card">
-                <div class="date-block">
-                    <span class="date-month">FEB</span>
-                    <span class="date-day">15</span>
-                    <span class="date-year">2026</span>
-                </div>
-                
-                <div class="appointment-info">
-                    <div class="appointment-header">
-                        <h3>Dr. Roberto Sánchez</h3>
-                        <span class="status-badge status-confirmed">Confirmada</span>
-                    </div>
-                    <p class="appointment-spec">Cardiología</p>
-                    <div class="appointment-meta">
-                        <span><span class="material-symbols-outlined">schedule</span> 10:30 AM</span>
-                        <span><span class="material-symbols-outlined">meeting_room</span> Consultorio 204</span>
-                    </div>
-                </div>
-
-                <div class="appointment-actions">
-                    <button class="btn-outline">Reprogramar</button>
-                    <button class="btn-outline btn-danger">Cancelar</button>
-                </div>
-            </div>
-
+        <div class="appointments-list" id="lista-proximas">
+            <p style="color:#94a3b8;">Cargando...</p>
         </div>
 
         <h2 class="section-subtitle" style="margin-top: 50px;">Historial de Consultas</h2>
-        <div class="appointments-list">
-            
-            <div class="appointment-card past-appointment">
-                <div class="date-block">
-                    <span class="date-month">ENE</span>
-                    <span class="date-day">10</span>
-                    <span class="date-year">2026</span>
-                </div>
-                
-                <div class="appointment-info">
-                    <div class="appointment-header">
-                        <h3>Dra. Elena Medina</h3>
-                        <span class="status-badge status-completed">Completada</span>
-                    </div>
-                    <p class="appointment-spec">Pediatría</p>
-                    <div class="appointment-meta">
-                        <span><span class="material-symbols-outlined">schedule</span> 04:00 PM</span>
-                        <span><span class="material-symbols-outlined">meeting_room</span> Consultorio 115</span>
-                    </div>
-                </div>
-
-                <div class="appointment-actions">
-                    <button class="btn-outline"><span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">prescriptions</span> Ver Receta</button>
-                </div>
-            </div>
-
-            <div class="appointment-card past-appointment">
-                <div class="date-block">
-                    <span class="date-month">DIC</span>
-                    <span class="date-day">05</span>
-                    <span class="date-year">2025</span>
-                </div>
-                
-                <div class="appointment-info">
-                    <div class="appointment-header">
-                        <h3>Laboratorio Clínico</h3>
-                        <span class="status-badge status-completed">Completada</span>
-                    </div>
-                    <p class="appointment-spec">Análisis de Sangre Completo</p>
-                    <div class="appointment-meta">
-                        <span><span class="material-symbols-outlined">schedule</span> 08:00 AM</span>
-                        <span><span class="material-symbols-outlined">science</span> Planta Baja</span>
-                    </div>
-                </div>
-
-                <div class="appointment-actions">
-                    <button class="btn-outline"><span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">download</span> Resultados</button>
-                </div>
-            </div>
-
+        <div class="appointments-list" id="lista-historial">
+            <p style="color:#94a3b8;">Cargando...</p>
         </div>
     </main>
 
     <script>
-        fetch('nav-user.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
+        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+
+        const mesesCorto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        function horaLabel(h) {
+            if (!h) return '—';
+            const [hh, mm] = h.split(':');
+            const n = parseInt(hh);
+            return `${n > 12 ? n-12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        function tarjetaCita(c, futura) {
+            const f    = c.fecha_cita.split('T')[0].split('-');
+            const mes  = mesesCorto[parseInt(f[1])-1].toUpperCase();
+            const color = c.color || '#94a3b8';
+            const acciones = futura ? `
+                <button class="btn-outline btn-danger" onclick="cancelarCita(${c.id_cita})">Cancelar</button>` : '';
+            return `
+            <div class="appointment-card ${futura ? '' : 'past-appointment'}">
+                <div class="date-block">
+                    <span class="date-month">${mes}</span>
+                    <span class="date-day">${parseInt(f[2])}</span>
+                    <span class="date-year">${f[0]}</span>
+                </div>
+                <div class="appointment-info">
+                    <div class="appointment-header">
+                        <h3>Dr(a). ${c.nombre_medico}</h3>
+                        <span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>
+                    </div>
+                    <p class="appointment-spec">${c.nombre_especialidad ?? ''}</p>
+                    <div class="appointment-meta">
+                        <span><span class="material-symbols-outlined">schedule</span> ${horaLabel(c.hora_inicio)}</span>
+                        ${c.numero_consultorio ? `<span><span class="material-symbols-outlined">meeting_room</span> Consultorio ${c.numero_consultorio}</span>` : ''}
+                        ${c.motivo_consulta ? `<span><span class="material-symbols-outlined">description</span> ${c.motivo_consulta}</span>` : ''}
+                    </div>
+                </div>
+                <div class="appointment-actions">${acciones}</div>
+            </div>`;
+        }
+
+        async function cancelarCita(id) {
+            if (!confirm('¿Seguro que deseas cancelar esta cita?')) return;
+            const res = await fetch(`/api/citas.php?id=${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_estado: 3 })
             });
+            if (res.ok) { alert('Cita cancelada.'); cargarCitas(); }
+            else alert('No se pudo cancelar la cita.');
+        }
+
+        async function cargarCitas() {
+            const auth = await fetch('/api/auth-status.php').then(r=>r.json());
+            if (!auth.loggedIn) { window.location.replace('/index.html'); return; }
+            if (!auth.id_paciente) {
+                document.getElementById('lista-proximas').innerHTML = '<p style="color:#94a3b8;">Sin expediente de paciente.</p>';
+                document.getElementById('lista-historial').innerHTML = '';
+                return;
+            }
+
+            const citas = await fetch(`/api/citas.php?paciente=${auth.id_paciente}`).then(r=>r.json());
+            const hoy   = new Date().toISOString().split('T')[0];
+
+            const proximas  = citas.filter(c => c.fecha_cita >= hoy && c.id_estado != 3);
+            const historial = citas.filter(c => c.fecha_cita < hoy  || c.id_estado == 3);
+
+            const elP = document.getElementById('lista-proximas');
+            const elH = document.getElementById('lista-historial');
+
+            elP.innerHTML = proximas.length
+                ? proximas.map(c => tarjetaCita(c, true)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">No tienes citas próximas.</p>';
+
+            elH.innerHTML = historial.length
+                ? historial.map(c => tarjetaCita(c, false)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">Sin historial de consultas.</p>';
+        }
+
+        cargarCitas();
     </script>
 </body>
 </html>

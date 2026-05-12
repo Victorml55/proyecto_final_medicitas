@@ -23,27 +23,44 @@ switch ($metodo) {
 
     case 'GET':
         if ($id) {
-            $stmt = $db->prepare('SELECT * FROM citas WHERE id_cita = ?');
+            $stmt = $db->prepare(
+                "SELECT c.*, e.nombre_estado, e.color,
+                        um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                        esp.nombre_especialidad,
+                        co.numero_consultorio
+                 FROM citas c
+                 JOIN estados_cita e   ON e.id_estado    = c.id_estado
+                 JOIN medicos      m   ON m.id_medico    = c.id_medico
+                 JOIN usuarios     um  ON um.id_usuario  = m.id_usuario
+                 JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
+                 LEFT JOIN consultorios co ON co.id_consultorio = c.id_consultorio
+                 WHERE c.id_cita = ?"
+            );
             $stmt->execute([$id]);
             $fila = $stmt->fetch();
             $fila
                 ? responder(200, $fila)
                 : responder(404, ['error' => 'Cita no encontrada']);
         } else {
+            $idPaciente = isset($_GET['paciente']) ? (int)$_GET['paciente'] : null;
+            $where = $idPaciente ? 'WHERE c.id_paciente = ' . $idPaciente : '';
             $stmt = $db->query(
-                "SELECT c.id_cita, c.fecha_cita, c.hora_inicio, c.hora_fin,
-                        c.motivo_consulta, c.costo, c.codigo_confirmacion,
+                "SELECT c.id_cita, c.id_paciente, c.fecha_cita, c.hora_inicio, c.hora_fin,
+                        c.motivo_consulta, c.costo, c.codigo_confirmacion, c.id_estado,
                         up.nombre || ' ' || up.apellido_paterno AS nombre_paciente,
                         um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                        esp.nombre_especialidad,
                         co.numero_consultorio,
-                        e.nombre_estado
+                        e.nombre_estado, e.color
                  FROM citas c
                  JOIN pacientes    p   ON p.id_paciente  = c.id_paciente
                  JOIN usuarios     up  ON up.id_usuario  = p.id_usuario
                  JOIN medicos      m   ON m.id_medico    = c.id_medico
                  JOIN usuarios     um  ON um.id_usuario  = m.id_usuario
+                 JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
                  JOIN estados_cita e   ON e.id_estado    = c.id_estado
                  LEFT JOIN consultorios co ON co.id_consultorio = c.id_consultorio
+                 $where
                  ORDER BY c.fecha_cita DESC, c.hora_inicio DESC"
             );
             responder(200, $stmt->fetchAll());
