@@ -23,17 +23,17 @@
 
     <main class="page-content">
         <div class="dashboard-header">
-            <h1>Hola, Victor</h1>
+            <h1 id="saludo">Hola</h1>
             <h2>Bienvenido a tu portal médico</h2>
         </div>
 
-        <div class="next-appointment-card">
+        <div class="next-appointment-card" id="proxima-cita" style="display:none;">
             <div class="appointment-icon">
-                
+                <span class="material-symbols-outlined">calendar_month</span>
             </div>
             <div class="appointment-details">
-                <h3>Tu próxima cita es mañana</h3>
-                <p><strong>Dr. Roberto Sánchez</strong> - Cardiología</p>
+                <h3 id="cita-cuando">—</h3>
+                <p id="cita-detalle">—</p>
             </div>
             <a href="mis-citas.html" class="btn-primary">Ver Detalles</a>
         </div>
@@ -60,11 +60,47 @@
     </main>
 
     <script>
-        fetch('nav-user.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
-            });
+        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+
+        function diasParaCita(fechaStr) {
+            const hoy    = new Date(); hoy.setHours(0,0,0,0);
+            const fecha  = new Date(fechaStr + 'T00:00:00');
+            const diff   = Math.round((fecha - hoy) / 86400000);
+            if (diff === 0) return 'Tu cita es hoy';
+            if (diff === 1) return 'Tu próxima cita es mañana';
+            return `Tu próxima cita es en ${diff} días`;
+        }
+
+        function horaLabel(h) {
+            if (!h) return '';
+            const [hh, mm] = h.split(':');
+            const n = parseInt(hh);
+            return `${n > 12 ? n-12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        (async function () {
+            const auth = await fetch('/api/auth-status.php').then(r => r.json());
+            if (!auth.loggedIn) { window.location.replace('/index.html'); return; }
+
+            document.getElementById('saludo').textContent = 'Hola, ' + auth.nombre;
+
+            if (!auth.id_paciente) return;
+
+            const citas = await fetch(`/api/citas.php?paciente=${auth.id_paciente}`).then(r => r.json());
+            const hoy   = new Date().toISOString().split('T')[0];
+            const proximas = citas
+                .filter(c => c.fecha_cita >= hoy && c.id_estado != 3)
+                .sort((a, b) => a.fecha_cita.localeCompare(b.fecha_cita) || a.hora_inicio.localeCompare(b.hora_inicio));
+
+            if (!proximas.length) return;
+
+            const c = proximas[0];
+            document.getElementById('cita-cuando').textContent  = diasParaCita(c.fecha_cita);
+            document.getElementById('cita-detalle').innerHTML   =
+                `<strong>Dr(a). ${c.nombre_medico}</strong> - ${c.nombre_especialidad ?? ''}
+                 <span style="margin-left:12px;opacity:.85;">🕐 ${horaLabel(c.hora_inicio)}</span>`;
+            document.getElementById('proxima-cita').style.display = 'flex';
+        })();
     </script>
 </body>
 </html>

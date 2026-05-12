@@ -29,62 +29,54 @@
 
         <div class="search-bar-container">
             <span class="material-symbols-outlined search-icon">search</span>
-            <input type="text" placeholder="Buscar por nombre o especialidad..." class="search-input">
+            <input type="text" id="buscador" placeholder="Buscar por nombre o especialidad..." class="search-input" oninput="filtrar(this.value)">
         </div>
 
-        <div class="directory-list">
-            
-            <div class="directory-card">
-                <div class="doc-avatar">
-                    
-                </div>
-                <div class="doc-info">
-                    <h3>Dr. Roberto Sánchez</h3>
-                    <span class="doc-badge">Cardiología</span>
-                    <p>Especialista en intervencionismo cardiovascular. Certificado por el Consejo Mexicano de Cardiología con más de 15 años de experiencia.</p>
-                </div>
-                <div class="doc-action">
-                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
-                </div>
-            </div>
-
-            <div class="directory-card">
-                <div class="doc-avatar">
-                    
-                </div>
-                <div class="doc-info">
-                    <h3>Dra. Elena Medina</h3>
-                    <span class="doc-badge">Pediatría</span>
-                    <p>Atención integral del recién nacido y adolescente. Subespecialidad en neonatología y cuidados intensivos pediátricos.</p>
-                </div>
-                <div class="doc-action">
-                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
-                </div>
-            </div>
-
-            <div class="directory-card">
-                <div class="doc-avatar">
-                    
-                </div>
-                <div class="doc-info">
-                    <h3>Dr. Alejandro Gómez</h3>
-                    <span class="doc-badge">Traumatología</span>
-                    <p>Experto en cirugía articular, medicina deportiva y reemplazos articulares. Miembro activo del Colegio Médico de Ortopedia.</p>
-                </div>
-                <div class="doc-action">
-                    <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
-                </div>
-            </div>
-
+        <div class="directory-list" id="directory-list">
+            <p style="color:#94a3b8;text-align:center;padding:30px;">Cargando médicos...</p>
         </div>
     </main>
 
     <script>
-        fetch('nav-user.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
-            });
+        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+
+        let todosMedicos = [];
+
+        function renderMedicos(lista) {
+            const el = document.getElementById('directory-list');
+            if (!lista.length) {
+                el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px;">No se encontraron médicos.</p>';
+                return;
+            }
+            el.innerHTML = lista.map(m => `
+                <div class="directory-card">
+                    <div class="doc-avatar">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div class="doc-info">
+                        <h3>Dr(a). ${m.nombre_completo}</h3>
+                        <span class="doc-badge">${m.nombre_especialidad}</span>
+                        <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}${m.años_experiencia ? ' · ' + m.años_experiencia + ' años de experiencia.' : ''}</p>
+                    </div>
+                    <div class="doc-action">
+                        <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
+                    </div>
+                </div>`).join('');
+        }
+
+        function filtrar(q) {
+            const t = q.toLowerCase();
+            renderMedicos(todosMedicos.filter(m =>
+                m.nombre_completo.toLowerCase().includes(t) ||
+                m.nombre_especialidad.toLowerCase().includes(t)
+            ));
+        }
+
+        (async function () {
+            const data = await fetch('/api/medicos.php').then(r => r.json());
+            todosMedicos = (Array.isArray(data) ? data : []).filter(m => m.activo);
+            renderMedicos(todosMedicos);
+        })();
     </script>
 </body>
 </html>
