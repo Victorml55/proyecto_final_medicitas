@@ -15,52 +15,34 @@
             <p>Atención médica de excelencia con los mejores especialistas de la región.</p>
         </div>
 
-        <div class="specialties-grid">
-            
-            <div class="specialty-card">
-                
-                <h2>Cardiología</h2>
-                <p>Cuidado integral de tu corazón con tecnología de punta y monitoreo continuo.</p>
-            </div>
-
-            <div class="specialty-card">
-                
-                <h2>Pediatría</h2>
-                <p>Atención especializada y cálida para el desarrollo y salud de los más pequeños.</p>
-            </div>
-
-            <div class="specialty-card">
-                
-                <h2>Neurología</h2>
-                <p>Diagnóstico y tratamiento avanzado de trastornos del sistema nervioso.</p>
-            </div>
-
-            <div class="specialty-card">
-                
-                <h2>Traumatología</h2>
-                <p>Especialistas en lesiones óseas, articulares y rehabilitación física.</p>
-            </div>
-
-            <div class="specialty-card">
-                
-                <h2>Medicina General</h2>
-                <p>Tu primer punto de contacto para diagnósticos precisos y medicina preventiva.</p>
-            </div>
-
-            <div class="specialty-card">
-                
-                <h2>Oftalmología</h2>
-                <p>Cuidado completo de tu visión, desde exámenes de rutina hasta cirugías.</p>
-            </div>
-
+        <div class="specialties-grid" id="specialties-grid">
+            <p id="cargando">Cargando especialidades...</p>
         </div>
     </main>
 
     <script>
         fetch('nav.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('nav-container').innerHTML = data;
+            .then(r => r.text())
+            .then(data => { document.getElementById('nav-container').innerHTML = data; });
+
+        fetch('api/especialidades.php')
+            .then(r => r.json())
+            .then(especialidades => {
+                const grid = document.getElementById('specialties-grid');
+                const activas = especialidades.filter(e => e.activo);
+                if (activas.length === 0) {
+                    grid.innerHTML = '<p>No hay especialidades disponibles.</p>';
+                    return;
+                }
+                grid.innerHTML = activas.map(e => `
+                    <div class="specialty-card">
+                        <h2>${e.nombre_especialidad}</h2>
+                        <p>${e.descripcion ?? ''}</p>
+                    </div>`).join('');
+            })
+            .catch(() => {
+                document.getElementById('specialties-grid').innerHTML =
+                    '<p>Error al cargar las especialidades.</p>';
             });
     </script>
 </body>
