@@ -4,12 +4,14 @@ require_once(__DIR__ . '/sistema.class.php');
 require_once(__DIR__ . '/auth.php');
 requerirLogin();
 require_once(__DIR__ . '/models/usuario.php');
+require_once(__DIR__ . '/models/usuario_rol.php');
 require_once(__DIR__ . '/services/MailService.php');
 
-$app    = new Usuario();
-$id     = isset($_GET['id'])     ? (int)$_GET['id'] : null;
-$accion = isset($_GET['accion']) ? $_GET['accion']   : null;
-$error  = null;
+$app        = new Usuario();
+$appRol     = new UsuarioRol();
+$id         = isset($_GET['id'])     ? (int)$_GET['id'] : null;
+$accion     = isset($_GET['accion']) ? $_GET['accion']   : null;
+$error      = null;
 
 $generosValidos = ['M', 'F', 'Otro'];
 
@@ -43,11 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $accion === 'borrar') {
                 $error = 'La fecha de nacimiento no es válida.';
                 break;
             }
+            $idRol = (int)($_POST['id_rol'] ?? 0);
+            if (!$idRol) {
+                $error = 'Debes seleccionar un rol para el usuario.';
+                break;
+            }
             if ($app->emailExiste($email)) {
                 $error = 'Ya existe un usuario con ese email.';
                 break;
             }
-            $app->crear($_POST);
+            $nuevoId = $app->crear($_POST);
+            $appRol->crear(['id_usuario' => $nuevoId, 'id_rol' => $idRol]);
 
             // ── Sprint 06: Envío de correo de bienvenida con PHPMailer ──
             $passwordPlano = trim($_POST['password']);
@@ -110,6 +118,7 @@ require(__DIR__ . '/views/header.php');
 
 switch ($accion) {
     case 'crear':
+        $roles = $appRol->todosRoles();
         require(__DIR__ . '/views/usuarios/formulario_crear.php');
         break;
     case 'actualizar':

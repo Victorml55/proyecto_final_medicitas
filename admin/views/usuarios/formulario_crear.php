@@ -65,6 +65,18 @@
                         <label class="form-check-label" for="activo">Usuario activo</label>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
+                    <select name="id_rol" class="form-select" required id="id_rol">
+                        <option value="">— Selecciona un rol —</option>
+                        <?php foreach ($roles as $r): ?>
+                        <option value="<?= $r['id_rol'] ?>" <?= (($_POST['id_rol'] ?? '') == $r['id_rol']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($r['nombre_rol']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="invalid-feedback">Debes seleccionar un rol.</div>
+                </div>
             </div>
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Guardar</button>
@@ -82,6 +94,7 @@ document.getElementById('frm').addEventListener('submit', function(e) {
         { el: this.querySelector('[name=password]'),        test: v => v.length >= 8 },
         { el: this.querySelector('[name=telefono]'),        test: v => v === '' || /^[0-9\+\-\s]+$/.test(v) },
         { el: this.querySelector('[name=fecha_nacimiento]'),test: v => v === '' || new Date(v) <= new Date() },
+        { el: this.querySelector('[name=id_rol]'),           test: v => v !== '' },
     ];
     campos.forEach(({ el, test }) => {
         if (!test(el.value)) { el.classList.add('is-invalid'); ok = false; }

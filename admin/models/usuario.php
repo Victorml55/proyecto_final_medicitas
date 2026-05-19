@@ -16,8 +16,8 @@ class Usuario extends Sistema {
         return $stmt->fetch();
     }
 
-    function crear(array $d) {
-        $stmt = $this->db->prepare('INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, email, password_hash, telefono, fecha_nacimiento, genero, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    function crear(array $d): int {
+        $stmt = $this->db->prepare('INSERT INTO usuarios (nombre, apellido_paterno, apellido_materno, email, password_hash, telefono, fecha_nacimiento, genero, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_usuario');
         $stmt->execute([
             trim($d['nombre']),
             trim($d['apellido_paterno']),
@@ -29,6 +29,7 @@ class Usuario extends Sistema {
             $d['genero'] ?: null,
             isset($d['activo']) ? 'true' : 'false',
         ]);
+        return (int)$stmt->fetchColumn();
     }
 
     function actualizar(array $d) {
