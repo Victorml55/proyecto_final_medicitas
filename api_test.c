@@ -57,13 +57,13 @@ static void post_paciente(void) {
 
     const char *body =
         "{"
-        "\"id_usuario\": 5,"
-        "\"numero_expediente\": \"EXP-2026-001\","
+        "\"id_usuario\": 15,"
+        "\"numero_expediente\": \"EXP-2026-002\","
         "\"tipo_sangre\": \"O+\","
         "\"alergias\": \"Penicilina\","
         "\"enfermedades_cronicas\": \"Ninguna\","
-        "\"contacto_emergencia_nombre\": \"Maria Lopez\","
-        "\"contacto_emergencia_telefono\": \"5551234567\","
+        "\"contacto_emergencia_nombre\": \"ncwdjhcwudw Lopez\","
+        "\"contacto_emergencia_telefono\": \"123232343232\","
         "\"seguro_medico\": \"IMSS\","
         "\"numero_poliza\": \"POL-999\""
         "}";
