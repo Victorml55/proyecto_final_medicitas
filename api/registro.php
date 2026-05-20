@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../admin/services/MailService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responder(405, ['error' => 'Método no permitido.']);
@@ -42,27 +43,32 @@ try {
         responder(409, ['error' => 'Ya existe una cuenta registrada con ese correo.']);
     }
 
-    $hash = password_hash($password, PASSWORD_BCRYPT);
+    // Eliminar verificaciones previas expiradas o del mismo email
+    $db->prepare('DELETE FROM verificaciones_pendientes WHERE email = ? OR expira_en < NOW()')
+       ->execute([$email]);
 
-    $stmt = $db->prepare(
-        'INSERT INTO usuarios
-            (nombre, apellido_paterno, apellido_materno, email, password_hash,
-             telefono, fecha_nacimiento, genero, activo)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)'
-    );
-    $stmt->execute([
-        $nombre,
-        $apellido_paterno,
-        $apellido_materno,
-        $email,
-        $hash,
-        $telefono,
-        $fecha_nacimiento,
-        $genero,
+    $token = bin2hex(random_bytes(32));
+    $hash  = password_hash($password, PASSWORD_BCRYPT);
+
+    $db->prepare(
+        'INSERT INTO verificaciones_pendientes
+            (token, nombre, apellido_paterno, apellido_materno, email, password_hash,
+             telefono, fecha_nacimiento, genero)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    )->execute([$token, $nombre, $apellido_paterno, $apellido_materno, $email, $hash,
+                $telefono, $fecha_nacimiento, $genero]);
+
+    $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host      = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $linkVerificacion = "$protocolo://$host/api/verificar.php?token=$token";
+
+    MailService::confirmacionRegistro($email, "$nombre $apellido_paterno", $linkVerificacion);
+
+    responder(200, [
+        'success' => true,
+        'mensaje' => 'Te enviamos un correo de confirmación. Revisa tu bandeja y haz clic en el enlace para activar tu cuenta.',
     ]);
 
-    responder(201, ['success' => true, 'mensaje' => 'Cuenta creada exitosamente.']);
-
 } catch (PDOException $e) {
-    responder(500, ['error' => 'Error al registrar la cuenta. Intenta de nuevo.']);
+    responder(500, ['error' => 'Error al procesar el registro. Intenta de nuevo.']);
 }
