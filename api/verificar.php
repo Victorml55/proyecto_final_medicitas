@@ -54,6 +54,7 @@ try {
 }
 
 function mostrarPagina(string $tipo, string $titulo, string $mensaje): void {
+    header('Content-Type: text/html; charset=utf-8');
     $color  = $tipo === 'ok' ? '#22c55e' : '#ef4444';
     $icono  = $tipo === 'ok' ? '✅' : '❌';
     $login  = '../index.html';
