@@ -225,10 +225,10 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    successBox.textContent   = '¡Cuenta creada exitosamente! Redirigiendo al inicio de sesión...';
+                    successBox.textContent   = data.mensaje;
                     successBox.style.display = 'block';
                     this.reset();
-                    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+                    btn.textContent = 'Correo enviado';
                 } else {
                     errorBox.textContent   = data.error || 'Error al crear la cuenta.';
                     errorBox.style.display = 'block';

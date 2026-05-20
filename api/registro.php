@@ -43,7 +43,7 @@ try {
         responder(409, ['error' => 'Ya existe una cuenta registrada con ese correo.']);
     }
 
-    // Eliminar verificaciones previas expiradas o del mismo email
+    // Limpiar verificaciones previas del mismo email o expiradas
     $db->prepare('DELETE FROM verificaciones_pendientes WHERE email = ? OR expira_en < NOW()')
        ->execute([$email]);
 
@@ -60,9 +60,9 @@ try {
 
     $protocolo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host      = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $linkVerificacion = "$protocolo://$host/api/verificar.php?token=$token";
+    $link      = "$protocolo://$host/api/verificar.php?token=$token";
 
-    MailService::confirmacionRegistro($email, "$nombre $apellido_paterno", $linkVerificacion);
+    MailService::confirmacionRegistro($email, "$nombre $apellido_paterno", $link);
 
     responder(200, [
         'success' => true,
@@ -70,5 +70,5 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    responder(500, ['error' => 'Error al procesar el registro. Intenta de nuevo.']);
+    responder(500, ['error' => 'Error al registrar la cuenta. Intenta de nuevo.']);
 }
