@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restablecer Contraseña | MediCitas SSL</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        .reset-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.1);
+        }
+        .reset-card h1 { font-size: 1.6rem; color: #005f99; margin-bottom: 8px; }
+        .reset-card p  { color: #666; margin-bottom: 24px; font-size: 0.95rem; }
+        .password-hint { font-size: 0.78rem; color: #94a3b8; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="reset-card">
+        <h1>Nueva contraseña</h1>
+        <p>Ingresa tu nueva contraseña para recuperar el acceso a tu cuenta.</p>
+
+        <div id="msg-error"   class="login-error"    style="display:none; margin-bottom:16px;"></div>
+        <div id="msg-success" class="register-success" style="display:none; margin-bottom:16px;
+             background:#dcfce7; color:#166534; border:1px solid #bbf7d0;
+             border-radius:8px; padding:10px 14px; font-size:.92rem;"></div>
+
+        <form id="reset-form" class="login-form">
+            <div class="input-group">
+                <label for="password">Nueva contraseña</label>
+                <input type="password" id="password" placeholder="••••••••" required minlength="8">
+                <p class="password-hint">Mínimo 8 caracteres</p>
+            </div>
+            <div class="input-group">
+                <label for="password_confirm">Confirmar contraseña</label>
+                <input type="password" id="password_confirm" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-login" id="btn-reset" style="margin-top:10px;">
+                Guardar contraseña
+            </button>
+        </form>
+
+        <div style="text-align:center; margin-top:20px;">
+            <a href="index.html" style="color:#005f99; font-size:0.9rem;">← Volver al inicio de sesión</a>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token  = params.get('token');
+
+        if (!token) {
+            document.getElementById('reset-form').style.display = 'none';
+            const err = document.getElementById('msg-error');
+            err.textContent   = 'Enlace inválido. Solicita uno nuevo desde el inicio de sesión.';
+            err.style.display = 'block';
+        }
+
+        document.getElementById('reset-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const errorBox   = document.getElementById('msg-error');
+            const successBox = document.getElementById('msg-success');
+            const btn        = document.getElementById('btn-reset');
+            const password   = document.getElementById('password').value;
+            const confirm    = document.getElementById('password_confirm').value;
+
+            errorBox.style.display   = 'none';
+            successBox.style.display = 'none';
+
+            if (password.length < 8) {
+                errorBox.textContent   = 'La contraseña debe tener al menos 8 caracteres.';
+                errorBox.style.display = 'block';
+                return;
+            }
+            if (password !== confirm) {
+                errorBox.textContent   = 'Las contraseñas no coinciden.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            btn.disabled    = true;
+            btn.textContent = 'Guardando...';
+
+            try {
+                const res  = await fetch('api/reset-password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    successBox.textContent   = '¡Contraseña actualizada! Redirigiendo al inicio de sesión...';
+                    successBox.style.display = 'block';
+                    this.style.display = 'none';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+                } else {
+                    errorBox.textContent   = data.error || 'Error al actualizar la contraseña.';
+                    errorBox.style.display = 'block';
+                    btn.disabled    = false;
+                    btn.textContent = 'Guardar contraseña';
+                }
+            } catch {
+                errorBox.textContent   = 'No se pudo conectar con el servidor.';
+                errorBox.style.display = 'block';
+                btn.disabled    = false;
+                btn.textContent = 'Guardar contraseña';
+            }
+        });
+    </script>
+</body>
+</html>

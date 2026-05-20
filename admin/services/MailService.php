@@ -78,7 +78,26 @@ class MailService {
     }
 
     // ----------------------------------------------------------
-    // 3. Correo de confirmación de cita
+    // 3. Correo de recuperación de contraseña
+    // ----------------------------------------------------------
+    public static function recuperarContrasena(string $destinatario, string $nombre, string $link): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Restablece tu contraseña';
+            $mail->Body    = self::templateRecuperarContrasena($nombre, $link);
+            $mail->AltBody = "Hola $nombre,\n\nRecibimos una solicitud para restablecer tu contraseña.\n\nEnlace (válido 1 hora):\n$link\n\nSi no solicitaste esto, ignora este correo.";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar recuperación: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 4. Correo de confirmación de cita
     // ----------------------------------------------------------
     public static function confirmacionCita(string $destinatario, string $nombre, array $cita): bool {
         try {
@@ -101,6 +120,55 @@ class MailService {
     // ----------------------------------------------------------
     // TEMPLATES HTML
     // ----------------------------------------------------------
+
+    private static function templateRecuperarContrasena(string $nombre, string $link): string {
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Recuperación de contraseña</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#005f99;margin-top:0;">Hola, {$nombre}</h2>
+                    <p style="color:#444;line-height:1.7;">
+                      Recibimos una solicitud para restablecer la contraseña de tu cuenta en <strong>MediCitas</strong>.
+                      Haz clic en el botón de abajo. Este enlace es válido por <strong>1 hora</strong>.
+                    </p>
+                    <div style="text-align:center;margin:32px 0;">
+                      <a href="{$link}" style="background:#005f99;color:#ffffff;padding:14px 36px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:16px;">
+                        Restablecer contraseña
+                      </a>
+                    </div>
+                    <p style="color:#888;font-size:13px;">
+                      Si el botón no funciona, copia y pega este enlace:<br>
+                      <a href="{$link}" style="color:#005f99;word-break:break-all;">{$link}</a>
+                    </p>
+                    <p style="color:#999;font-size:12px;border-top:1px solid #eee;padding-top:16px;margin-top:24px;">
+                      Si no solicitaste restablecer tu contraseña, ignora este correo. Tu cuenta está segura.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
 
     private static function templateConfirmacionRegistro(string $nombre, string $link): string {
         return <<<HTML

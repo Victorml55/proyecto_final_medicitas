@@ -42,7 +42,7 @@
                             <input type="checkbox" id="remember">
                             <label for="remember">Recordarme</label>
                         </div>
-                        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                        <a href="#" class="forgot-password" id="btn-forgot">¿Olvidaste tu contraseña?</a>
                     </div>
 
                     <button type="submit" class="btn-login" id="btn-login">Ingresar</button>
@@ -65,7 +65,96 @@
 
     </div>
 
+<!-- Modal recuperar contraseña -->
+<div id="modal-forgot" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+     z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:36px 32px; width:100%;
+                max-width:400px; margin:16px; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+        <h2 style="color:#005f99; margin:0 0 8px; font-size:1.3rem;">Recuperar contraseña</h2>
+        <p style="color:#666; font-size:.9rem; margin:0 0 20px;">
+            Ingresa tu correo y te enviaremos un enlace para restablecerla.
+        </p>
+        <div id="forgot-error"   style="display:none; background:#fee2e2; color:#991b1b;
+             border-radius:8px; padding:10px 14px; font-size:.88rem; margin-bottom:14px;"></div>
+        <div id="forgot-success" style="display:none; background:#dcfce7; color:#166534;
+             border-radius:8px; padding:10px 14px; font-size:.88rem; margin-bottom:14px;"></div>
+        <div class="input-group" style="margin-bottom:16px;">
+            <label for="forgot-email">Correo electrónico</label>
+            <input type="email" id="forgot-email" placeholder="ejemplo@correo.com"
+                   style="width:100%; padding:12px 15px; border:1px solid #ddd;
+                          border-radius:8px; font-size:1rem; outline:none; box-sizing:border-box;">
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="btn-forgot-submit" class="btn-login" style="flex:1; padding:12px;">
+                Enviar enlace
+            </button>
+            <button id="btn-forgot-cancel" style="flex:1; padding:12px; border:2px solid #005f99;
+                    background:transparent; color:#005f99; border-radius:8px;
+                    font-weight:600; cursor:pointer;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+        // Modal recuperar contraseña
+        const modal       = document.getElementById('modal-forgot');
+        const forgotError = document.getElementById('forgot-error');
+        const forgotOk    = document.getElementById('forgot-success');
+
+        document.getElementById('btn-forgot').addEventListener('click', function(e) {
+            e.preventDefault();
+            forgotError.style.display = forgotOk.style.display = 'none';
+            document.getElementById('forgot-email').value = '';
+            modal.style.display = 'flex';
+        });
+        document.getElementById('btn-forgot-cancel').addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        document.getElementById('btn-forgot-submit').addEventListener('click', async function() {
+            const email = document.getElementById('forgot-email').value.trim();
+            forgotError.style.display = forgotOk.style.display = 'none';
+
+            if (!email) {
+                forgotError.textContent   = 'Ingresa tu correo.';
+                forgotError.style.display = 'block';
+                return;
+            }
+
+            this.disabled    = true;
+            this.textContent = 'Enviando...';
+
+            try {
+                const res  = await fetch('api/recuperar.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    forgotOk.textContent   = data.mensaje;
+                    forgotOk.style.display = 'block';
+                    this.style.display = 'none';
+                } else {
+                    forgotError.textContent   = data.error || 'Error al enviar el correo.';
+                    forgotError.style.display = 'block';
+                    this.disabled    = false;
+                    this.textContent = 'Enviar enlace';
+                }
+            } catch {
+                forgotError.textContent   = 'No se pudo conectar con el servidor.';
+                forgotError.style.display = 'block';
+                this.disabled    = false;
+                this.textContent = 'Enviar enlace';
+            }
+        });
+
         fetch('/nav.html')
             .then(r => r.text())
             .then(data => { document.getElementById('nav-container').innerHTML = data; });
