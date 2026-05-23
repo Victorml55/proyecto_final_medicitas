@@ -43,7 +43,14 @@ switch ($metodo) {
                 : responder(404, ['error' => 'Cita no encontrada']);
         } else {
             $idPaciente = isset($_GET['paciente']) ? (int)$_GET['paciente'] : null;
-            $where = $idPaciente ? 'WHERE c.id_paciente = ' . $idPaciente : '';
+            $idMedico   = isset($_GET['medico'])   ? (int)$_GET['medico']   : null;
+            if ($idPaciente) {
+                $where = 'WHERE c.id_paciente = ' . $idPaciente;
+            } elseif ($idMedico) {
+                $where = 'WHERE c.id_medico = ' . $idMedico;
+            } else {
+                $where = '';
+            }
             $stmt = $db->query(
                 "SELECT c.id_cita, c.id_paciente, c.fecha_cita, c.hora_inicio, c.hora_fin,
                         c.motivo_consulta, c.costo, c.codigo_confirmacion, c.id_estado,

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Mis Citas | Portal Médico</title>
+    <script>
+        fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+            if (!d.loggedIn || d.rol !== 'medico') window.location.replace('/index.html');
+        });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="cuerpo-pagina">
+
+    <div id="nav-container"></div>
+
+    <main class="contenido-pagina">
+        <div class="section-header" style="text-align: left; margin-bottom: 40px;">
+            <h1>Mis Citas</h1>
+            <p>Consulta tu agenda de pacientes.</p>
+        </div>
+
+        <h2 class="section-subtitle">Próximas Citas</h2>
+        <div class="appointments-list" id="lista-proximas">
+            <p style="color:#94a3b8;">Cargando...</p>
+        </div>
+
+        <h2 class="section-subtitle" style="margin-top: 50px;">Historial</h2>
+        <div class="appointments-list" id="lista-historial">
+            <p style="color:#94a3b8;">Cargando...</p>
+        </div>
+    </main>
+
+    <script>
+        fetch('nav-medico.html').then(r => r.text()).then(d => {
+            document.getElementById('nav-container').innerHTML = d;
+        });
+
+        const mesesCorto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        function horaLabel(h) {
+            if (!h) return '—';
+            const [hh, mm] = h.split(':');
+            const n = parseInt(hh);
+            return `${n > 12 ? n - 12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        function tarjetaCita(c, futura) {
+            const f     = c.fecha_cita.split('T')[0].split('-');
+            const mes   = mesesCorto[parseInt(f[1]) - 1].toUpperCase();
+            const color = c.color || '#94a3b8';
+            return `
+            <div class="appointment-card ${futura ? '' : 'past-appointment'}">
+                <div class="date-block">
+                    <span class="date-month">${mes}</span>
+                    <span class="date-day">${parseInt(f[2])}</span>
+                    <span class="date-year">${f[0]}</span>
+                </div>
+                <div class="appointment-info">
+                    <div class="appointment-header">
+                        <h3>${c.nombre_paciente}</h3>
+                        <span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>
+                    </div>
+                    <div class="appointment-meta">
+                        <span><span class="material-symbols-outlined">schedule</span> ${horaLabel(c.hora_inicio)}</span>
+                        ${c.numero_consultorio ? `<span><span class="material-symbols-outlined">meeting_room</span> Consultorio ${c.numero_consultorio}</span>` : ''}
+                        ${c.motivo_consulta ? `<span><span class="material-symbols-outlined">description</span> ${c.motivo_consulta}</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        async function cargarCitas() {
+            const auth = await fetch('/api/auth-status.php').then(r => r.json());
+            if (!auth.loggedIn || auth.rol !== 'medico') {
+                window.location.replace('/index.html');
+                return;
+            }
+
+            const citas = await fetch(`/api/citas.php?medico=${auth.id_medico}`).then(r => r.json());
+            const hoy   = new Date().toISOString().split('T')[0];
+
+            const proximas  = citas.filter(c => c.fecha_cita >= hoy && c.id_estado != 3)
+                                   .sort((a, b) => a.fecha_cita.localeCompare(b.fecha_cita) || a.hora_inicio.localeCompare(b.hora_inicio));
+            const historial = citas.filter(c => c.fecha_cita < hoy || c.id_estado == 3)
+                                   .sort((a, b) => b.fecha_cita.localeCompare(a.fecha_cita));
+
+            const elP = document.getElementById('lista-proximas');
+            const elH = document.getElementById('lista-historial');
+
+            elP.innerHTML = proximas.length
+                ? proximas.map(c => tarjetaCita(c, true)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">No tienes citas próximas.</p>';
+
+            elH.innerHTML = historial.length
+                ? historial.map(c => tarjetaCita(c, false)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">Sin historial de citas.</p>';
+        }
+
+        cargarCitas();
+    </script>
+</body>
+</html>

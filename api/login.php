@@ -71,7 +71,19 @@ try {
         $_SESSION['nombre']     = $usuario['nombre'];
         $_SESSION['email']      = $usuario['email'];
 
-        echo json_encode(['success' => true, 'nombre' => $usuario['nombre']]);
+        // Detectar si el usuario es médico
+        $stmtMedico = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
+        $stmtMedico->execute([$usuario['id_usuario']]);
+        $medico = $stmtMedico->fetch();
+
+        $rol = 'paciente';
+        if ($medico) {
+            $rol = 'medico';
+            $_SESSION['id_medico'] = $medico['id_medico'];
+        }
+        $_SESSION['rol'] = $rol;
+
+        echo json_encode(['success' => true, 'nombre' => $usuario['nombre'], 'rol' => $rol]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Correo o contraseña incorrectos.']);
     }

@@ -182,7 +182,7 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    window.location.href = 'inicio-usuario.html';
+                    window.location.href = data.rol === 'medico' ? 'inicio-medico.html' : 'inicio-usuario.html';
                 } else {
                     errorBox.textContent   = data.error || 'Error al iniciar sesión.';
                     errorBox.style.display = 'block';

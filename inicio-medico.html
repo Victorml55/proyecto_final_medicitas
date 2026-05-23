@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Panel Médico | MediCitas SSL</title>
+    <script>
+        fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+            if (!d.loggedIn || d.rol !== 'medico') window.location.replace('/index.html');
+        });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        .medico-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            text-align: center;
+        }
+        .stat-card .stat-num {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #005f99;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .stat-card .stat-label {
+            font-size: .85rem;
+            color: #64748b;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 16px;
+        }
+        .citas-hoy-list {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        .cita-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .cita-item:last-child { border-bottom: none; }
+        .cita-hora {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #005f99;
+            min-width: 60px;
+        }
+        .cita-info { flex: 1; }
+        .cita-paciente { font-weight: 500; color: #1e293b; margin-bottom: 2px; }
+        .cita-motivo  { font-size: .82rem; color: #64748b; }
+        .cita-badge {
+            font-size: .75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            font-size: .95rem;
+        }
+    </style>
+</head>
+<body class="page-body">
+
+    <div id="nav-container"></div>
+
+    <main class="page-content">
+        <div class="dashboard-header">
+            <h1 id="saludo">Hola, Doctor</h1>
+            <h2 id="especialidad-label">Bienvenido a tu portal médico</h2>
+        </div>
+
+        <div class="medico-stats">
+            <div class="stat-card">
+                <div class="stat-num" id="stat-hoy">—</div>
+                <div class="stat-label">Citas hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-semana">—</div>
+                <div class="stat-label">Esta semana</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="stat-pendientes">—</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+        </div>
+
+        <div class="quick-actions-grid" style="margin-bottom: 32px;">
+            <a href="mis-citas-medico.html" class="action-card">
+                <h3>Mis Citas</h3>
+            </a>
+            <a href="mi-perfil.html" class="action-card">
+                <h3>Mi Perfil</h3>
+            </a>
+        </div>
+
+        <p class="section-title">Citas de hoy</p>
+        <div class="citas-hoy-list" id="lista-citas-hoy">
+            <div class="empty-state">Cargando...</div>
+        </div>
+    </main>
+
+    <script>
+        fetch('nav-medico.html').then(r => r.text()).then(d => {
+            document.getElementById('nav-container').innerHTML = d;
+        });
+
+        function horaLabel(h) {
+            if (!h) return '';
+            const [hh, mm] = h.split(':');
+            const n = parseInt(hh);
+            return `${n > 12 ? n - 12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
+        }
+
+        (async function () {
+            const auth = await fetch('/api/auth-status.php').then(r => r.json());
+            if (!auth.loggedIn || auth.rol !== 'medico') {
+                window.location.replace('/index.html');
+                return;
+            }
+
+            document.getElementById('saludo').textContent = 'Hola, Dr(a). ' + auth.nombre;
+
+            // Cargar info del médico (especialidad)
+            const medico = await fetch(`/api/medicos.php?id=${auth.id_medico}`).then(r => r.json());
+            if (medico && medico.nombre_especialidad) {
+                document.getElementById('especialidad-label').textContent =
+                    medico.nombre_especialidad + ' — Bienvenido a tu portal médico';
+            }
+
+            const citas = await fetch(`/api/citas.php?medico=${auth.id_medico}`).then(r => r.json());
+            const hoy   = new Date().toISOString().split('T')[0];
+
+            const citasHoy     = citas.filter(c => c.fecha_cita === hoy);
+            const inicioSemana = new Date(); inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay() + 1);
+            const finSemana    = new Date(inicioSemana); finSemana.setDate(finSemana.getDate() + 6);
+            const isoInicio    = inicioSemana.toISOString().split('T')[0];
+            const isoFin       = finSemana.toISOString().split('T')[0];
+
+            const citasSemana     = citas.filter(c => c.fecha_cita >= isoInicio && c.fecha_cita <= isoFin);
+            const citasPendientes = citas.filter(c => c.fecha_cita >= hoy && c.id_estado == 1);
+
+            document.getElementById('stat-hoy').textContent       = citasHoy.length;
+            document.getElementById('stat-semana').textContent     = citasSemana.length;
+            document.getElementById('stat-pendientes').textContent = citasPendientes.length;
+
+            const lista = document.getElementById('lista-citas-hoy');
+            if (!citasHoy.length) {
+                lista.innerHTML = '<div class="empty-state">No tienes citas programadas para hoy.</div>';
+                return;
+            }
+
+            const ordenadas = citasHoy.sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+            lista.innerHTML = ordenadas.map(c => `
+                <div class="cita-item">
+                    <div class="cita-hora">${horaLabel(c.hora_inicio)}</div>
+                    <div class="cita-info">
+                        <div class="cita-paciente">${c.nombre_paciente}</div>
+                        <div class="cita-motivo">${c.motivo_consulta || 'Sin motivo especificado'}</div>
+                    </div>
+                    <span class="cita-badge" style="background:${c.color}22; color:${c.color};">${c.nombre_estado}</span>
+                </div>
+            `).join('');
+        })();
+    </script>
+</body>
+</html>
