@@ -29,12 +29,13 @@ try {
         mostrarPagina('error', 'Correo ya registrado', 'Ya existe una cuenta con ese correo. Puedes iniciar sesión.');
     }
 
-    $db->prepare(
+    $stmtUser = $db->prepare(
         'INSERT INTO usuarios
             (nombre, apellido_paterno, apellido_materno, email, password_hash,
              telefono, fecha_nacimiento, genero, activo)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)'
-    )->execute([
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, true) RETURNING id_usuario'
+    );
+    $stmtUser->execute([
         $pendiente['nombre'],
         $pendiente['apellido_paterno'],
         $pendiente['apellido_materno'],
@@ -44,6 +45,13 @@ try {
         $pendiente['fecha_nacimiento'],
         $pendiente['genero'],
     ]);
+    $idUsuario = (int)$stmtUser->fetchColumn();
+
+    // Crear expediente de paciente automáticamente
+    $expediente = 'EXP-' . date('Y') . '-' . str_pad($idUsuario, 5, '0', STR_PAD_LEFT);
+    $db->prepare(
+        'INSERT INTO pacientes (id_usuario, numero_expediente) VALUES (?, ?)'
+    )->execute([$idUsuario, $expediente]);
 
     $db->prepare('DELETE FROM verificaciones_pendientes WHERE token = ?')->execute([$token]);
 
