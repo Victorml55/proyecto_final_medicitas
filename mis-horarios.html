@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Mis Horarios | Portal Médico</title>
+    <script>
+        fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+            if (!d.loggedIn || d.rol !== 'medico') window.location.replace('/index.html');
+        });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        .horarios-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            max-width: 640px;
+            overflow: hidden;
+        }
+        .dia-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 14px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .15s;
+        }
+        .dia-row:last-child { border-bottom: none; }
+        .dia-row.activo { background: #f0f7ff; }
+        .dia-nombre {
+            min-width: 110px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: .95rem;
+        }
+        .dia-toggle {
+            width: 40px;
+            height: 22px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 99px;
+            cursor: pointer;
+            position: relative;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+        .dia-toggle::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: left .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        }
+        .dia-toggle:checked { background: #005f99; }
+        .dia-toggle:checked::after { left: 21px; }
+        .tiempo-inputs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        .tiempo-inputs label { font-size: .82rem; color: #64748b; white-space: nowrap; }
+        .tiempo-inputs input[type=time] {
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: .9rem;
+            color: #1e293b;
+            outline: none;
+            width: 110px;
+            transition: border-color .2s;
+        }
+        .tiempo-inputs input[type=time]:focus { border-color: #005f99; }
+        .tiempo-inputs.desactivado {
+            opacity: .35;
+            pointer-events: none;
+        }
+        .btn-guardar {
+            margin-top: 24px;
+            padding: 12px 32px;
+            background: #005f99;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-guardar:hover { background: #004470; }
+        .btn-guardar:disabled { background: #94a3b8; cursor: default; }
+        .msg-box {
+            max-width: 640px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: .9rem;
+            margin-top: 16px;
+            display: none;
+        }
+        .msg-ok    { background: #dcfce7; color: #166534; }
+        .msg-error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body class="cuerpo-pagina">
+
+    <div id="nav-container"></div>
+
+    <main class="contenido-pagina">
+        <div class="section-header" style="text-align:left; margin-bottom:32px;">
+            <h1>Mis Horarios</h1>
+            <p>Define los días y horas en que atiendes pacientes.</p>
+        </div>
+
+        <div class="horarios-card" id="horarios-card">
+            <div style="padding:40px; text-align:center; color:#94a3b8;">Cargando...</div>
+        </div>
+
+        <button class="btn-guardar" id="btn-guardar" disabled>Guardar cambios</button>
+        <div class="msg-box msg-ok"    id="msg-ok"></div>
+        <div class="msg-box msg-error" id="msg-error"></div>
+    </main>
+
+    <script>
+        fetch('nav-medico.html').then(r => r.text()).then(d => {
+            document.getElementById('nav-container').innerHTML = d;
+        });
+
+        const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+        // Estado local: dia -> {activo, hora_inicio, hora_fin}
+        const estado = {};
+        DIAS.forEach(d => { estado[d] = { activo: false, hora_inicio: '08:00', hora_fin: '17:00' }; });
+
+        function renderizar() {
+            const card = document.getElementById('horarios-card');
+            card.innerHTML = DIAS.map(dia => {
+                const s = estado[dia];
+                return `
+                <div class="dia-row ${s.activo ? 'activo' : ''}" id="row-${dia}">
+                    <span class="dia-nombre">${dia}</span>
+                    <input type="checkbox" class="dia-toggle" id="tog-${dia}"
+                           ${s.activo ? 'checked' : ''}
+                           onchange="toggleDia('${dia}', this.checked)">
+                    <div class="tiempo-inputs ${s.activo ? '' : 'desactivado'}" id="inputs-${dia}">
+                        <label>Entrada</label>
+                        <input type="time" value="${s.hora_inicio}"
+                               onchange="actualizarHora('${dia}', 'hora_inicio', this.value)">
+                        <label>Salida</label>
+                        <input type="time" value="${s.hora_fin}"
+                               onchange="actualizarHora('${dia}', 'hora_fin', this.value)">
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('btn-guardar').disabled = false;
+        }
+
+        function toggleDia(dia, activo) {
+            estado[dia].activo = activo;
+            document.getElementById('row-' + dia).classList.toggle('activo', activo);
+            const inputs = document.getElementById('inputs-' + dia);
+            inputs.classList.toggle('desactivado', !activo);
+        }
+
+        function actualizarHora(dia, campo, valor) {
+            estado[dia][campo] = valor;
+        }
+
+        async function cargar() {
+            const auth = await fetch('/api/auth-status.php').then(r => r.json());
+            if (!auth.loggedIn || auth.rol !== 'medico') {
+                window.location.replace('/index.html'); return;
+            }
+
+            const horarios = await fetch('/api/mis-horarios.php').then(r => r.json());
+            horarios.forEach(h => {
+                estado[h.dia_semana] = {
+                    activo:      h.activo,
+                    hora_inicio: h.hora_inicio.substring(0, 5),
+                    hora_fin:    h.hora_fin.substring(0, 5),
+                };
+            });
+            renderizar();
+        }
+
+        document.getElementById('btn-guardar').addEventListener('click', async function () {
+            const msgOk  = document.getElementById('msg-ok');
+            const msgErr = document.getElementById('msg-error');
+            msgOk.style.display = msgErr.style.display = 'none';
+            this.disabled = true;
+            this.textContent = 'Guardando...';
+
+            const payload = DIAS
+                .filter(d => estado[d].activo)
+                .map(d => ({
+                    dia_semana:  d,
+                    hora_inicio: estado[d].hora_inicio,
+                    hora_fin:    estado[d].hora_fin,
+                }));
+
+            // Validar que hora_fin > hora_inicio en cada día activo
+            const invalido = payload.find(p => p.hora_fin <= p.hora_inicio);
+            if (invalido) {
+                msgErr.textContent   = `En ${invalido.dia_semana} la hora de salida debe ser mayor a la de entrada.`;
+                msgErr.style.display = 'block';
+                this.disabled = false;
+                this.textContent = 'Guardar cambios';
+                return;
+            }
+
+            try {
+                const res  = await fetch('/api/mis-horarios.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msgOk.textContent   = data.mensaje;
+                    msgOk.style.display = 'block';
+                } else {
+                    msgErr.textContent   = data.error || 'Error al guardar.';
+                    msgErr.style.display = 'block';
+                }
+            } catch {
+                msgErr.textContent   = 'No se pudo conectar con el servidor.';
+                msgErr.style.display = 'block';
+            }
+
+            this.disabled = false;
+            this.textContent = 'Guardar cambios';
+        });
+
+        cargar();
+    </script>
+</body>
+</html>
