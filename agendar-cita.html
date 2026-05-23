@@ -9,8 +9,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/estilo-bootstrap.css">
+    <style>
+        /* Días disponibles en el calendario */
+        .flatpickr-day.dia-disponible {
+            background: #e6f0f9 !important;
+            border-color: #005f99 !important;
+            color: #005f99 !important;
+            font-weight: 600;
+        }
+        .flatpickr-day.dia-disponible:hover,
+        .flatpickr-day.dia-disponible.selected,
+        .flatpickr-day.dia-disponible.startRange {
+            background: #005f99 !important;
+            border-color: #005f99 !important;
+            color: #fff !important;
+        }
+        /* Input del calendario */
+        .flatpickr-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #0f172a;
+            background: #fff;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .flatpickr-input:focus { outline: none; border-color: #005f99; }
+    </style>
 </head>
 <body class="cuerpo-pagina">
 
@@ -142,7 +172,7 @@
 
                     <div class="date-input-wrapper mt-3">
                         <label for="appointment-date">Selecciona el día</label>
-                        <input type="date" id="appointment-date" onchange="verificarPaso3()">
+                        <input type="text" id="appointment-date" placeholder="Selecciona una fecha..." readonly>
                     </div>
 
                     <span class="time-section-label">Horarios disponibles</span>
@@ -237,6 +267,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <script>
         const booking = {
@@ -245,9 +277,50 @@
             date: '',      time: '',
             motivo: ''
         };
-        let currentStep  = 1;
+        let currentStep   = 1;
         let sesionUsuario = null;
         const TOTAL_STEPS = 4;
+
+        // Flatpickr — calendario de fechas
+        const DIAS_NUM = {
+            'Domingo': 0, 'Lunes': 1, 'Martes': 2, 'Miércoles': 3,
+            'Jueves': 4,  'Viernes': 5, 'Sábado': 6
+        };
+        let diasDisponibles = new Set();
+
+        const calPicker = flatpickr('#appointment-date', {
+            locale: 'es',
+            minDate: 'today',
+            dateFormat: 'Y-m-d',
+            disableMobile: true,
+            onDayCreate(dObj, dStr, fp, dayElem) {
+                if (diasDisponibles.size === 0) return;
+                const dow = dayElem.dateObj.getDay();
+                if (diasDisponibles.has(dow)) {
+                    dayElem.classList.add('dia-disponible');
+                } else {
+                    dayElem.classList.add('flatpickr-disabled');
+                    dayElem.title = 'El médico no atiende este día';
+                }
+            },
+            onChange(selectedDates, dateStr) {
+                if (dateStr) verificarPaso3(dateStr);
+            }
+        });
+
+        async function cargarDisponibilidadMedico(medicoId) {
+            try {
+                const dias = await fetch(`/api/horarios.php?medico=${medicoId}&dias=1`).then(r => r.json());
+                diasDisponibles = new Set(
+                    Array.isArray(dias)
+                        ? dias.map(d => DIAS_NUM[d]).filter(n => n !== undefined)
+                        : []
+                );
+            } catch {
+                diasDisponibles = new Set();
+            }
+            calPicker.set('minDate', 'today'); // fuerza redraw con nuevos días
+        }
 
         const iconosEspec = {
             'Cardiología': 'cardiology', 'Pediatría': 'child_care',
@@ -370,8 +443,10 @@
             booking.doctor   = card.dataset.doc;
             booking.doctorId = parseInt(card.dataset.docId);
             booking.time     = '';
+            booking.date     = '';
+            calPicker.clear();
             document.getElementById('btn-next-2').disabled = false;
-            if (booking.date) verificarPaso3();
+            cargarDisponibilidadMedico(booking.doctorId);
         }
 
         /* ── Paso 3: Fecha y hora ───────────────────────── */
@@ -382,8 +457,8 @@
             document.getElementById('btn-next-3').disabled = false;
         }
 
-        async function verificarPaso3() {
-            booking.date  = document.getElementById('appointment-date').value;
+        async function verificarPaso3(fechaStr) {
+            booking.date  = fechaStr ?? booking.date;
             booking.time  = '';
             document.getElementById('btn-next-3').disabled = true;
             document.getElementById('pill-spec-3').textContent = booking.specialty;
@@ -394,7 +469,7 @@
 
             grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">Cargando horarios...</p>';
 
-            const res  = await fetch(`/api/horarios.php?medico=${booking.doctorId}&fecha=${booking.date}`).then(r => r.json());
+            const res   = await fetch(`/api/horarios.php?medico=${booking.doctorId}&fecha=${booking.date}`).then(r => r.json());
             const slots = res.slots ?? [];
 
             if (!slots.length) {
@@ -407,9 +482,6 @@
                 return `<button class="time-slot" onclick="selectTime(this,'${s.hora}')">${s.label}</button>`;
             }).join('');
         }
-
-        document.getElementById('appointment-date').setAttribute('min', new Date().toISOString().split('T')[0]);
-        document.getElementById('appointment-date').addEventListener('change', verificarPaso3);
 
         /* ── Paso 4: Resumen ────────────────────────────── */
         function llenarResumen() {

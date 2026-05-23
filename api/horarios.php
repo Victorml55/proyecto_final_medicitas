@@ -10,8 +10,26 @@ require_once __DIR__ . '/config.php';
 $id_medico = isset($_GET['medico']) ? (int)$_GET['medico'] : 0;
 $fecha     = $_GET['fecha'] ?? '';
 
-if (!$id_medico || !$fecha) {
-    responder(400, ['error' => 'Se requieren los parámetros medico y fecha']);
+if (!$id_medico) {
+    responder(400, ['error' => 'Se requiere el parámetro medico']);
+}
+
+// Modo: solo días de semana disponibles del médico (sin fecha)
+if (isset($_GET['dias'])) {
+    try {
+        $db   = conectarDB();
+        $stmt = $db->prepare(
+            'SELECT DISTINCT dia_semana FROM horarios_medicos WHERE id_medico = ? AND activo = true'
+        );
+        $stmt->execute([$id_medico]);
+        responder(200, array_column($stmt->fetchAll(), 'dia_semana'));
+    } catch (PDOException $e) {
+        responder(500, ['error' => 'Error al obtener días disponibles.']);
+    }
+}
+
+if (!$fecha) {
+    responder(400, ['error' => 'Se requiere el parámetro fecha']);
 }
 
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
