@@ -295,6 +295,8 @@
             disableMobile: true,
             onDayCreate(dObj, dStr, fp, dayElem) {
                 if (diasDisponibles.size === 0) return;
+                const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                if (dayElem.dateObj < hoy) return;
                 const dow = dayElem.dateObj.getDay();
                 if (diasDisponibles.has(dow)) {
                     dayElem.classList.add('dia-disponible');
