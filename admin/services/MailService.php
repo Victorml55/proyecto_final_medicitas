@@ -97,22 +97,39 @@ class MailService {
     }
 
     // ----------------------------------------------------------
-    // 4. Correo de confirmación de cita
+    // 4. Correo de confirmación de cita (al paciente)
     // ----------------------------------------------------------
     public static function confirmacionCita(string $destinatario, string $nombre, array $cita): bool {
         try {
             $mail = self::crearMailer();
-
             $mail->addAddress($destinatario, $nombre);
             $mail->isHTML(true);
             $mail->Subject = 'MediCitas – Confirmación de tu cita médica';
             $mail->Body    = self::templateConfirmacionCita($nombre, $cita);
-            $mail->AltBody = "Hola $nombre,\n\nTu cita ha sido agendada.\n\nFecha: {$cita['fecha']}\nHora: {$cita['hora']}\nMédico: {$cita['medico']}\n\nGracias por usar MediCitas.";
-
+            $mail->AltBody = "Hola $nombre,\n\nTu cita ha sido agendada.\n\nFecha: {$cita['fecha']}\nHora: {$cita['hora']}\nMédico: Dr. {$cita['medico']}\nEspecialidad: {$cita['especialidad']}\nMotivo: {$cita['motivo']}\n\nGracias por usar MediCitas.";
             $mail->send();
             return true;
         } catch (Exception $e) {
             error_log('[MailService] Error al enviar confirmación de cita: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 5. Correo de nueva cita (al médico)
+    // ----------------------------------------------------------
+    public static function nuevaCitaMedico(string $destinatario, string $nombre, array $cita): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Nueva cita agendada';
+            $mail->Body    = self::templateNuevaCitaMedico($nombre, $cita);
+            $mail->AltBody = "Hola Dr(a). $nombre,\n\nSe ha agendado una nueva cita.\n\nPaciente: {$cita['paciente']}\nFecha: {$cita['fecha']}\nHora: {$cita['hora']}\nMotivo: {$cita['motivo']}\n\nMediCitas";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar notificación al médico: ' . $e->getMessage());
             return false;
         }
     }
@@ -289,10 +306,15 @@ class MailService {
     }
 
     private static function templateConfirmacionCita(string $nombre, array $cita): string {
-        $fecha  = htmlspecialchars($cita['fecha']  ?? 'N/A');
-        $hora   = htmlspecialchars($cita['hora']   ?? 'N/A');
-        $medico = htmlspecialchars($cita['medico'] ?? 'N/A');
-        $motivo = htmlspecialchars($cita['motivo'] ?? 'N/A');
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $medico       = htmlspecialchars($cita['medico']       ?? 'N/A');
+        $especialidad = htmlspecialchars($cita['especialidad'] ?? '');
+        $motivo       = htmlspecialchars($cita['motivo']       ?? 'No especificado');
+        $consultorio  = !empty($cita['consultorio']) ? htmlspecialchars($cita['consultorio']) : null;
+        $codigo       = !empty($cita['codigo'])      ? htmlspecialchars($cita['codigo'])      : null;
+        $filaCons     = $consultorio ? "<p style='margin:8px 0;color:#333;'><strong>🚪 Consultorio:</strong> {$consultorio}</p>" : '';
+        $filaCod      = $codigo      ? "<p style='margin:8px 0;color:#333;'><strong>🔖 Código:</strong> <code style='background:#dce8f5;padding:2px 8px;border-radius:4px;'>{$codigo}</code></p>" : '';
 
         return <<<HTML
         <!DOCTYPE html>
@@ -302,40 +324,86 @@ class MailService {
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
             <tr><td align="center">
               <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                
                 <tr>
                   <td style="background:#005f99;padding:30px 40px;text-align:center;">
                     <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
                     <p style="color:#b3d9f2;margin:8px 0 0;">Confirmación de Cita Médica</p>
                   </td>
                 </tr>
-
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="color:#005f99;margin-top:0;">Tu cita ha sido confirmada ✅</h2>
                     <p style="color:#444;line-height:1.7;">Hola <strong>{$nombre}</strong>, tu cita médica ha sido agendada con los siguientes detalles:</p>
-
                     <table width="100%" style="background:#f0f8ff;border-radius:8px;margin:20px 0;">
                       <tr><td style="padding:20px;">
                         <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
                         <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
-                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> Dr. {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> Dr(a). {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
+                        {$filaCons}
                         <p style="margin:8px 0;color:#333;"><strong>📋 Motivo:</strong> {$motivo}</p>
+                        {$filaCod}
                       </td></tr>
                     </table>
-
                     <p style="color:#444;font-size:14px;">Te pedimos llegar 10 minutos antes de tu cita. Si necesitas cancelar, comunícate con nosotros con anticipación.</p>
                   </td>
                 </tr>
-
                 <tr>
                   <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-                    <p style="color:#999;font-size:12px;margin:0;">
-                      Este correo fue generado automáticamente por MediCitas.
-                    </p>
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
                   </td>
                 </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
 
+    private static function templateNuevaCitaMedico(string $nombre, array $cita): string {
+        $paciente     = htmlspecialchars($cita['paciente']     ?? 'N/A');
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $motivo       = htmlspecialchars($cita['motivo']       ?? 'No especificado');
+        $consultorio  = !empty($cita['consultorio']) ? htmlspecialchars($cita['consultorio']) : null;
+        $filaCons     = $consultorio ? "<p style='margin:8px 0;color:#333;'><strong>🚪 Consultorio:</strong> {$consultorio}</p>" : '';
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Nueva Cita Agendada</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#005f99;margin-top:0;">Nueva cita en tu agenda 📅</h2>
+                    <p style="color:#444;line-height:1.7;">Hola <strong>Dr(a). {$nombre}</strong>, se ha agendado una nueva cita en tu portal:</p>
+                    <table width="100%" style="background:#f0f8ff;border-radius:8px;margin:20px 0;">
+                      <tr><td style="padding:20px;">
+                        <p style="margin:8px 0;color:#333;"><strong>👤 Paciente:</strong> {$paciente}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
+                        {$filaCons}
+                        <p style="margin:8px 0;color:#333;"><strong>📋 Motivo:</strong> {$motivo}</p>
+                      </td></tr>
+                    </table>
+                    <p style="color:#444;font-size:14px;">Puedes ver todos los detalles en tu <strong>portal médico</strong>.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
+                  </td>
+                </tr>
               </table>
             </td></tr>
           </table>

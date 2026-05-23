@@ -106,7 +106,71 @@ switch ($metodo) {
             $d['costo'] !== '' ? (float)($d['costo'] ?? 0) : null,
             trim($d['codigo_confirmacion'] ?? '') ?: null,
         ]);
-        responder(201, $stmt->fetch());
+        $nueva = $stmt->fetch();
+
+        // Notificaciones por correo (silenciosas — no bloquean la respuesta)
+        try {
+            require_once __DIR__ . '/../admin/services/MailService.php';
+
+            $qPac = $db->prepare(
+                "SELECT up.email, up.nombre || ' ' || up.apellido_paterno AS nombre
+                 FROM pacientes p JOIN usuarios up ON up.id_usuario = p.id_usuario
+                 WHERE p.id_paciente = ?"
+            );
+            $qPac->execute([$nueva['id_paciente']]);
+            $infoPac = $qPac->fetch();
+
+            $qMed = $db->prepare(
+                "SELECT um.email, um.nombre || ' ' || um.apellido_paterno AS nombre,
+                        esp.nombre_especialidad
+                 FROM medicos m
+                 JOIN usuarios um ON um.id_usuario = m.id_usuario
+                 JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
+                 WHERE m.id_medico = ?"
+            );
+            $qMed->execute([$nueva['id_medico']]);
+            $infoMed = $qMed->fetch();
+
+            $consultorio = null;
+            if ($nueva['id_consultorio']) {
+                $qCon = $db->prepare('SELECT numero_consultorio FROM consultorios WHERE id_consultorio = ?');
+                $qCon->execute([$nueva['id_consultorio']]);
+                $con = $qCon->fetch();
+                $consultorio = $con ? $con['numero_consultorio'] : null;
+            }
+
+            $meses = ['enero','febrero','marzo','abril','mayo','junio',
+                      'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+            [$y, $m, $dia] = explode('-', $nueva['fecha_cita']);
+            $fechaLegible = (int)$dia . ' de ' . $meses[(int)$m - 1] . ' de ' . $y;
+
+            [$hh, $mm] = explode(':', $nueva['hora_inicio']);
+            $h12 = (int)$hh % 12 ?: 12;
+            $ampm = (int)$hh >= 12 ? 'PM' : 'AM';
+            $horaLegible = sprintf('%d:%s %s', $h12, $mm, $ampm);
+
+            $datosCita = [
+                'fecha'        => $fechaLegible,
+                'hora'         => $horaLegible,
+                'medico'       => $infoMed['nombre']             ?? '',
+                'paciente'     => $infoPac['nombre']             ?? '',
+                'especialidad' => $infoMed['nombre_especialidad'] ?? '',
+                'consultorio'  => $consultorio,
+                'motivo'       => $nueva['motivo_consulta']      ?? 'No especificado',
+                'codigo'       => $nueva['codigo_confirmacion']  ?? '',
+            ];
+
+            if ($infoPac) {
+                MailService::confirmacionCita($infoPac['email'], $infoPac['nombre'], $datosCita);
+            }
+            if ($infoMed) {
+                MailService::nuevaCitaMedico($infoMed['email'], $infoMed['nombre'], $datosCita);
+            }
+        } catch (Throwable $e) {
+            error_log('[citas.php] Error al enviar correos: ' . $e->getMessage());
+        }
+
+        responder(201, $nueva);
         break;
 
     case 'PUT':
