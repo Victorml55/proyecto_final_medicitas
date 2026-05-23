@@ -5,10 +5,12 @@ require_once(__DIR__ . '/auth.php');
 requerirLogin();
 require_once(__DIR__ . '/models/usuario.php');
 require_once(__DIR__ . '/models/usuario_rol.php');
+require_once(__DIR__ . '/models/medico.php');
 require_once(__DIR__ . '/services/MailService.php');
 
 $app        = new Usuario();
 $appRol     = new UsuarioRol();
+$appMedico  = new Medico();
 $id         = isset($_GET['id'])     ? (int)$_GET['id'] : null;
 $accion     = isset($_GET['accion']) ? $_GET['accion']   : null;
 $error      = null;
@@ -57,11 +59,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $accion === 'borrar') {
             $nuevoId = $app->crear($_POST);
             $appRol->crear(['id_usuario' => $nuevoId, 'id_rol' => $idRol]);
 
-            // ── Sprint 06: Envío de correo de bienvenida con PHPMailer ──
-            $passwordPlano = trim($_POST['password']);
+            // Si el rol seleccionado es "Médico", crear perfil en medicos
+            $rolSeleccionado = '';
+            foreach ($appRol->todosRoles() as $r) {
+                if ((int)$r['id_rol'] === $idRol) { $rolSeleccionado = strtolower($r['nombre_rol']); break; }
+            }
+            if (str_contains($rolSeleccionado, 'médico') || str_contains($rolSeleccionado, 'medico')) {
+                $cedula = trim($_POST['cedula_profesional'] ?? '');
+                $idEsp  = (int)($_POST['id_especialidad']  ?? 0);
+                $costo  = trim($_POST['costo_consulta']    ?? '');
+                if (!$cedula || !$idEsp || $costo === '') {
+                    $error = 'Para el rol Médico debes completar: cédula, especialidad y costo de consulta.';
+                    break;
+                }
+                $appMedico->crear(array_merge($_POST, ['id_usuario' => $nuevoId]));
+            }
+
+            $passwordPlano  = trim($_POST['password']);
             $nombreCompleto = trim($_POST['nombre']) . ' ' . trim($_POST['apellido_paterno']);
             MailService::bienvenidaUsuario($email, $nombreCompleto, $passwordPlano);
-            // ─────────────────────────────────────────────────────────────
 
             header('Location: usuario.php?accion=leer&ok=creado');
             exit;
@@ -118,7 +134,8 @@ require(__DIR__ . '/views/header.php');
 
 switch ($accion) {
     case 'crear':
-        $roles = $appRol->todosRoles();
+        $roles         = $appRol->todosRoles();
+        $especialidades = $appMedico->todasEspecialidades();
         require(__DIR__ . '/views/usuarios/formulario_crear.php');
         break;
     case 'actualizar':

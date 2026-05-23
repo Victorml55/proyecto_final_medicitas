@@ -70,7 +70,9 @@
                     <select name="id_rol" class="form-select" required id="id_rol">
                         <option value="">— Selecciona un rol —</option>
                         <?php foreach ($roles as $r): ?>
-                        <option value="<?= $r['id_rol'] ?>" <?= (($_POST['id_rol'] ?? '') == $r['id_rol']) ? 'selected' : '' ?>>
+                        <option value="<?= $r['id_rol'] ?>"
+                                data-nombre="<?= htmlspecialchars(strtolower($r['nombre_rol'])) ?>"
+                                <?= (($_POST['id_rol'] ?? '') == $r['id_rol']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($r['nombre_rol']) ?>
                         </option>
                         <?php endforeach; ?>
@@ -78,6 +80,58 @@
                     <div class="invalid-feedback">Debes seleccionar un rol.</div>
                 </div>
             </div>
+
+            <!-- Sección médico: se muestra solo cuando el rol es Médico -->
+            <div id="seccion-medico" style="display:none;">
+                <hr class="my-4">
+                <h5 class="fw-semibold mb-3">Datos del perfil médico</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Especialidad <span class="text-danger">*</span></label>
+                        <select name="id_especialidad" class="form-select" id="id_especialidad">
+                            <option value="">— Selecciona —</option>
+                            <?php foreach ($especialidades as $e): ?>
+                            <option value="<?= $e['id_especialidad'] ?>"
+                                    <?= (($_POST['id_especialidad'] ?? '') == $e['id_especialidad']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($e['nombre_especialidad']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="invalid-feedback">La especialidad es obligatoria.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Cédula profesional <span class="text-danger">*</span></label>
+                        <input type="text" name="cedula_profesional" class="form-control" maxlength="20"
+                               value="<?= htmlspecialchars($_POST['cedula_profesional'] ?? '') ?>">
+                        <div class="invalid-feedback">La cédula es obligatoria.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Costo consulta ($) <span class="text-danger">*</span></label>
+                        <input type="number" name="costo_consulta" class="form-control" min="0" step="0.01"
+                               value="<?= htmlspecialchars($_POST['costo_consulta'] ?? '') ?>">
+                        <div class="invalid-feedback">El costo es obligatorio.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Duración consulta (min)</label>
+                        <input type="number" name="duracion_consulta" class="form-control" min="5" max="180" value="<?= htmlspecialchars($_POST['duracion_consulta'] ?? '30') ?>">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Años de experiencia</label>
+                        <input type="number" name="años_experiencia" class="form-control" min="0" max="60"
+                               value="<?= htmlspecialchars($_POST['años_experiencia'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Universidad</label>
+                        <input type="text" name="universidad" class="form-control" maxlength="150"
+                               value="<?= htmlspecialchars($_POST['universidad'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Biografía</label>
+                        <textarea name="biografia" class="form-control" rows="2"><?= htmlspecialchars($_POST['biografia'] ?? '') ?></textarea>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">Guardar</button>
             </div>
@@ -85,6 +139,22 @@
     </div>
 </div>
 <script>
+const rolSelect     = document.getElementById('id_rol');
+const seccionMedico = document.getElementById('seccion-medico');
+
+function esMedico() {
+    const opt = rolSelect.options[rolSelect.selectedIndex];
+    const nombre = (opt?.dataset?.nombre ?? '').toLowerCase();
+    return nombre.includes('médico') || nombre.includes('medico');
+}
+
+rolSelect.addEventListener('change', function () {
+    seccionMedico.style.display = esMedico() ? 'block' : 'none';
+});
+
+// Mostrar sección si se recarga con error y el rol ya estaba seleccionado
+if (esMedico()) seccionMedico.style.display = 'block';
+
 document.getElementById('frm').addEventListener('submit', function(e) {
     let ok = true;
     const campos = [
@@ -94,8 +164,15 @@ document.getElementById('frm').addEventListener('submit', function(e) {
         { el: this.querySelector('[name=password]'),        test: v => v.length >= 8 },
         { el: this.querySelector('[name=telefono]'),        test: v => v === '' || /^[0-9\+\-\s]+$/.test(v) },
         { el: this.querySelector('[name=fecha_nacimiento]'),test: v => v === '' || new Date(v) <= new Date() },
-        { el: this.querySelector('[name=id_rol]'),           test: v => v !== '' },
+        { el: this.querySelector('[name=id_rol]'),          test: v => v !== '' },
     ];
+    if (esMedico()) {
+        campos.push(
+            { el: this.querySelector('[name=id_especialidad]'),   test: v => v !== '' },
+            { el: this.querySelector('[name=cedula_profesional]'),test: v => v.trim() !== '' },
+            { el: this.querySelector('[name=costo_consulta]'),    test: v => v !== '' && parseFloat(v) >= 0 },
+        );
+    }
     campos.forEach(({ el, test }) => {
         if (!test(el.value)) { el.classList.add('is-invalid'); ok = false; }
         else el.classList.remove('is-invalid');
