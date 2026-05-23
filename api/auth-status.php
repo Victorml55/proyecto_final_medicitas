@@ -47,9 +47,10 @@ try {
         $rowM = $stmtM->fetch(PDO::FETCH_ASSOC);
         if ($rowM) {
             $id_medico = $rowM['id_medico'];
-            $rol = 'medico';
         }
     }
+    // rol siempre derivado de id_medico, no de la sesión (más confiable)
+    if ($id_medico) $rol = 'medico';
 } catch (Exception $e) {}
 
 echo json_encode([
