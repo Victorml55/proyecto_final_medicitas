@@ -125,7 +125,10 @@
     </main>
 
     <script>
-        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+        fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
+            const nav = auth.rol === 'medico' ? 'nav-medico.html' : 'nav-user.html';
+            fetch(nav).then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+        });
 
         const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
         const generoMap = { M: 'Masculino', F: 'Femenino', Otro: 'Otro' };
