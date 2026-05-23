@@ -6,11 +6,13 @@ requerirLogin();
 require_once(__DIR__ . '/models/usuario.php');
 require_once(__DIR__ . '/models/usuario_rol.php');
 require_once(__DIR__ . '/models/medico.php');
+require_once(__DIR__ . '/models/horario_medico.php');
 require_once(__DIR__ . '/services/MailService.php');
 
 $app        = new Usuario();
 $appRol     = new UsuarioRol();
 $appMedico  = new Medico();
+$appHorario = new HorarioMedico();
 $id         = isset($_GET['id'])     ? (int)$_GET['id'] : null;
 $accion     = isset($_GET['accion']) ? $_GET['accion']   : null;
 $error      = null;
@@ -72,7 +74,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $accion === 'borrar') {
                     $error = 'Para el rol Médico debes completar: cédula, especialidad y costo de consulta.';
                     break;
                 }
-                $appMedico->crear(array_merge($_POST, ['id_usuario' => $nuevoId]));
+                $idMedico = $appMedico->crear(array_merge($_POST, ['id_usuario' => $nuevoId]));
+
+                // Insertar horarios marcados
+                $horarios = $_POST['horario'] ?? [];
+                foreach ($horarios as $dia => $datos) {
+                    if (empty($datos['hora_inicio']) || empty($datos['hora_fin'])) continue;
+                    $appHorario->crear([
+                        'id_medico'      => $idMedico,
+                        'id_consultorio' => null,
+                        'dia_semana'     => $dia,
+                        'hora_inicio'    => $datos['hora_inicio'],
+                        'hora_fin'       => $datos['hora_fin'],
+                        'activo'         => true,
+                    ]);
+                }
             }
 
             $passwordPlano  = trim($_POST['password']);

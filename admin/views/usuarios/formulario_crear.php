@@ -129,6 +129,47 @@
                         <label class="form-label fw-semibold">Biografía</label>
                         <textarea name="biografia" class="form-control" rows="2"><?= htmlspecialchars($_POST['biografia'] ?? '') ?></textarea>
                     </div>
+
+                    <!-- Horarios -->
+                    <div class="col-12 mt-2">
+                        <label class="form-label fw-semibold">Horarios de atención</label>
+                        <p class="text-muted small mb-2">Activa los días que el médico atiende y define su horario.</p>
+                        <div class="border rounded" style="overflow:hidden;">
+                            <?php
+                            $dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+                            $defaultsActivo = ['Lunes'=>true,'Martes'=>true,'Miércoles'=>true,'Jueves'=>true,'Viernes'=>true,'Sábado'=>false,'Domingo'=>false];
+                            foreach ($dias as $i => $dia):
+                                $checked   = !empty($_POST['horario'][$dia]['hora_inicio']);
+                                $hInicio   = htmlspecialchars($_POST['horario'][$dia]['hora_inicio'] ?? '08:00');
+                                $hFin      = htmlspecialchars($_POST['horario'][$dia]['hora_fin']    ?? '17:00');
+                                $border    = $i > 0 ? 'border-top' : '';
+                            ?>
+                            <div class="d-flex align-items-center gap-3 px-3 py-2 <?= $border ?>" style="background:#fff;">
+                                <div style="min-width:110px;">
+                                    <div class="form-check mb-0">
+                                        <input type="checkbox" class="form-check-input dia-toggle"
+                                               id="dia-<?= $dia ?>"
+                                               name="horario[<?= $dia ?>][activo]"
+                                               value="1"
+                                               <?= $checked ? 'checked' : '' ?>
+                                               onchange="toggleHorario(this)">
+                                        <label class="form-check-label fw-semibold" for="dia-<?= $dia ?>"><?= $dia ?></label>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 horario-inputs" style="<?= $checked ? '' : 'opacity:.4; pointer-events:none;' ?>">
+                                    <label class="mb-0 small text-muted">Entrada</label>
+                                    <input type="time" name="horario[<?= $dia ?>][hora_inicio]"
+                                           class="form-control form-control-sm" style="width:120px;"
+                                           value="<?= $hInicio ?>">
+                                    <label class="mb-0 small text-muted">Salida</label>
+                                    <input type="time" name="horario[<?= $dia ?>][hora_fin]"
+                                           class="form-control form-control-sm" style="width:120px;"
+                                           value="<?= $hFin ?>">
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -139,6 +180,17 @@
     </div>
 </div>
 <script>
+function toggleHorario(checkbox) {
+    const inputs = checkbox.closest('.d-flex').querySelector('.horario-inputs');
+    if (checkbox.checked) {
+        inputs.style.opacity = '1';
+        inputs.style.pointerEvents = 'auto';
+    } else {
+        inputs.style.opacity = '.4';
+        inputs.style.pointerEvents = 'none';
+    }
+}
+
 const rolSelect     = document.getElementById('id_rol');
 const seccionMedico = document.getElementById('seccion-medico');
 

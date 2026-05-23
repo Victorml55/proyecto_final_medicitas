@@ -31,24 +31,25 @@ class Medico extends Sistema {
         return $stmt->fetch();
     }
 
-    function crear(array $d) {
+    function crear(array $d): int {
         $stmt = $this->db->prepare(
             "INSERT INTO medicos
                 (id_usuario, id_especialidad, cedula_profesional, universidad,
                  años_experiencia, biografia, costo_consulta, duracion_consulta, activo)
-             VALUES (?,?,?,?,?,?,?,?,?)"
+             VALUES (?,?,?,?,?,?,?,?,?) RETURNING id_medico"
         );
         $stmt->execute([
             (int)$d['id_usuario'],
             (int)$d['id_especialidad'],
             trim($d['cedula_profesional']),
             trim($d['universidad']    ?? '') ?: null,
-            $d['años_experiencia'] !== '' ? (int)$d['años_experiencia'] : null,
+            ($d['años_experiencia'] ?? '') !== '' ? (int)$d['años_experiencia'] : null,
             trim($d['biografia']      ?? '') ?: null,
             (float)$d['costo_consulta'],
             (int)($d['duracion_consulta'] ?: 30),
             isset($d['activo']) ? 'true' : 'false',
         ]);
+        return (int)$stmt->fetchColumn();
     }
 
     function actualizar(array $d) {
