@@ -201,6 +201,8 @@
 
         const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
+        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+
         function formatFecha(str) {
             if (!str) return '—';
             const d = new Date(str);
@@ -211,7 +213,7 @@
             document.getElementById('receta-' + id).classList.toggle('open');
         }
 
-        function imprimirReceta(id, titulo, medico, fecha, diagnostico, indGen, meds) {
+        function imprimirReceta(id, titulo, medico, generoMedico, fecha, diagnostico, indGen, meds) {
             const zona = document.getElementById('zona-impresion');
             const medsHtml = meds.map(m => `
                 <div style="border:1px solid #ccc;border-radius:6px;padding:10px 14px;margin-bottom:8px;">
@@ -223,7 +225,7 @@
 
             zona.innerHTML = `
                 <h2 style="margin:0 0 4px;">Receta Médica — MediCitas SSL</h2>
-                <p style="color:#555;margin:0 0 16px;">${fecha} · Dr(a). ${medico}</p>
+                <p style="color:#555;margin:0 0 16px;">${fecha} · ${drLabel(generoMedico)} ${medico}</p>
                 ${diagnostico ? `<p><strong>Diagnóstico:</strong> ${diagnostico}</p>` : ''}
                 <h4 style="margin:14px 0 8px;">Medicamentos</h4>
                 ${medsHtml}
@@ -288,7 +290,7 @@
                                     ${r.diagnostico ? r.diagnostico : 'Receta del ' + fecha}
                                 </div>
                                 <div class="receta-meta">
-                                    Dr(a). ${r.nombre_medico}
+                                    ${drLabel(r.genero_medico)} ${r.nombre_medico}
                                     ${r.nombre_especialidad ? ' · ' + r.nombre_especialidad : ''}
                                     &nbsp;·&nbsp; ${fecha}
                                     &nbsp;·&nbsp; ${meds.length} medicamento${meds.length !== 1 ? 's' : ''}
@@ -304,6 +306,7 @@
                                 ${r.id_receta},
                                 ${JSON.stringify(r.diagnostico ?? '')},
                                 ${JSON.stringify(r.nombre_medico)},
+                                ${JSON.stringify(r.genero_medico ?? null)},
                                 ${JSON.stringify(fecha)},
                                 ${JSON.stringify(r.diagnostico ?? '')},
                                 ${JSON.stringify(r.indicaciones_generales ?? '')},

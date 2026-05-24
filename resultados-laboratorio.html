@@ -133,6 +133,8 @@
 
         const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
+        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+
         function formatFecha(str) {
             if (!str) return '—';
             const d = new Date(str);
@@ -173,7 +175,7 @@
                     const { clase, icono } = iconoTipo(a.tipo_archivo);
                     const meta = [
                         a.fecha_subida ? formatFecha(a.fecha_subida) : null,
-                        a.nombre_medico ? 'Dr(a). ' + a.nombre_medico : null,
+                        a.nombre_medico ? drLabel(a.genero_medico) + ' ' + a.nombre_medico : null,
                         a.fecha_cita    ? 'Cita: ' + formatFecha(a.fecha_cita) : null,
                         formatTamaño(a.tamaño_kb),
                     ].filter(Boolean).join(' · ');

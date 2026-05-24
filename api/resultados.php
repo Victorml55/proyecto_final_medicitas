@@ -26,7 +26,8 @@ try {
         "SELECT a.id_archivo, a.nombre_archivo, a.tipo_archivo, a.tamaño_kb,
                 a.descripcion, a.fecha_subida, a.id_cita,
                 c.fecha_cita,
-                um.nombre || ' ' || um.apellido_paterno AS nombre_medico
+                um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                um.genero AS genero_medico
          FROM archivos_adjuntos a
          LEFT JOIN citas    c  ON c.id_cita   = a.id_cita
          LEFT JOIN medicos  m  ON m.id_medico  = c.id_medico

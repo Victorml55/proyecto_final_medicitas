@@ -190,7 +190,9 @@ class PdfService {
         $pdf->SetFont('helvetica', 'B', 9);
         $pdf->SetTextColor(...$negro);
         $pdf->SetXY($xMed + 8, $y + 16);
-        $pdf->Cell($halfW - 12, 6, 'Dr(a). ' . ($cita['nombre_medico'] ?? ''), 0, 1);
+        $gm = $cita['genero_medico'] ?? null;
+        $titMed = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+        $pdf->Cell($halfW - 12, 6, $titMed . ' ' . ($cita['nombre_medico'] ?? ''), 0, 1);
         $pdf->SetFont('helvetica', '', 7.5);
         $pdf->SetTextColor(...$grisText);
         $pdf->SetXY($xMed + 8, $y + 25);

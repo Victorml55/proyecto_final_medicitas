@@ -26,6 +26,7 @@ try {
         "SELECT r.id_receta, r.diagnostico, r.indicaciones_generales, r.fecha_emision,
                 c.fecha_cita,
                 um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                um.genero AS genero_medico,
                 e.nombre_especialidad
          FROM recetas r
          JOIN citas       c  ON c.id_cita      = r.id_cita

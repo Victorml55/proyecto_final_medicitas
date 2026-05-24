@@ -26,6 +26,7 @@ cargarEnv();
 $id_paciente = null;
 $id_medico   = null;
 $rol         = 'paciente';
+$genero      = null;
 
 try {
     $host = $_ENV['DB_HOST'] ?? 'postgres';
@@ -36,6 +37,11 @@ try {
     $db   = new PDO("pgsql:host=$host;port=$port;dbname=$name", $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
+
+    $stmtU = $db->prepare('SELECT genero FROM usuarios WHERE id_usuario = ? LIMIT 1');
+    $stmtU->execute([$_SESSION['id_usuario']]);
+    $rowU = $stmtU->fetch(PDO::FETCH_ASSOC);
+    $genero = $rowU['genero'] ?? null;
 
     $stmt = $db->prepare('SELECT id_paciente FROM pacientes WHERE id_usuario = ? LIMIT 1');
     $stmt->execute([$_SESSION['id_usuario']]);
@@ -59,6 +65,7 @@ echo json_encode([
     'loggedIn'    => true,
     'id_usuario'  => $_SESSION['id_usuario'],
     'nombre'      => $_SESSION['nombre'] ?? null,
+    'genero'      => $genero,
     'rol'         => $rol,
     'id_paciente' => $id_paciente,
     'id_medico'   => $id_medico,

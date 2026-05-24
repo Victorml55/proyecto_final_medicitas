@@ -43,6 +43,8 @@
 
         const mesesCorto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
+        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+
         function horaLabel(h) {
             if (!h) return '—';
             const [hh, mm] = h.split(':');
@@ -65,7 +67,7 @@
                 </div>
                 <div class="appointment-info">
                     <div class="appointment-header">
-                        <h3>Dr(a). ${c.nombre_medico}</h3>
+                        <h3>${drLabel(c.genero_medico)} ${c.nombre_medico}</h3>
                         <span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>
                     </div>
                     <p class="appointment-spec">${c.nombre_especialidad ?? ''}</p>

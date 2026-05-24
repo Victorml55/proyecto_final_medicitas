@@ -425,10 +425,10 @@
             }
 
             lista.innerHTML = filtrados.map(m => `
-                <div class="doctor-card" data-doc="${m.nombre_completo}" data-doc-id="${m.id_medico}" onclick="seleccionarDoctor(this)">
+                <div class="doctor-card" data-doc="${m.nombre_completo}" data-doc-id="${m.id_medico}" data-genero="${m.genero ?? ''}" onclick="seleccionarDoctor(this)">
                     <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
                     <div class="doctor-card-info">
-                        <h3>Dr(a). ${m.nombre_completo}</h3>
+                        <h3>${m.genero === 'M' ? 'Dr.' : m.genero === 'F' ? 'Dra.' : 'Dr(a).'} ${m.nombre_completo}</h3>
                         <p>${m.nombre_especialidad}${m.costo_consulta ? ' · $' + parseFloat(m.costo_consulta).toFixed(2) : ''}</p>
                     </div>
                     <button class="doc-select-btn">Seleccionar</button>
@@ -442,8 +442,9 @@
             });
             card.classList.add('selected');
             card.querySelector('.doc-select-btn').textContent = '✓ Seleccionado';
-            booking.doctor   = card.dataset.doc;
-            booking.doctorId = parseInt(card.dataset.docId);
+            booking.doctor      = card.dataset.doc;
+            booking.doctorId    = parseInt(card.dataset.docId);
+            booking.doctorGenero = card.dataset.genero || null;
             booking.time     = '';
             booking.date     = '';
             calPicker.clear();
@@ -488,7 +489,8 @@
         /* ── Paso 4: Resumen ────────────────────────────── */
         function llenarResumen() {
             document.getElementById('sum-spec').textContent = booking.specialty || '—';
-            document.getElementById('sum-doc').textContent  = 'Dr(a). ' + (booking.doctor || '—');
+            const _dr = booking.doctorGenero === 'M' ? 'Dr.' : booking.doctorGenero === 'F' ? 'Dra.' : 'Dr(a).';
+            document.getElementById('sum-doc').textContent  = _dr + ' ' + (booking.doctor || '—');
             document.getElementById('sum-time').textContent = booking.time || '—';
             if (booking.date) {
                 const [y, m, d] = booking.date.split('-');
@@ -552,7 +554,8 @@
                 const data = await res.json();
 
                 if (res.ok) {
-                    alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 Dr(a). ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
+                    const _drAlert = booking.doctorGenero === 'M' ? 'Dr.' : booking.doctorGenero === 'F' ? 'Dra.' : 'Dr(a).';
+                    alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 ${_drAlert} ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
                     window.location.href = 'mis-citas.html';
                 } else {
                     alert('Error al guardar la cita: ' + (data.error || 'Error desconocido'));

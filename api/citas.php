@@ -26,6 +26,7 @@ switch ($metodo) {
             $stmt = $db->prepare(
                 "SELECT c.*, e.nombre_estado, e.color,
                         um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                        um.genero AS genero_medico,
                         esp.nombre_especialidad,
                         co.numero_consultorio
                  FROM citas c
@@ -56,6 +57,7 @@ switch ($metodo) {
                         c.motivo_consulta, c.costo, c.codigo_confirmacion, c.id_estado,
                         up.nombre || ' ' || up.apellido_paterno AS nombre_paciente,
                         um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                        um.genero AS genero_medico,
                         esp.nombre_especialidad,
                         co.numero_consultorio,
                         e.nombre_estado, e.color
@@ -122,6 +124,7 @@ switch ($metodo) {
 
             $qMed = $db->prepare(
                 "SELECT um.email, um.nombre || ' ' || um.apellido_paterno AS nombre,
+                        um.genero,
                         esp.nombre_especialidad
                  FROM medicos m
                  JOIN usuarios um ON um.id_usuario = m.id_usuario
@@ -150,14 +153,15 @@ switch ($metodo) {
             $horaLegible = sprintf('%d:%s %s', $h12, $mm, $ampm);
 
             $datosCita = [
-                'fecha'        => $fechaLegible,
-                'hora'         => $horaLegible,
-                'medico'       => $infoMed['nombre']             ?? '',
-                'paciente'     => $infoPac['nombre']             ?? '',
-                'especialidad' => $infoMed['nombre_especialidad'] ?? '',
-                'consultorio'  => $consultorio,
-                'motivo'       => $nueva['motivo_consulta']      ?? 'No especificado',
-                'codigo'       => $nueva['codigo_confirmacion']  ?? '',
+                'fecha'          => $fechaLegible,
+                'hora'           => $horaLegible,
+                'medico'         => $infoMed['nombre']              ?? '',
+                'genero_medico'  => $infoMed['genero']              ?? null,
+                'paciente'       => $infoPac['nombre']              ?? '',
+                'especialidad'   => $infoMed['nombre_especialidad'] ?? '',
+                'consultorio'    => $consultorio,
+                'motivo'         => $nueva['motivo_consulta']       ?? 'No especificado',
+                'codigo'         => $nueva['codigo_confirmacion']   ?? '',
             ];
 
             if ($infoPac) {

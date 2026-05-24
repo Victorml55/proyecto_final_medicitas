@@ -71,6 +71,8 @@
             return `Tu próxima cita es en ${diff} días`;
         }
 
+        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+
         function horaLabel(h) {
             if (!h) return '';
             const [hh, mm] = h.split(':');
@@ -97,7 +99,7 @@
             const c = proximas[0];
             document.getElementById('cita-cuando').textContent  = diasParaCita(c.fecha_cita);
             document.getElementById('cita-detalle').innerHTML   =
-                `<strong>Dr(a). ${c.nombre_medico}</strong> - ${c.nombre_especialidad ?? ''}
+                `<strong>${drLabel(c.genero_medico)} ${c.nombre_medico}</strong> - ${c.nombre_especialidad ?? ''}
                  <span style="margin-left:12px;opacity:.85;">🕐 ${horaLabel(c.hora_inicio)}</span>`;
             document.getElementById('proxima-cita').style.display = 'flex';
         })();

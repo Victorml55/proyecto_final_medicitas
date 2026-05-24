@@ -35,6 +35,7 @@ $stmt = $app->db->prepare(
         up.telefono                               AS telefono_paciente,
         up.email                                  AS email_paciente,
         um.nombre || ' ' || um.apellido_paterno  AS nombre_medico,
+        um.genero                                 AS genero_medico,
         e2.nombre_especialidad,
         co.numero_consultorio,
         e.nombre_estado

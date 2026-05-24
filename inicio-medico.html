@@ -147,7 +147,8 @@
                 return;
             }
 
-            document.getElementById('saludo').textContent = 'Hola, Dr(a). ' + auth.nombre;
+            const titulo = auth.genero === 'M' ? 'Dr.' : auth.genero === 'F' ? 'Dra.' : 'Dr(a).';
+            document.getElementById('saludo').textContent = 'Hola, ' + titulo + ' ' + auth.nombre;
 
             // Cargar info del médico (especialidad)
             const medico = await fetch(`/api/medicos.php?id=${auth.id_medico}`).then(r => r.json());

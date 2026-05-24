@@ -125,7 +125,9 @@ class MailService {
             $mail->isHTML(true);
             $mail->Subject = 'MediCitas – Nueva cita agendada';
             $mail->Body    = self::templateNuevaCitaMedico($nombre, $cita);
-            $mail->AltBody = "Hola Dr(a). $nombre,\n\nSe ha agendado una nueva cita.\n\nPaciente: {$cita['paciente']}\nFecha: {$cita['fecha']}\nHora: {$cita['hora']}\nMotivo: {$cita['motivo']}\n\nMediCitas";
+            $g = $cita['genero_medico'] ?? null;
+            $titulo = $g === 'M' ? 'Dr.' : ($g === 'F' ? 'Dra.' : 'Dr(a).');
+            $mail->AltBody = "Hola $titulo $nombre,\n\nSe ha agendado una nueva cita.\n\nPaciente: {$cita['paciente']}\nFecha: {$cita['fecha']}\nHora: {$cita['hora']}\nMotivo: {$cita['motivo']}\n\nMediCitas";
             $mail->send();
             return true;
         } catch (Exception $e) {
@@ -315,6 +317,8 @@ class MailService {
         $codigo       = !empty($cita['codigo'])      ? htmlspecialchars($cita['codigo'])      : null;
         $filaCons     = $consultorio ? "<p style='margin:8px 0;color:#333;'><strong>🚪 Consultorio:</strong> {$consultorio}</p>" : '';
         $filaCod      = $codigo      ? "<p style='margin:8px 0;color:#333;'><strong>🔖 Código:</strong> <code style='background:#dce8f5;padding:2px 8px;border-radius:4px;'>{$codigo}</code></p>" : '';
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
 
         return <<<HTML
         <!DOCTYPE html>
@@ -338,7 +342,7 @@ class MailService {
                       <tr><td style="padding:20px;">
                         <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
                         <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
-                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> Dr(a). {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> {$titMedico} {$medico}</p>
                         <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
                         {$filaCons}
                         <p style="margin:8px 0;color:#333;"><strong>📋 Motivo:</strong> {$motivo}</p>
@@ -368,6 +372,8 @@ class MailService {
         $motivo       = htmlspecialchars($cita['motivo']       ?? 'No especificado');
         $consultorio  = !empty($cita['consultorio']) ? htmlspecialchars($cita['consultorio']) : null;
         $filaCons     = $consultorio ? "<p style='margin:8px 0;color:#333;'><strong>🚪 Consultorio:</strong> {$consultorio}</p>" : '';
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
 
         return <<<HTML
         <!DOCTYPE html>
@@ -386,7 +392,7 @@ class MailService {
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="color:#005f99;margin-top:0;">Nueva cita en tu agenda 📅</h2>
-                    <p style="color:#444;line-height:1.7;">Hola <strong>Dr(a). {$nombre}</strong>, se ha agendado una nueva cita en tu portal:</p>
+                    <p style="color:#444;line-height:1.7;">Hola <strong>{$titMedico} {$nombre}</strong>, se ha agendado una nueva cita en tu portal:</p>
                     <table width="100%" style="background:#f0f8ff;border-radius:8px;margin:20px 0;">
                       <tr><td style="padding:20px;">
                         <p style="margin:8px 0;color:#333;"><strong>👤 Paciente:</strong> {$paciente}</p>

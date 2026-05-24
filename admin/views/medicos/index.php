@@ -24,8 +24,17 @@
                 <tr>
                     <td><?= $m['id_medico'] ?></td>
                     <td>
-                        <div class="fw-semibold"><?= htmlspecialchars(trim($m['nombre_completo'])) ?></div>
-                        <small class="text-muted"><?= htmlspecialchars($m['email']) ?></small>
+                        <div class="d-flex align-items-center gap-2">
+                            <?php if (!empty($m['foto_perfil'])): ?>
+                                <img src="<?= htmlspecialchars($m['foto_perfil']) ?>" style="width:36px;height:36px;object-fit:cover;border-radius:50%;flex-shrink:0;">
+                            <?php else: ?>
+                                <span style="width:36px;height:36px;border-radius:50%;background:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">&#128100;</span>
+                            <?php endif; ?>
+                            <div>
+                                <div class="fw-semibold"><?= htmlspecialchars(trim($m['nombre_completo'])) ?></div>
+                                <small class="text-muted"><?= htmlspecialchars($m['email']) ?></small>
+                            </div>
+                        </div>
                     </td>
                     <td><span class="badge bg-info text-dark"><?= htmlspecialchars($m['nombre_especialidad']) ?></span></td>
                     <td><code><?= htmlspecialchars($m['cedula_profesional']) ?></code></td>
