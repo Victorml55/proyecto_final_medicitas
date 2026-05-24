@@ -131,6 +131,55 @@
             .modal-date-grid { grid-template-columns: 1fr; }
         }
 
+        /* Tabs consultas / laboratorio */
+        .citas-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0;
+        }
+        .citas-tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            font-size: .94rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 4px 4px 0 0;
+            transition: color .15s, border-color .15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .citas-tab-btn:hover  { color: #005f99; }
+        .citas-tab-btn.active { color: #005f99; border-bottom-color: #005f99; }
+
+        /* Modal laboratorio */
+        .modal-lab-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .modal-lab-icon {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            background: rgba(34,197,94,.15);
+            color: #16a34a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .modal-lab-title { font-weight: 700; font-size: 1.05rem; color: #14532d; }
+        .modal-lab-sub   { color: #64748b; font-size: .87rem; margin-top: 2px; }
+
         /* Receta en detalle de cita (Concluida) */
         .receta-pac-card {
             background: rgba(37,99,235,.05);
@@ -180,19 +229,53 @@
     <div id="nav-container"></div>
 
     <main class="contenido-pagina">
-        <div class="section-header" style="text-align: left; margin-bottom: 40px;">
+        <div class="section-header" style="text-align: left; margin-bottom: 30px;">
             <h1>Mis Citas</h1>
-            <p>Gestiona tus próximas consultas y revisa tu historial médico.</p>
+            <p>Gestiona tus consultas y análisis de laboratorio.</p>
         </div>
 
-        <h2 class="section-subtitle">Próximas Citas</h2>
-        <div class="appointments-list" id="lista-proximas">
-            <p style="color:#94a3b8;">Cargando...</p>
+        <!-- Tabs -->
+        <div class="citas-tabs">
+            <button class="citas-tab-btn active" id="tab-btn-medico" onclick="cambiarTab('medico')">
+                <span class="material-symbols-outlined" style="font-size:18px;">stethoscope</span>
+                Consultas Médicas
+            </button>
+            <button class="citas-tab-btn" id="tab-btn-laboratorio" onclick="cambiarTab('laboratorio')">
+                <span class="material-symbols-outlined" style="font-size:18px;">science</span>
+                Laboratorio Clínico
+            </button>
         </div>
 
-        <h2 class="section-subtitle" style="margin-top: 50px;">Historial de Consultas</h2>
-        <div class="appointments-list" id="lista-historial">
-            <p style="color:#94a3b8;">Cargando...</p>
+        <!-- Sección: consultas médicas -->
+        <div id="tab-medico">
+            <h2 class="section-subtitle">Próximas Citas</h2>
+            <div class="appointments-list" id="lista-proximas">
+                <p style="color:#94a3b8;">Cargando...</p>
+            </div>
+
+            <h2 class="section-subtitle" style="margin-top: 50px;">Historial de Consultas</h2>
+            <div class="appointments-list" id="lista-historial">
+                <p style="color:#94a3b8;">Cargando...</p>
+            </div>
+        </div>
+
+        <!-- Sección: laboratorio -->
+        <div id="tab-laboratorio" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                <h2 class="section-subtitle" style="margin-bottom:0;">Citas de Laboratorio</h2>
+                <a href="agendar-cita-laboratorio.html"
+                   style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#005f99;color:#fff;border-radius:8px;font-size:.88rem;font-weight:600;text-decoration:none;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+                    Nueva cita de laboratorio
+                </a>
+            </div>
+            <div class="appointments-list" id="lista-lab-proximas">
+                <p style="color:#94a3b8;">Cargando...</p>
+            </div>
+            <h2 class="section-subtitle" style="margin-top:50px;">Historial de Laboratorio</h2>
+            <div class="appointments-list" id="lista-lab-historial">
+                <p style="color:#94a3b8;">Cargando...</p>
+            </div>
         </div>
     </main>
 
@@ -287,6 +370,58 @@
             </div>
             <div class="modal-footer">
                 <button onclick="cerrarModalCita()" style="padding:8px 22px;border-radius:8px;border:2px solid #005f99;background:white;color:#005f99;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal detalle cita de laboratorio -->
+    <div id="modal-backdrop-lab" class="modal-backdrop" onclick="if(event.target===this)cerrarModalLab()">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3>Detalle – Análisis de Laboratorio</h3>
+                <button class="modal-close" onclick="cerrarModalLab()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-lab-banner">
+                    <div class="modal-lab-icon">
+                        <span class="material-symbols-outlined">science</span>
+                    </div>
+                    <div>
+                        <div class="modal-lab-title" id="lab-modal-analisis">—</div>
+                        <div class="modal-lab-sub">Laboratorio Clínico</div>
+                    </div>
+                    <div id="lab-modal-estado" style="margin-left:auto;"></div>
+                </div>
+
+                <div class="modal-detail-row">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    <span id="lab-modal-fecha">—</span>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span id="lab-modal-hora">—</span>
+                </div>
+                <div class="modal-detail-row" id="lab-modal-notas-row" style="display:none;">
+                    <span class="material-symbols-outlined">description</span>
+                    <span id="lab-modal-notas">—</span>
+                </div>
+                <div class="modal-detail-row" id="lab-modal-codigo-row">
+                    <span class="material-symbols-outlined">confirmation_number</span>
+                    <span id="lab-modal-codigo">—</span>
+                </div>
+
+                <!-- Acción: cancelar (Pendiente / Confirmada) -->
+                <div id="lab-actions-cancelar" style="display:none;">
+                    <hr class="modal-section-sep">
+                    <button class="modal-action-btn btn-cancel-direct" onclick="cancelarCitaLab()">
+                        Cancelar esta cita
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="cerrarModalLab()" style="padding:8px 22px;border-radius:8px;border:2px solid #005f99;background:white;color:#005f99;font-size:0.9rem;font-weight:600;cursor:pointer;">
                     Cerrar
                 </button>
             </div>
@@ -552,7 +687,126 @@
             }
         }
 
+        // ── Tabs ─────────────────────────────────────────────────────────────
+
+        function cambiarTab(tab) {
+            document.getElementById('tab-medico').style.display       = tab === 'medico'      ? '' : 'none';
+            document.getElementById('tab-laboratorio').style.display  = tab === 'laboratorio' ? '' : 'none';
+            document.getElementById('tab-btn-medico').classList.toggle('active',      tab === 'medico');
+            document.getElementById('tab-btn-laboratorio').classList.toggle('active', tab === 'laboratorio');
+        }
+
+        // ── Lab: tarjeta ─────────────────────────────────────────────────────
+
+        function tarjetaLab(c, futura) {
+            const f    = c.fecha_cita.split('T')[0].split('-');
+            const mes  = mesesCorto[parseInt(f[1])-1].toUpperCase();
+            const color = c.color || '#94a3b8';
+            const analisis = c.tipo_analisis || 'Análisis de laboratorio';
+            return `
+            <div class="appointment-card ${futura ? '' : 'past-appointment'}"
+                 onclick="abrirModalLab(${c.id_cita_lab})">
+                <div class="date-block">
+                    <span class="date-month">${mes}</span>
+                    <span class="date-day">${parseInt(f[2])}</span>
+                    <span class="date-year">${f[0]}</span>
+                </div>
+                <div class="appointment-info">
+                    <div class="appointment-header">
+                        <h3>${analisis}</h3>
+                        <span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>
+                    </div>
+                    <p class="appointment-spec">Laboratorio Clínico</p>
+                    <div class="appointment-meta">
+                        <span><span class="material-symbols-outlined">schedule</span> ${horaLabel(c.hora_inicio)}</span>
+                    </div>
+                </div>
+                <div class="appointment-actions" style="min-width:auto;">
+                    <span class="material-symbols-outlined" style="color:#94a3b8;font-size:20px;">chevron_right</span>
+                </div>
+            </div>`;
+        }
+
+        let todasCitasLab = [];
+        let citaLabActual = null;
+
+        async function cargarCitasLab() {
+            const citas = await fetch('/api/citas-laboratorio.php').then(r => r.json()).catch(() => []);
+            todasCitasLab = Array.isArray(citas) ? citas : [];
+            const hoy   = new Date().toISOString().split('T')[0];
+
+            const terminada = c => ['Cancelada','Rechazada','Concluida'].includes(c.nombre_estado);
+            const proximas  = todasCitasLab.filter(c => c.fecha_cita >= hoy && !terminada(c));
+            const historial = todasCitasLab.filter(c => c.fecha_cita <  hoy || terminada(c));
+
+            const elP = document.getElementById('lista-lab-proximas');
+            const elH = document.getElementById('lista-lab-historial');
+
+            elP.innerHTML = proximas.length
+                ? proximas.map(c => tarjetaLab(c, true)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">No tienes citas de laboratorio próximas. <a href="agendar-cita-laboratorio.html">Agendar una</a>.</p>';
+
+            elH.innerHTML = historial.length
+                ? historial.map(c => tarjetaLab(c, false)).join('')
+                : '<p style="color:#94a3b8;padding:20px 0;">Sin historial de laboratorio.</p>';
+        }
+
+        // ── Lab: modal ───────────────────────────────────────────────────────
+
+        function abrirModalLab(id) {
+            const c = todasCitasLab.find(x => x.id_cita_lab === id);
+            if (!c) return;
+            citaLabActual = c;
+
+            document.getElementById('lab-modal-analisis').textContent = c.tipo_analisis || 'Análisis de laboratorio';
+
+            const color = c.color || '#94a3b8';
+            document.getElementById('lab-modal-estado').innerHTML =
+                `<span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>`;
+
+            const f = c.fecha_cita.split('T')[0].split('-');
+            document.getElementById('lab-modal-fecha').textContent =
+                `${parseInt(f[2])} de ${mesesLargo[parseInt(f[1])-1]} de ${f[0]}`;
+            document.getElementById('lab-modal-hora').textContent = horaLabel(c.hora_inicio);
+
+            const notasRow = document.getElementById('lab-modal-notas-row');
+            if (c.notas_paciente) {
+                document.getElementById('lab-modal-notas').textContent = c.notas_paciente;
+                notasRow.style.display = '';
+            } else {
+                notasRow.style.display = 'none';
+            }
+
+            document.getElementById('lab-modal-codigo').textContent =
+                'Código: ' + (c.codigo_confirmacion ?? '—');
+
+            const canCancel = ['Pendiente','Confirmada'].includes(c.nombre_estado);
+            document.getElementById('lab-actions-cancelar').style.display = canCancel ? '' : 'none';
+
+            document.getElementById('modal-backdrop-lab').classList.add('active');
+        }
+
+        function cerrarModalLab() {
+            document.getElementById('modal-backdrop-lab').classList.remove('active');
+            citaLabActual = null;
+        }
+
+        async function cancelarCitaLab() {
+            if (!confirm('¿Seguro que deseas cancelar esta cita de laboratorio?')) return;
+            const r = await fetch(
+                `/api/citas-laboratorio.php?id=${citaLabActual.id_cita_lab}&accion=cancelar`,
+                { method: 'PUT', headers: { 'Content-Type': 'application/json' } }
+            );
+            if (r.ok) {
+                cerrarModalLab();
+                cargarCitasLab();
+            } else {
+                alert('No se pudo cancelar la cita.');
+            }
+        }
+
         cargarCitas();
+        cargarCitasLab();
     </script>
 </body>
 </html>
