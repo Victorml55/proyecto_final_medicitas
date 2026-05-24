@@ -85,7 +85,7 @@ switch ($metodo) {
             "INSERT INTO citas_laboratorio
                 (id_paciente, id_estado, fecha_cita, hora_inicio, hora_fin,
                  tipo_analisis, notas_paciente, costo, codigo_confirmacion)
-             VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)
+             VALUES (?, 2, ?, ?, ?, ?, ?, ?, ?)
              RETURNING id_cita_lab"
         );
         $stmt->execute([
