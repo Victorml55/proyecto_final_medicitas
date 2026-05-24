@@ -2732,3 +2732,6 @@ a.sidebar-item[data-active="true"] {
 .alert-error   { background: var(--danger-soft); color: var(--danger-ink); border: 1px solid var(--danger-soft); }
 .alert-success { background: var(--success-soft); color: var(--success-ink); border: 1px solid var(--success-soft); }
 .alert-info    { background: var(--primary-soft); color: var(--primary-ink); }
+
+/* Salvaguarda: logo heredado del diseño anterior */
+.nav-logo { max-width: 140px; height: auto; display: block; }
