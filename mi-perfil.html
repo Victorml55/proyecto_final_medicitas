@@ -1,455 +1,135 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <title>Mi Perfil | MediCitas SSL</title>
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(d=>{
-            if (!d.loggedIn) window.location.replace('/index.html');
-        });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="css/estilo.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi perfil | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
-        <div class="section-header" style="text-align: left; margin-bottom: 30px;">
-            <h1>Mi Perfil</h1>
-            <p>Gestiona tu información personal y médica de forma segura.</p>
+      <div class="page-header">
+        <p class="eyebrow">Tu información</p>
+        <h1>Mi perfil</h1>
+        <p>Mantén tu información actualizada para una mejor atención médica.</p>
+      </div>
+
+      <div class="profile-layout">
+        <aside class="profile-sidebar">
+          <div class="profile-photo-wrap">
+            <div class="profile-photo" id="profile-ini">??</div>
+            <button class="profile-photo-edit" aria-label="Cambiar foto"><i data-icon="plus" data-size="14"></i></button>
+          </div>
+          <h3 style="font-size:20px;text-align:center;margin-bottom:4px;" id="profile-nombre">Cargando...</h3>
+          <p style="text-align:center;font-size:13px;color:var(--text-3);" id="profile-sub">—</p>
+
+          <div class="profile-id">
+            <span>EXPEDIENTE</span>
+            <strong id="profile-id">—</strong>
+          </div>
+
+          <div class="profile-nav">
+            <button class="profile-nav-item" data-active="true" data-tab="personal"><i data-icon="user" data-size="16"></i>Datos personales<i data-icon="chevron-right" data-size="14" style="margin-left:auto;opacity:0.5;"></i></button>
+            <button class="profile-nav-item" data-tab="salud"><i data-icon="heart-pulse" data-size="16"></i>Información de salud<i data-icon="chevron-right" data-size="14" style="margin-left:auto;opacity:0.5;"></i></button>
+            <button class="profile-nav-item" data-tab="contacto"><i data-icon="phone" data-size="16"></i>Contacto de emergencia<i data-icon="chevron-right" data-size="14" style="margin-left:auto;opacity:0.5;"></i></button>
+            <button class="profile-nav-item" data-tab="seguridad"><i data-icon="lock" data-size="16"></i>Seguridad<i data-icon="chevron-right" data-size="14" style="margin-left:auto;opacity:0.5;"></i></button>
+          </div>
+
+          <div class="divider" style="margin:14px 0;"></div>
+          <a href="logout.php" class="btn btn-danger-ghost" style="width:100%;"><i data-icon="log-out"></i>Cerrar sesión</a>
+        </aside>
+
+        <div class="profile-main" id="profile-main">
+          <div class="card flush profile-card-block">
+            <div class="card-head">
+              <div class="row" style="gap:10px;"><div class="profile-card-icon"><i data-icon="user" data-size="18"></i></div><h3>Información personal</h3></div>
+              <button class="btn btn-soft btn-sm" id="btn-edit-personal">Editar</button>
+            </div>
+            <div class="card-body">
+              <div class="info-grid" id="grid-personal">
+                <div class="loading-empty" style="grid-column:1/-1;">Cargando datos...</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card flush profile-card-block" style="margin-top:18px;">
+            <div class="card-head">
+              <div class="row" style="gap:10px;"><div class="profile-card-icon"><i data-icon="mail" data-size="18"></i></div><h3>Datos de contacto</h3></div>
+              <button class="btn btn-soft btn-sm" id="btn-edit-contacto">Editar</button>
+            </div>
+            <div class="card-body">
+              <div class="info-grid" id="grid-contacto"></div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="profile-layout">
-            
-            <aside class="profile-sidebar">
-                <div class="profile-avatar-container">
-                    <div class="profile-avatar" id="avatar-wrapper">
-                        <span class="material-symbols-outlined" id="avatar-icon">person</span>
-                        <img id="avatar-img" src="" alt="Foto de perfil" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
-                    </div>
-                    <button class="btn-edit-avatar" onclick="document.getElementById('input-foto').click()" title="Cambiar foto de perfil">
-                        <span class="material-symbols-outlined">photo_camera</span>
-                    </button>
-                    <input type="file" id="input-foto" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none" onchange="subirFoto(this)">
-                </div>
-                <h2 class="profile-name" id="p-nombre">—</h2>
-                <p class="profile-id" id="p-expediente">Cargando...</p>
-                
-                <div class="profile-quick-actions">
-                    <button class="btn-outline" style="width: 100%;" onclick="abrirModalEditar()">Editar Perfil</button>
-                    <button class="btn-outline" style="width: 100%; margin-top: 10px;" onclick="abrirModalPassword()">Cambiar Contraseña</button>
-                </div>
-            </aside>
-
-            <div class="profile-content">
-                
-                <div class="profile-card">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">badge</span>
-                        <h3>Datos Personales</h3>
-                    </div>
-                    <div class="card-body info-grid">
-                        <div class="info-group">
-                            <label>Nombre Completo</label>
-                            <p id="p-nombre-completo">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Fecha de Nacimiento</label>
-                            <p id="p-nacimiento">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Género</label>
-                            <p id="p-genero">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Miembro desde</label>
-                            <p id="p-registro">—</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="profile-card">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">contact_mail</span>
-                        <h3>Información de Contacto</h3>
-                    </div>
-                    <div class="card-body info-grid">
-                        <div class="info-group">
-                            <label>Correo Electrónico</label>
-                            <p id="p-email">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Teléfono</label>
-                            <p id="p-telefono">—</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="profile-card" id="card-consulta" style="display:none">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">payments</span>
-                        <h3>Datos de Consulta</h3>
-                    </div>
-                    <div class="card-body info-grid">
-                        <div class="info-group">
-                            <label>Costo de Consulta</label>
-                            <p class="highlight-value" id="p-costo-consulta">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Duración de Consulta</label>
-                            <p id="p-duracion-consulta">—</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="profile-card" id="card-medicos-basicos">
-                    <div class="card-header">
-                        <span class="material-symbols-outlined">medical_information</span>
-                        <h3>Datos Médicos Básicos</h3>
-                    </div>
-                    <div class="card-body info-grid">
-                        <div class="info-group">
-                            <label>Tipo de Sangre</label>
-                            <p class="highlight-value" id="p-sangre">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Alergias Conocidas</label>
-                            <p id="p-alergias">—</p>
-                        </div>
-                        <div class="info-group" style="grid-column: 1 / -1;">
-                            <label>Enfermedades Crónicas</label>
-                            <p id="p-cronicas">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Contacto de Emergencia</label>
-                            <p id="p-emergencia-nombre">—</p>
-                        </div>
-                        <div class="info-group">
-                            <label>Teléfono de Emergencia</label>
-                            <p id="p-emergencia-tel">—</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal: Editar Perfil -->
-    <div class="modal-backdrop" id="modal-editar">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Editar Perfil</h3>
-                <button class="modal-close" onclick="cerrarModal('modal-editar')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="alerta-editar" class="alert-msg"></div>
-                <div class="modal-grid">
-                    <span class="modal-section-title">Datos Personales</span>
-                    <div class="modal-field">
-                        <label>Nombre</label>
-                        <input type="text" id="e-nombre" placeholder="Nombre">
-                    </div>
-                    <div class="modal-field">
-                        <label>Apellido Paterno</label>
-                        <input type="text" id="e-apellido-paterno" placeholder="Apellido paterno">
-                    </div>
-                    <div class="modal-field">
-                        <label>Apellido Materno</label>
-                        <input type="text" id="e-apellido-materno" placeholder="Apellido materno">
-                    </div>
-                    <div class="modal-field">
-                        <label>Teléfono</label>
-                        <input type="tel" id="e-telefono" placeholder="10 dígitos">
-                    </div>
-                    <div class="modal-field">
-                        <label>Fecha de Nacimiento</label>
-                        <input type="date" id="e-nacimiento">
-                    </div>
-                    <div class="modal-field">
-                        <label>Género</label>
-                        <select id="e-genero">
-                            <option value="">— Seleccionar —</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <span class="modal-section-title" id="seccion-consulta" style="display:none">Datos de Consulta</span>
-                    <div class="modal-field" id="campo-costo" style="display:none">
-                        <label>Costo de Consulta ($)</label>
-                        <input type="number" id="e-costo" min="0" step="0.01" placeholder="0.00">
-                    </div>
-                    <div class="modal-field" id="campo-duracion" style="display:none">
-                        <label>Duración de Consulta (min)</label>
-                        <input type="number" id="e-duracion" min="5" max="240" step="5" placeholder="30">
-                    </div>
-
-                    <span class="modal-section-title" id="seccion-medica">Datos Médicos</span>
-                    <div class="modal-field" id="campo-sangre">
-                        <label>Tipo de Sangre</label>
-                        <select id="e-sangre">
-                            <option value="">— Desconocido —</option>
-                            <option>A+</option><option>A-</option>
-                            <option>B+</option><option>B-</option>
-                            <option>AB+</option><option>AB-</option>
-                            <option>O+</option><option>O-</option>
-                        </select>
-                    </div>
-                    <div class="modal-field full-width" id="campo-alergias">
-                        <label>Alergias Conocidas</label>
-                        <textarea id="e-alergias" placeholder="Ej. Penicilina, látex..."></textarea>
-                    </div>
-                    <div class="modal-field full-width" id="campo-cronicas">
-                        <label>Enfermedades Crónicas</label>
-                        <textarea id="e-cronicas" placeholder="Ej. Diabetes tipo 2, hipertensión..."></textarea>
-                    </div>
-                    <div class="modal-field" id="campo-emerg-nombre">
-                        <label>Contacto de Emergencia</label>
-                        <input type="text" id="e-emergencia-nombre" placeholder="Nombre completo">
-                    </div>
-                    <div class="modal-field" id="campo-emerg-tel">
-                        <label>Teléfono de Emergencia</label>
-                        <input type="tel" id="e-emergencia-tel" placeholder="10 dígitos">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="cerrarModal('modal-editar')">Cancelar</button>
-                <button class="btn-primary" onclick="guardarPerfil()">Guardar Cambios</button>
-            </div>
-        </div>
     </div>
+  </main>
+</div>
 
-    <!-- Toast: Cambiar Contraseña -->
-    <div id="toast-password" style="
-        display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
-        background:#0f172a; color:#fff; padding:14px 24px; border-radius:10px;
-        font-size:0.95rem; z-index:2000; box-shadow:0 6px 24px rgba(0,0,0,0.25);
-        max-width:380px; text-align:center;
-    "></div>
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  MC.loadNav('nav-user.html');
 
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
-            const nav = auth.id_medico ? 'nav-medico.html' : 'nav-user.html';
-            fetch(nav).then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
-        });
+  (async function () {
+    const auth = await MC.requireAuth();
+    if (!auth) return;
 
-        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-        const generoMap = { M: 'Masculino', F: 'Femenino', Otro: 'Otro' };
+    try {
+      const p = await fetch('/api/perfil.php').then(r => r.json());
 
-        function edad(fechaStr) {
-            if (!fechaStr) return '';
-            const hoy = new Date(), nac = new Date(fechaStr);
-            let e = hoy.getFullYear() - nac.getFullYear();
-            if (hoy < new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate())) e--;
-            return e + ' años';
-        }
+      const nombreCompleto = [p.nombre, p.apellido_paterno, p.apellido_materno].filter(Boolean).join(' ');
+      document.getElementById('profile-ini').textContent = MC.iniciales(nombreCompleto);
+      document.getElementById('profile-nombre').textContent = nombreCompleto;
+      document.getElementById('profile-sub').textContent = auth.rol === 'medico' ? 'Médico' : 'Paciente';
+      document.getElementById('profile-id').textContent = '#' + (p.id_paciente || p.id_medico || auth.id_usuario);
 
-        function formatFecha(f) {
-            if (!f) return '—';
-            const [y,m,d] = f.split('-');
-            return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
-        }
+      const fmt = (iso) => iso ? MC.fechaLarga(iso) : 'No especificado';
+      const personal = [
+        ['Nombre completo', nombreCompleto],
+        ['Fecha de nacimiento', fmt(p.fecha_nacimiento)],
+        ['Género', p.genero === 'M' ? 'Masculino' : p.genero === 'F' ? 'Femenino' : (p.genero || 'No especificado')],
+        ['Tipo de sangre', p.tipo_sangre || 'No especificado', { highlight: !!p.tipo_sangre }],
+      ];
+      const contacto = [
+        ['Correo electrónico', p.email || '—'],
+        ['Teléfono', p.telefono || 'No registrado'],
+        ['Dirección', p.direccion || 'No registrada', { full: true }],
+      ];
 
-        let perfilActual = {};
+      const renderGrid = (id, items) => {
+        document.getElementById(id).innerHTML = items.map(([l, v, opt = {}]) => `
+          <div class="info-item${opt.full ? ' full' : ''}">
+            <span class="info-label">${l}</span>
+            <span class="info-value" ${opt.highlight ? 'data-highlight' : ''}>${v}</span>
+          </div>`).join('');
+      };
+      renderGrid('grid-personal', personal);
+      renderGrid('grid-contacto', contacto);
 
-        function actualizarAvatar(url) {
-            const img  = document.getElementById('avatar-img');
-            const icon = document.getElementById('avatar-icon');
-            if (url) {
-                img.src = url;
-                img.style.display = 'block';
-                icon.style.display = 'none';
-            } else {
-                img.style.display = 'none';
-                icon.style.display = '';
-            }
-        }
+    } catch (e) {
+      console.warn('Error perfil', e);
+    }
+  })();
 
-        async function subirFoto(input) {
-            const file = input.files[0];
-            if (!file) return;
+  // Tabs (placeholder)
+  document.querySelectorAll('.profile-nav-item').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.profile-nav-item').forEach(x => x.removeAttribute('data-active'));
+      b.setAttribute('data-active', 'true');
+      MC.toast('Sección "' + b.textContent.trim() + '" — en desarrollo', 'success');
+    });
+  });
+</script>
 
-            const tiposValidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!tiposValidos.includes(file.type)) {
-                alert('Solo se permiten imágenes JPG, PNG, GIF o WebP.');
-                input.value = '';
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                alert('La imagen no debe superar 5 MB.');
-                input.value = '';
-                return;
-            }
-
-            const btn = document.querySelector('.btn-edit-avatar');
-            btn.disabled = true;
-
-            const formData = new FormData();
-            formData.append('foto', file);
-
-            const res = await fetch('/api/subir-foto.php', {
-                method: 'POST',
-                body: formData,
-            }).then(r => r.json()).catch(() => ({ error: 'Error de red.' }));
-
-            btn.disabled = false;
-            input.value = '';
-
-            if (res.error) {
-                alert(res.error);
-                return;
-            }
-
-            perfilActual.foto_perfil = res.url;
-            actualizarAvatar(res.url);
-        }
-
-        (async function cargarPerfil() {
-            const p = await fetch('/api/perfil.php').then(r => r.json());
-            if (p.error) return;
-            perfilActual = p;
-
-            actualizarAvatar(p.foto_perfil || null);
-
-            const nombre = [p.nombre, p.apellido_paterno, p.apellido_materno].filter(Boolean).join(' ');
-            document.getElementById('p-nombre').textContent         = nombre;
-            document.getElementById('p-nombre-completo').textContent = nombre;
-            document.getElementById('p-expediente').textContent     = p.numero_expediente ? 'Exp: #' + p.numero_expediente : 'Sin expediente asignado';
-            document.getElementById('p-nacimiento').textContent     = p.fecha_nacimiento ? formatFecha(p.fecha_nacimiento) + ' (' + edad(p.fecha_nacimiento) + ')' : '—';
-            document.getElementById('p-genero').textContent         = generoMap[p.genero] ?? p.genero ?? '—';
-            document.getElementById('p-registro').textContent       = p.fecha_registro ? formatFecha(p.fecha_registro.split('T')[0]) : '—';
-            document.getElementById('p-email').textContent          = p.email ?? '—';
-            document.getElementById('p-telefono').textContent       = p.telefono ?? '—';
-            document.getElementById('p-sangre').textContent         = p.tipo_sangre ?? '—';
-            document.getElementById('p-alergias').textContent       = p.alergias ?? '—';
-            document.getElementById('p-cronicas').textContent       = p.enfermedades_cronicas ?? '—';
-            document.getElementById('p-emergencia-nombre').textContent = p.contacto_emergencia_nombre ?? '—';
-            document.getElementById('p-emergencia-tel').textContent    = p.contacto_emergencia_telefono ?? '—';
-
-            const esMedico = !!p.id_medico;
-            ['campo-sangre','campo-alergias','campo-cronicas','campo-emerg-nombre','campo-emerg-tel','seccion-medica']
-                .forEach(id => { document.getElementById(id).style.display = esMedico ? 'none' : ''; });
-            ['campo-costo','campo-duracion','seccion-consulta']
-                .forEach(id => { document.getElementById(id).style.display = esMedico ? '' : 'none'; });
-            document.getElementById('card-consulta').style.display       = esMedico ? '' : 'none';
-            document.getElementById('card-medicos-basicos').style.display = esMedico ? 'none' : '';
-
-            if (esMedico) {
-                document.getElementById('p-costo-consulta').textContent    = p.costo_consulta != null ? '$' + parseFloat(p.costo_consulta).toFixed(2) : '—';
-                document.getElementById('p-duracion-consulta').textContent = p.duracion_consulta ? p.duracion_consulta + ' min' : '—';
-            }
-        })();
-
-        function abrirModalEditar() {
-            const p = perfilActual;
-            document.getElementById('e-nombre').value            = p.nombre ?? '';
-            document.getElementById('e-apellido-paterno').value  = p.apellido_paterno ?? '';
-            document.getElementById('e-apellido-materno').value  = p.apellido_materno ?? '';
-            document.getElementById('e-telefono').value          = p.telefono ?? '';
-            document.getElementById('e-nacimiento').value        = p.fecha_nacimiento ?? '';
-            document.getElementById('e-genero').value            = p.genero ?? '';
-            document.getElementById('e-sangre').value            = p.tipo_sangre ?? '';
-            document.getElementById('e-alergias').value          = p.alergias ?? '';
-            document.getElementById('e-cronicas').value          = p.enfermedades_cronicas ?? '';
-            document.getElementById('e-emergencia-nombre').value = p.contacto_emergencia_nombre ?? '';
-            document.getElementById('e-emergencia-tel').value    = p.contacto_emergencia_telefono ?? '';
-            document.getElementById('e-costo').value             = p.costo_consulta ?? '';
-            document.getElementById('e-duracion').value          = p.duracion_consulta ?? '';
-            setAlerta('alerta-editar', '', '');
-            document.getElementById('modal-editar').classList.add('active');
-        }
-
-        async function abrirModalPassword() {
-            const btn = document.querySelector('[onclick="abrirModalPassword()"]');
-            btn.disabled = true;
-            btn.textContent = 'Enviando...';
-
-            const res = await fetch('/api/recuperar.php', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ email: perfilActual.email })
-            }).then(r => r.json()).catch(() => ({ error: 'Error de red.' }));
-
-            btn.disabled = false;
-            btn.textContent = 'Cambiar Contraseña';
-
-            const toast = document.getElementById('toast-password');
-            toast.textContent = res.error
-                ? res.error
-                : 'Te enviamos un enlace a ' + perfilActual.email + ' para restablecer tu contraseña.';
-            toast.style.background = res.error ? '#991b1b' : '#166534';
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 5000);
-        }
-
-        function cerrarModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        document.addEventListener('click', e => {
-            if (e.target.classList.contains('modal-backdrop')) cerrarModal(e.target.id);
-        });
-
-        function setAlerta(id, tipo, msg) {
-            const el = document.getElementById(id);
-            el.className = 'alert-msg' + (tipo ? ' ' + tipo : '');
-            el.textContent = msg;
-        }
-
-        async function guardarPerfil() {
-            const body = {
-                nombre:                       document.getElementById('e-nombre').value.trim(),
-                apellido_paterno:             document.getElementById('e-apellido-paterno').value.trim(),
-                apellido_materno:             document.getElementById('e-apellido-materno').value.trim(),
-                telefono:                     document.getElementById('e-telefono').value.trim(),
-                fecha_nacimiento:             document.getElementById('e-nacimiento').value,
-                genero:                       document.getElementById('e-genero').value,
-                tipo_sangre:                  document.getElementById('e-sangre').value,
-                alergias:                     document.getElementById('e-alergias').value.trim(),
-                enfermedades_cronicas:        document.getElementById('e-cronicas').value.trim(),
-                contacto_emergencia_nombre:   document.getElementById('e-emergencia-nombre').value.trim(),
-                contacto_emergencia_telefono: document.getElementById('e-emergencia-tel').value.trim(),
-                costo_consulta:               document.getElementById('e-costo').value || null,
-                duracion_consulta:            document.getElementById('e-duracion').value || null,
-            };
-
-            setAlerta('alerta-editar', '', '');
-            const res = await fetch('/api/actualizar-perfil.php', {
-                method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
-            }).then(r => r.json());
-
-            if (res.error) { setAlerta('alerta-editar', 'error', res.error); return; }
-
-            perfilActual = { ...perfilActual, ...body };
-            const nombre = [body.nombre, body.apellido_paterno, body.apellido_materno].filter(Boolean).join(' ');
-            document.getElementById('p-nombre').textContent          = nombre;
-            document.getElementById('p-nombre-completo').textContent = nombre;
-            document.getElementById('p-telefono').textContent        = body.telefono || '—';
-            document.getElementById('p-genero').textContent          = generoMap[body.genero] ?? body.genero ?? '—';
-            document.getElementById('p-nacimiento').textContent      = body.fecha_nacimiento ? formatFecha(body.fecha_nacimiento) + ' (' + edad(body.fecha_nacimiento) + ')' : '—';
-            document.getElementById('p-sangre').textContent          = body.tipo_sangre || '—';
-            document.getElementById('p-alergias').textContent        = body.alergias || '—';
-            document.getElementById('p-cronicas').textContent        = body.enfermedades_cronicas || '—';
-            document.getElementById('p-emergencia-nombre').textContent = body.contacto_emergencia_nombre || '—';
-            document.getElementById('p-emergencia-tel').textContent    = body.contacto_emergencia_telefono || '—';
-            if (body.costo_consulta != null)    document.getElementById('p-costo-consulta').textContent    = '$' + parseFloat(body.costo_consulta).toFixed(2);
-            if (body.duracion_consulta != null) document.getElementById('p-duracion-consulta').textContent = body.duracion_consulta + ' min';
-
-            setAlerta('alerta-editar', 'success', 'Perfil actualizado correctamente.');
-            setTimeout(() => cerrarModal('modal-editar'), 1200);
-        }
-
-    </script>
 </body>
 </html>

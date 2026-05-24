@@ -1,111 +1,217 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <title>Mi Panel | MediCitas SSL</title>
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(d=>{
-            if (!d.loggedIn) window.location.replace('/index.html');
-        });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="css/estilo.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <title>Mi panel | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="page-body">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="page-content">
-        <div class="dashboard-header">
-            <h1 id="saludo">Hola</h1>
-            <h2>Bienvenido a tu portal médico</h2>
+      <div class="page-header">
+        <p class="eyebrow" id="fecha-hoy">Cargando fecha...</p>
+        <h1 id="saludo">Hola</h1>
+        <p>Esto es lo que necesitas saber sobre tu salud hoy.</p>
+      </div>
+
+      <!-- Próxima cita -->
+      <div class="hero-appt" id="proxima-cita" style="display:none;">
+        <div class="hero-left">
+          <div class="hero-eyebrow">
+            <span class="badge primary"><span class="badge-dot"></span>Confirmada</span>
+            <span style="font-size:12px;color:rgba(255,255,255,.7);" id="cita-cuando-eyebrow">—</span>
+          </div>
+          <h2 id="cita-doctor">—</h2>
+          <div class="hero-meta">
+            <span><i data-icon="calendar" data-size="16"></i> <span id="cita-fecha">—</span></span>
+            <span><i data-icon="clock" data-size="16"></i> <span id="cita-hora">—</span></span>
+            <span><i data-icon="map-pin" data-size="16"></i> <span id="cita-loc">Consultorio</span></span>
+          </div>
+          <div class="hero-actions">
+            <a href="mis-citas.html" class="btn btn-soft" style="background:rgba(255,255,255,.15);color:white;">Reprogramar</a>
+            <a href="mis-citas.html" class="btn" style="background:white;color:var(--primary);">
+              Ver detalles <i data-icon="arrow-right"></i>
+            </a>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-date">
+            <div class="hero-month" id="cita-month">—</div>
+            <div class="hero-day" id="cita-day">—</div>
+            <div class="hero-year" id="cita-year">2025</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accesos rápidos -->
+      <div class="section-title">
+        <h2>Accesos rápidos</h2>
+      </div>
+      <div class="grid-4">
+        <a href="agendar-cita.html" class="action-card" data-tone="primary">
+          <div class="action-icon"><i data-icon="calendar-plus" data-size="22"></i></div>
+          <div class="action-label">Agendar cita</div>
+          <div class="action-hint">Reserva en minutos</div>
+          <i data-icon="chevron-right" class="action-chev"></i>
+        </a>
+        <a href="mis-citas.html" class="action-card" data-tone="warm">
+          <div class="action-icon"><i data-icon="calendar" data-size="22"></i></div>
+          <div class="action-label">Mis citas</div>
+          <div class="action-hint" id="hint-citas">—</div>
+          <i data-icon="chevron-right" class="action-chev"></i>
+        </a>
+        <a href="resultados-laboratorio.html" class="action-card" data-tone="success">
+          <div class="action-icon"><i data-icon="flask" data-size="22"></i></div>
+          <div class="action-label">Laboratorio</div>
+          <div class="action-hint">Tus estudios y resultados</div>
+          <i data-icon="chevron-right" class="action-chev"></i>
+        </a>
+        <a href="mis-recetas.html" class="action-card" data-tone="muted">
+          <div class="action-icon"><i data-icon="pill" data-size="22"></i></div>
+          <div class="action-label">Mis recetas</div>
+          <div class="action-hint">Medicación activa</div>
+          <i data-icon="chevron-right" class="action-chev"></i>
+        </a>
+      </div>
+
+      <!-- Dos columnas: actividad + recordatorio -->
+      <div class="grid-2" style="margin-top:32px;grid-template-columns:1.4fr 1fr;">
+        <div class="card flush">
+          <div class="card-head">
+            <h3>Actividad médica reciente</h3>
+            <a href="mis-citas.html" class="btn btn-ghost btn-sm">Ver todo</a>
+          </div>
+          <div class="timeline" id="timeline-actividad">
+            <div class="loading-empty">Cargando actividad...</div>
+          </div>
         </div>
 
-        <div class="next-appointment-card" id="proxima-cita" style="display:none;">
-            <div class="appointment-icon">
-                <span class="material-symbols-outlined">calendar_month</span>
+        <div class="stack">
+          <div class="card" style="background:var(--warm-soft);border-color:transparent;">
+            <div class="row" style="gap:12px;align-items:flex-start;">
+              <div class="hint-icon"><i data-icon="bell" data-size="18"></i></div>
+              <div>
+                <strong style="display:block;margin-bottom:4px;">Recordatorio</strong>
+                <p style="font-size:13px;color:var(--text-2);line-height:1.5;">
+                  Mantén tu información médica actualizada para que tus médicos puedan brindarte la mejor atención.
+                </p>
+                <a href="mi-perfil.html" class="btn btn-soft btn-sm" style="margin-top:12px;">
+                  Revisar mi perfil
+                </a>
+              </div>
             </div>
-            <div class="appointment-details">
-                <h3 id="cita-cuando">—</h3>
-                <p id="cita-detalle">—</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:16px;margin-bottom:14px;">Tu salud en cifras</h3>
+            <div class="metric-row">
+              <div><i data-icon="calendar" class="metric-icon" style="color:var(--primary);"></i></div>
+              <div class="metric-info">
+                <span>Citas este año</span>
+                <strong id="stat-citas-ano">—</strong>
+              </div>
             </div>
-            <a href="mis-citas.html" class="btn-primary">Ver Detalles</a>
+            <div class="metric-row" style="border-bottom:0;">
+              <div><i data-icon="pill" class="metric-icon" style="color:var(--warm-ink);"></i></div>
+              <div class="metric-info">
+                <span>Recetas activas</span>
+                <strong id="stat-recetas">—</strong>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="quick-actions-grid">
-            <a href="agendar-cita.html" class="action-card">
-                
-                <h3>Agendar Cita</h3>
-            </a>
-            <a href="mis-citas.html" class="action-card">
-                
-                <h3>Historial de Citas</h3>
-            </a>
-            <a href="resultados-laboratorio.html" class="action-card">
+    </div>
+  </main>
+</div>
 
-                <h3>Resultados de Laboratorio</h3>
-            </a>
-            <a href="mis-recetas.html" class="action-card">
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  MC.loadNav('nav-user.html');
 
-                <h3>Mis Recetas</h3>
-            </a>
-            <a href="agendar-cita-laboratorio.html" class="action-card">
+  // Fecha de hoy
+  const hoy = new Date();
+  document.getElementById('fecha-hoy').textContent =
+    MC.fechaLarga(hoy.toISOString().split('T')[0]).replace(/^(Domingo|Lunes|Martes|Miércoles|Jueves|Viernes|Sábado)/, m => m);
 
-                <h3>Laboratorio Clínico</h3>
-            </a>
-        </div>
-    </main>
+  (async function () {
+    const auth = await MC.requireAuth();
+    if (!auth) return;
 
-    <script>
-        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+    document.getElementById('saludo').textContent = 'Hola, ' + (auth.nombre || '').split(' ')[0] + '.';
+    if (!auth.id_paciente) return;
 
-        function diasParaCita(fechaStr) {
-            const hoy    = new Date(); hoy.setHours(0,0,0,0);
-            const fecha  = new Date(fechaStr + 'T00:00:00');
-            const diff   = Math.round((fecha - hoy) / 86400000);
-            if (diff === 0) return 'Tu cita es hoy';
-            if (diff === 1) return 'Tu próxima cita es mañana';
-            return `Tu próxima cita es en ${diff} días`;
-        }
+    try {
+      const citas = await fetch('/api/citas.php?paciente=' + auth.id_paciente).then(r => r.json());
+      const hoyISO = new Date().toISOString().split('T')[0];
+      const proximas = (citas || [])
+        .filter(c => c.fecha_cita >= hoyISO && c.id_estado == 2)
+        .sort((a, b) => a.fecha_cita.localeCompare(b.fecha_cita) || a.hora_inicio.localeCompare(b.hora_inicio));
 
-        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+      // Hint para card "Mis citas"
+      document.getElementById('hint-citas').textContent =
+        proximas.length === 0 ? 'Sin citas próximas' : proximas.length + ' próxima' + (proximas.length === 1 ? '' : 's');
 
-        function horaLabel(h) {
-            if (!h) return '';
-            const [hh, mm] = h.split(':');
-            const n = parseInt(hh);
-            return `${n > 12 ? n-12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
-        }
+      if (proximas.length) {
+        const c = proximas[0];
+        const f = MC.fechaCorta(c.fecha_cita);
+        document.getElementById('proxima-cita').style.display = 'grid';
+        document.getElementById('cita-cuando-eyebrow').textContent = MC.diasParaCita(c.fecha_cita);
+        document.getElementById('cita-doctor').textContent =
+          `${MC.drLabel(c.genero_medico)} ${c.nombre_medico} · ${c.nombre_especialidad || ''}`;
+        document.getElementById('cita-fecha').textContent = MC.fechaLarga(c.fecha_cita);
+        document.getElementById('cita-hora').textContent  = MC.horaLabel(c.hora_inicio);
+        document.getElementById('cita-loc').textContent   = c.consultorio || 'Consultorio';
+        document.getElementById('cita-month').textContent = f.month;
+        document.getElementById('cita-day').textContent   = f.day;
+        document.getElementById('cita-year').textContent  = f.year;
+      }
 
-        (async function () {
-            const auth = await fetch('/api/auth-status.php').then(r => r.json());
-            if (!auth.loggedIn) { window.location.replace('/index.html'); return; }
+      // Actividad (últimas 4 citas + recetas + lab)
+      const recientes = (citas || []).slice(0, 4);
+      const tl = document.getElementById('timeline-actividad');
+      if (!recientes.length) {
+        tl.innerHTML = '<div class="loading-empty">Aún no tienes actividad.</div>';
+      } else {
+        tl.innerHTML = recientes.map(c => {
+          const f = MC.fechaCorta(c.fecha_cita);
+          const dot = c.id_estado == 3 ? 'success' : c.id_estado == 2 ? 'primary' : 'muted';
+          return `
+            <div class="timeline-item">
+              <div class="timeline-date">${f.day} ${f.month.toLowerCase()}</div>
+              <div class="timeline-dot ${dot}"></div>
+              <div class="timeline-body">
+                <strong>${MC.drLabel(c.genero_medico)} ${c.nombre_medico}</strong>
+                <div class="timeline-sub">${c.nombre_especialidad || ''} · ${MC.horaLabel(c.hora_inicio)}</div>
+              </div>
+            </div>`;
+        }).join('');
+        MCIcons.render(tl);
+      }
 
-            document.getElementById('saludo').textContent = 'Hola, ' + auth.nombre;
+      document.getElementById('stat-citas-ano').textContent = (citas || []).length;
+    } catch (e) {
+      console.warn('Error cargando datos del dashboard', e);
+    }
 
-            if (!auth.id_paciente) return;
+    // Recetas count (mejor esfuerzo)
+    try {
+      const recetas = await fetch('/api/recetas.php?paciente=' + auth.id_paciente).then(r => r.json());
+      document.getElementById('stat-recetas').textContent = (recetas || []).filter(r => r.activa).length || 0;
+    } catch { document.getElementById('stat-recetas').textContent = '—'; }
+  })();
+</script>
 
-            const citas = await fetch(`/api/citas.php?paciente=${auth.id_paciente}`).then(r => r.json());
-            const hoy   = new Date().toISOString().split('T')[0];
-            const proximas = citas
-                .filter(c => c.fecha_cita >= hoy && c.id_estado == 2)
-                .sort((a, b) => a.fecha_cita.localeCompare(b.fecha_cita) || a.hora_inicio.localeCompare(b.hora_inicio));
-
-            if (!proximas.length) return;
-
-            const c = proximas[0];
-            document.getElementById('cita-cuando').textContent  = diasParaCita(c.fecha_cita);
-            document.getElementById('cita-detalle').innerHTML   =
-                `<strong>${drLabel(c.genero_medico)} ${c.nombre_medico}</strong> - ${c.nombre_especialidad ?? ''}
-                 <span style="margin-left:12px;opacity:.85;">🕐 ${horaLabel(c.hora_inicio)}</span>`;
-            document.getElementById('proxima-cita').style.display = 'flex';
-        })();
-    </script>
 </body>
 </html>

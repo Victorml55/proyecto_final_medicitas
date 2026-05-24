@@ -1,16 +1,65 @@
-<nav class="top-navbar">
-    <a href="inicio-usuario.html" class="nav-brand">
-        <img src="/img/logo.png" alt="Logo SSL" class="nav-logo">
-        <span>MediCitas <strong>SSL</strong></span>
-    </a>
-    
-    <ul class="nav-links">
-        <li><a href="mis-citas.html">Mis Citas</a></li>
-        <li><a href="medicos.html">Médicos</a></li>
-        <li><a href="mi-perfil.html">Mi Perfil</a></li>
-    </ul>
-    
-    <div class="nav-actions">
-        <a href="logout.php" class="btn-outline">Cerrar sesión</a>
+<!-- Sidebar para PACIENTES -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-mark">S</div>
+    <div class="brand-text">
+      <span class="brand-name">Santa Lucía</span>
+      <span class="brand-sub">Sanatorio</span>
     </div>
-</nav>
+  </div>
+
+  <div class="sidebar-section">Menú</div>
+  <a href="inicio-usuario.html" class="sidebar-item">
+    <i data-icon="home"></i>Inicio
+  </a>
+  <a href="agendar-cita.html" class="sidebar-item">
+    <i data-icon="calendar-plus"></i>Agendar cita
+  </a>
+  <a href="mis-citas.html" class="sidebar-item">
+    <i data-icon="calendar"></i>Mis citas
+  </a>
+  <a href="medicos.html" class="sidebar-item">
+    <i data-icon="stethoscope"></i>Médicos
+  </a>
+  <a href="especialidad.html" class="sidebar-item">
+    <i data-icon="heart-pulse"></i>Especialidades
+  </a>
+  <a href="servicios.html" class="sidebar-item">
+    <i data-icon="activity"></i>Servicios
+  </a>
+  <a href="mis-recetas.html" class="sidebar-item">
+    <i data-icon="pill"></i>Recetas
+  </a>
+  <a href="resultados-laboratorio.html" class="sidebar-item">
+    <i data-icon="flask"></i>Laboratorio
+  </a>
+
+  <div class="sidebar-section">Cuenta</div>
+  <a href="mi-perfil.html" class="sidebar-item">
+    <i data-icon="user"></i>Mi perfil
+  </a>
+  <a href="logout.php" class="sidebar-item">
+    <i data-icon="log-out"></i>Cerrar sesión
+  </a>
+
+  <div class="sidebar-foot">
+    <div class="avatar" id="user-iniciales">??</div>
+    <div class="who">
+      <strong id="user-nombre">Cargando...</strong>
+      <span>Paciente</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Pinta nombre/iniciales del paciente en el footer del sidebar
+  fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+    if (!d.loggedIn) return;
+    const nombre = d.nombre || 'Usuario';
+    const ini = (window.MC && MC.iniciales) ? MC.iniciales(nombre) : '??';
+    const elN = document.getElementById('user-nombre');
+    const elI = document.getElementById('user-iniciales');
+    if (elN) elN.textContent = nombre;
+    if (elI) elI.textContent = ini;
+  });
+</script>

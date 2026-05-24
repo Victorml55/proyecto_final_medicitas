@@ -1,16 +1,53 @@
-<nav class="top-navbar">
-    <a href="inicio-medico.html" class="nav-brand">
-        <img src="/img/logo.png" alt="Logo SSL" class="nav-logo">
-        <span>MediCitas <strong>SSL</strong></span>
-    </a>
-
-    <ul class="nav-links">
-        <li><a href="mis-citas-medico.html">Mis Citas</a></li>
-        <li><a href="mis-horarios.html">Mis Horarios</a></li>
-        <li><a href="mi-perfil.html">Mi Perfil</a></li>
-    </ul>
-
-    <div class="nav-actions">
-        <a href="logout.php" class="btn-outline">Cerrar sesión</a>
+<!-- Sidebar para MÉDICOS -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-mark">S</div>
+    <div class="brand-text">
+      <span class="brand-name">Santa Lucía</span>
+      <span class="brand-sub">Portal médico</span>
     </div>
-</nav>
+  </div>
+
+  <div class="sidebar-section">Menú</div>
+  <a href="inicio-medico.html" class="sidebar-item">
+    <i data-icon="home"></i>Inicio
+  </a>
+  <a href="mis-citas-medico.html" class="sidebar-item">
+    <i data-icon="calendar"></i>Agenda
+  </a>
+  <a href="mis-horarios.html" class="sidebar-item">
+    <i data-icon="clock"></i>Mis horarios
+  </a>
+  <a href="medicos.html" class="sidebar-item">
+    <i data-icon="users"></i>Directorio
+  </a>
+
+  <div class="sidebar-section">Cuenta</div>
+  <a href="mi-perfil.html" class="sidebar-item">
+    <i data-icon="user"></i>Mi perfil
+  </a>
+  <a href="logout.php" class="sidebar-item">
+    <i data-icon="log-out"></i>Cerrar sesión
+  </a>
+
+  <div class="sidebar-foot">
+    <div class="avatar" id="user-iniciales">??</div>
+    <div class="who">
+      <strong id="user-nombre">Cargando...</strong>
+      <span id="user-especialidad">Médico</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+    if (!d.loggedIn) return;
+    const titulo = d.genero === 'M' ? 'Dr.' : d.genero === 'F' ? 'Dra.' : '';
+    const nombre = (titulo ? titulo + ' ' : '') + (d.nombre || 'Médico');
+    const ini = (window.MC && MC.iniciales) ? MC.iniciales(d.nombre || 'Medico') : '??';
+    const elN = document.getElementById('user-nombre');
+    const elI = document.getElementById('user-iniciales');
+    if (elN) elN.textContent = nombre;
+    if (elI) elI.textContent = ini;
+  });
+</script>

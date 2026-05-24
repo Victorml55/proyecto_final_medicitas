@@ -1,248 +1,239 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Cuenta | MediCitas</title>
-    <link rel="stylesheet" href="css/estilo.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .register-wrapper {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-            background: #ffffff;
-            padding-top: 90px;
-        }
-
-        .register-side {
-            width: 45%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 60px 80px;
-            background-color: #ffffff;
-            overflow-y: auto;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 20px;
-        }
-
-        .form-grid .input-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .input-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            background-color: #fff;
-            color: #333;
-            transition: all 0.3s ease;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-        }
-        .input-group select:focus {
-            border-color: #005f99;
-            box-shadow: 0 0 0 3px rgba(0, 95, 153, 0.1);
-        }
-
-        .password-hint {
-            font-size: 0.78rem;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-
-        .register-success {
-            background-color: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 18px;
-            font-size: 0.92rem;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .register-wrapper { flex-direction: column; }
-            .register-side { width: 100%; padding: 40px 20px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .form-grid .input-group.full-width { grid-column: auto; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-    <div id="nav-container"></div>
-    <div class="register-wrapper">
 
-        <div class="register-side">
-            <div class="login-content">
-                <div class="logo-area">
-                    <h2>Sanatorio Santa Lucía</h2>
-                </div>
+<div class="login-stage">
+  <div class="login-card">
 
-                <div class="form-header">
-                    <h1>Crear cuenta</h1>
-                    <p>Completa el formulario para registrarte como paciente.</p>
-                </div>
+    <div class="login-form" style="padding:40px 56px;justify-content:flex-start;max-height:92vh;overflow-y:auto;">
+      <div class="login-logo">
+        <div class="logo-mark" style="width:44px;height:44px;font-size:22px;border-radius:12px;">S</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:18px;font-weight:600;">Sanatorio Santa Lucía</div>
+          <div style="font-size:12px;color:var(--text-3);letter-spacing:0.04em;">CREAR CUENTA · PACIENTE</div>
+        </div>
+      </div>
 
-                <div id="register-error" class="login-error" style="display:none;"></div>
-                <div id="register-success" class="register-success"></div>
+      <div class="login-hero" style="margin-bottom:24px;">
+        <p class="eyebrow">Paso <span id="step-indicator">1</span> de 2</p>
+        <h1 style="font-size:34px;" id="step-title">Crear cuenta</h1>
+        <p class="login-lede" id="step-sub">Completa el formulario para registrarte. Solo te tomará 1 minuto.</p>
+      </div>
 
-                <form id="register-form" class="login-form">
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label for="nombre">Nombre(s) *</label>
-                            <input type="text" id="nombre" name="nombre" placeholder="Juan" required>
-                        </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:50%;"></div></div>
 
-                        <div class="input-group">
-                            <label for="apellido_paterno">Apellido paterno *</label>
-                            <input type="text" id="apellido_paterno" name="apellido_paterno" placeholder="García" required>
-                        </div>
+      <div id="register-error"   class="alert alert-error"></div>
+      <div id="register-success" class="alert alert-success"></div>
 
-                        <div class="input-group">
-                            <label for="apellido_materno">Apellido materno</label>
-                            <input type="text" id="apellido_materno" name="apellido_materno" placeholder="López">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="tel" id="telefono" name="telefono" placeholder="4611234567">
-                        </div>
-
-                        <div class="input-group full-width">
-                            <label for="email">Correo electrónico *</label>
-                            <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="fecha_nacimiento">Fecha de nacimiento</label>
-                            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="genero">Género</label>
-                            <select id="genero" name="genero">
-                                <option value="">Seleccionar</option>
-                                <option value="M">Masculino</option>
-                                <option value="F">Femenino</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="password">Contraseña *</label>
-                            <input type="password" id="password" name="password" placeholder="••••••••" required>
-                            <p class="password-hint">Mínimo 8 caracteres</p>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="password_confirm">Confirmar contraseña *</label>
-                            <input type="password" id="password_confirm" name="password_confirm" placeholder="••••••••" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-login" id="btn-register" style="margin-top: 10px;">
-                        Crear cuenta
-                    </button>
-                </form>
-
-                <div class="register-link">
-                    <p>¿Ya tienes una cuenta? <a href="index.html">Inicia sesión aquí</a></p>
-                </div>
+      <!-- PASO 1: datos personales -->
+      <div id="step-1">
+        <div class="reg-grid">
+          <div class="field">
+            <label>Nombre(s) <span style="color:var(--danger);">*</span></label>
+            <input class="input" id="nombre" placeholder="Juan" required>
+          </div>
+          <div class="field">
+            <label>Apellido paterno <span style="color:var(--danger);">*</span></label>
+            <input class="input" id="apellido_paterno" placeholder="García" required>
+          </div>
+          <div class="field">
+            <label>Apellido materno</label>
+            <input class="input" id="apellido_materno" placeholder="López">
+          </div>
+          <div class="field">
+            <label>Teléfono</label>
+            <div class="input-wrap">
+              <i data-icon="phone" class="input-icon"></i>
+              <input class="input has-icon" id="telefono" type="tel" placeholder="4611234567">
             </div>
+          </div>
+          <div class="field full">
+            <label>Correo electrónico <span style="color:var(--danger);">*</span></label>
+            <div class="input-wrap">
+              <i data-icon="mail" class="input-icon"></i>
+              <input class="input has-icon" id="email" type="email" placeholder="ejemplo@correo.com" required>
+            </div>
+          </div>
+          <div class="field">
+            <label>Fecha de nacimiento</label>
+            <input class="input" id="fecha_nacimiento" type="date">
+          </div>
+          <div class="field">
+            <label>Género</label>
+            <select class="input select" id="genero">
+              <option value="">Seleccionar</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg" id="btn-next" style="width:100%;margin-top:22px;">
+          Continuar <i data-icon="arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- PASO 2: contraseña -->
+      <div id="step-2" style="display:none;">
+        <div class="reg-grid">
+          <div class="field full">
+            <label>Contraseña <span style="color:var(--danger);">*</span></label>
+            <div class="input-wrap">
+              <i data-icon="lock" class="input-icon"></i>
+              <input class="input has-icon" id="password" type="password" placeholder="••••••••">
+            </div>
+            <p class="hint">Mínimo 8 caracteres</p>
+          </div>
+          <div class="field full">
+            <label>Confirmar contraseña <span style="color:var(--danger);">*</span></label>
+            <div class="input-wrap">
+              <i data-icon="lock" class="input-icon"></i>
+              <input class="input has-icon" id="password_confirm" type="password" placeholder="••••••••">
+            </div>
+          </div>
         </div>
 
-        <div class="image-side" style="width: 55%; background-image: url('/img/consultorio.png');">
-            <div class="overlay">
-                <div class="overlay-text">
-                    <h2>Tu salud, nuestro compromiso</h2>
-                </div>
-            </div>
-        </div>
+        <label class="row" style="gap:10px;margin-top:14px;align-items:flex-start;color:var(--text-2);font-size:13px;">
+          <input type="checkbox" id="acepta-terminos" checked style="margin-top:3px;">
+          <span>Acepto el <a href="#" class="tlink">Aviso de Privacidad</a> y los <a href="#" class="tlink">Términos del servicio</a> del Sanatorio Santa Lucía.</span>
+        </label>
 
+        <div class="row" style="margin-top:22px;gap:12px;">
+          <button class="btn btn-ghost" id="btn-back"><i data-icon="chevron-left"></i>Atrás</button>
+          <button class="btn btn-primary btn-lg" id="btn-submit" style="flex:1;">
+            Crear mi cuenta <i data-icon="check"></i>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;text-align:center;font-size:13px;color:var(--text-3);">
+        ¿Ya tienes una cuenta? <a href="index.html" class="tlink">Inicia sesión aquí</a>
+      </div>
     </div>
 
-    <script>
-        fetch('/nav.html')
-            .then(r => r.text())
-            .then(data => { document.getElementById('nav-container').innerHTML = data; });
+    <!-- Imagen lateral -->
+    <div class="login-aside">
+      <div class="login-image" style="background-image:url('img/consultorio.png');">
+        <div class="login-overlay"></div>
+        <div class="login-aside-content">
+          <div class="quote-mark">“</div>
+          <p class="quote-text">
+            Tu expediente digital, tu historia clínica y tus citas, todo en un mismo lugar — seguro y siempre disponible.
+          </p>
+          <div class="quote-author">
+            <div class="avatar warm">SL</div>
+            <div>
+              <strong>Pacientes Santa Lucía</strong>
+              <span>18 mil familias confían en nosotros</span>
+            </div>
+          </div>
+          <div class="login-stats">
+            <div><strong>HIPAA</strong><span>Cumplimiento</span></div>
+            <div><strong>24/7</strong><span>Soporte</span></div>
+            <div><strong>SSL</strong><span>Encriptado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        document.getElementById('register-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+  </div>
+</div>
 
-            const errorBox   = document.getElementById('register-error');
-            const successBox = document.getElementById('register-success');
-            const btn        = document.getElementById('btn-register');
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  const step1 = document.getElementById('step-1');
+  const step2 = document.getElementById('step-2');
+  const ind   = document.getElementById('step-indicator');
+  const tit   = document.getElementById('step-title');
+  const sub   = document.getElementById('step-sub');
+  const prog  = document.getElementById('progress-fill');
 
-            errorBox.style.display   = 'none';
-            successBox.style.display = 'none';
+  document.getElementById('btn-next').addEventListener('click', () => {
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+    ind.textContent = '2';
+    tit.textContent = 'Casi listo';
+    sub.textContent = 'Define una contraseña segura para proteger tu información médica.';
+    prog.style.width = '100%';
+  });
 
-            const password        = document.getElementById('password').value;
-            const passwordConfirm = document.getElementById('password_confirm').value;
+  document.getElementById('btn-back').addEventListener('click', () => {
+    step2.style.display = 'none';
+    step1.style.display = 'block';
+    ind.textContent = '1';
+    tit.textContent = 'Crear cuenta';
+    sub.textContent = 'Completa el formulario para registrarte. Solo te tomará 1 minuto.';
+    prog.style.width = '50%';
+  });
 
-            if (password.length < 8) {
-                errorBox.textContent   = 'La contraseña debe tener al menos 8 caracteres.';
-                errorBox.style.display = 'block';
-                return;
-            }
+  document.getElementById('btn-submit').addEventListener('click', async function () {
+    const err = document.getElementById('register-error');
+    const ok  = document.getElementById('register-success');
+    err.classList.remove('show'); ok.classList.remove('show');
 
-            if (password !== passwordConfirm) {
-                errorBox.textContent   = 'Las contraseñas no coinciden.';
-                errorBox.style.display = 'block';
-                return;
-            }
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password_confirm').value;
 
-            btn.disabled    = true;
-            btn.textContent = 'Registrando...';
+    if (password.length < 8) {
+      err.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+      err.classList.add('show');
+      return;
+    }
+    if (password !== passwordConfirm) {
+      err.textContent = 'Las contraseñas no coinciden.';
+      err.classList.add('show');
+      return;
+    }
 
-            const body = JSON.stringify({
-                nombre:            document.getElementById('nombre').value.trim(),
-                apellido_paterno:  document.getElementById('apellido_paterno').value.trim(),
-                apellido_materno:  document.getElementById('apellido_materno').value.trim(),
-                telefono:          document.getElementById('telefono').value.trim(),
-                email:             document.getElementById('email').value.trim(),
-                fecha_nacimiento:  document.getElementById('fecha_nacimiento').value,
-                genero:            document.getElementById('genero').value,
-                password
-            });
+    this.disabled = true;
+    this.textContent = 'Creando cuenta...';
 
-            try {
-                const res  = await fetch('api/registro.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body
-                });
-                const data = await res.json();
+    try {
+      const res = await fetch('api/registro.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre:           document.getElementById('nombre').value.trim(),
+          apellido_paterno: document.getElementById('apellido_paterno').value.trim(),
+          apellido_materno: document.getElementById('apellido_materno').value.trim(),
+          telefono:         document.getElementById('telefono').value.trim(),
+          email:            document.getElementById('email').value.trim(),
+          fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+          genero:           document.getElementById('genero').value,
+          password,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        ok.textContent = data.mensaje || 'Cuenta creada. Revisa tu correo para verificarla.';
+        ok.classList.add('show');
+        this.textContent = 'Correo enviado';
+      } else {
+        err.textContent = data.error || 'Error al crear la cuenta.';
+        err.classList.add('show');
+        this.disabled = false;
+        this.innerHTML = 'Crear mi cuenta <i data-icon="check"></i>';
+        MCIcons.render(this);
+      }
+    } catch {
+      err.textContent = 'No se pudo conectar con el servidor.';
+      err.classList.add('show');
+      this.disabled = false;
+      this.innerHTML = 'Crear mi cuenta <i data-icon="check"></i>';
+      MCIcons.render(this);
+    }
+  });
+</script>
 
-                if (data.success) {
-                    successBox.textContent   = data.mensaje;
-                    successBox.style.display = 'block';
-                    this.reset();
-                    btn.textContent = 'Correo enviado';
-                } else {
-                    errorBox.textContent   = data.error || 'Error al crear la cuenta.';
-                    errorBox.style.display = 'block';
-                    btn.disabled    = false;
-                    btn.textContent = 'Crear cuenta';
-                }
-            } catch {
-                errorBox.textContent   = 'No se pudo conectar con el servidor.';
-                errorBox.style.display = 'block';
-                btn.disabled    = false;
-                btn.textContent = 'Crear cuenta';
-            }
-        });
-    </script>
 </body>
 </html>

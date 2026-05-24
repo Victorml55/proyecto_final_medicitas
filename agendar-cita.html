@@ -1,1047 +1,368 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agendar Cita | MediCitas SSL</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="css/estilo.css">
-    <link rel="stylesheet" href="css/estilo-bootstrap.css">
-    <style>
-        /* Días disponibles en el calendario */
-        .flatpickr-day.dia-disponible {
-            background: #e6f0f9 !important;
-            border-color: #005f99 !important;
-            color: #005f99 !important;
-            font-weight: 600;
-        }
-        .flatpickr-day.dia-disponible:hover,
-        .flatpickr-day.dia-disponible.selected,
-        .flatpickr-day.dia-disponible.startRange {
-            background: #005f99 !important;
-            border-color: #005f99 !important;
-            color: #fff !important;
-        }
-        /* Input del calendario */
-        .flatpickr-input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            color: #0f172a;
-            background: #fff;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-        }
-        .flatpickr-input:focus { outline: none; border-color: #005f99; }
-
-        /* Selector de tipo de cita */
-        .tipo-selector-wrapper { max-width: 600px; margin: 0 auto 40px; }
-        .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .tipo-card {
-            border: 2px solid #e2e8f0; border-radius: 16px;
-            padding: 28px 20px; cursor: pointer; text-align: center;
-            transition: border-color .15s, background .15s, box-shadow .15s;
-            background: #fff;
-        }
-        .tipo-card:hover { border-color: #005f99; background: #f0f8ff; box-shadow: 0 4px 12px rgba(0,95,153,.1); }
-        .tipo-card .material-symbols-outlined { font-size: 40px; color: #005f99; margin-bottom: 10px; display: block; }
-        .tipo-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
-        .tipo-card p { font-size: .85rem; color: #64748b; margin: 0; }
-        @media (max-width: 500px) { .tipo-grid { grid-template-columns: 1fr; } }
-
-        /* Lab: análisis cards */
-        .analisis-grid-ag {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-            gap: 10px; margin-bottom: 20px;
-        }
-        .analisis-card-ag {
-            border: 2px solid #e2e8f0; border-radius: 10px;
-            padding: 11px 14px; cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            font-size: .88rem; font-weight: 500; color: #334155;
-            background: #fff;
-            transition: border-color .12s, background .12s;
-            user-select: none;
-        }
-        .analisis-card-ag:hover { border-color: #005f99; background: #f0f8ff; }
-        .analisis-card-ag.active { border-color: #005f99; background: #e6f0f9; color: #004477; }
-        .analisis-card-ag .material-symbols-outlined { font-size: 18px; color: #005f99; flex-shrink: 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar cita | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <nav class="top-navbar">
-        <a href="inicio-usuario.html" class="nav-brand">
-            <img src="img/logo.png" alt="Logo SSL" class="nav-logo">
-            <span>MediCitas <strong>SSL</strong></span>
-        </a>
-        <a href="inicio-usuario.html" class="btn-outline nav-back-btn">
-            <span class="material-symbols-outlined">arrow_back</span> Volver al Inicio
-        </a>
-    </nav>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
+      <div class="page-header row between">
+        <div>
+          <p class="eyebrow">Reserva una consulta</p>
+          <h1>Agendar nueva cita</h1>
+          <p>Cuatro pasos cortos y te confirmamos tu horario.</p>
+        </div>
+        <a href="inicio-usuario.html" class="btn btn-ghost"><i data-icon="x"></i>Cancelar</a>
+      </div>
 
-        <h1 class="page-title">Agendar Cita</h1>
-        <p class="page-subtitle" id="page-subtitle">¿Qué tipo de cita deseas agendar?</p>
+      <!-- Stepper -->
+      <div class="stepper" id="stepper">
+        <div class="step" data-state="active" data-step="1">
+          <div class="step-bullet"><span>1</span></div>
+          <div class="step-label"><div class="step-n">PASO 01</div><div class="step-name">Especialidad</div></div>
+          <div class="step-bar"></div>
+        </div>
+        <div class="step" data-state="pending" data-step="2">
+          <div class="step-bullet"><span>2</span></div>
+          <div class="step-label"><div class="step-n">PASO 02</div><div class="step-name">Médico</div></div>
+          <div class="step-bar"></div>
+        </div>
+        <div class="step" data-state="pending" data-step="3">
+          <div class="step-bullet"><span>3</span></div>
+          <div class="step-label"><div class="step-n">PASO 03</div><div class="step-name">Fecha y hora</div></div>
+          <div class="step-bar"></div>
+        </div>
+        <div class="step" data-state="pending" data-step="4">
+          <div class="step-bullet"><span>4</span></div>
+          <div class="step-label"><div class="step-n">PASO 04</div><div class="step-name">Confirmación</div></div>
+        </div>
+      </div>
 
-        <!-- Selector de tipo -->
-        <div class="tipo-selector-wrapper" id="tipo-selector">
-            <div class="tipo-grid">
-                <div class="tipo-card" onclick="seleccionarModo('medico')">
-                    <span class="material-symbols-outlined">stethoscope</span>
-                    <h3>Consulta Médica</h3>
-                    <p>Agenda con un especialista de tu elección</p>
-                </div>
-                <div class="tipo-card" onclick="seleccionarModo('lab')">
-                    <span class="material-symbols-outlined">science</span>
-                    <h3>Laboratorio Clínico</h3>
-                    <p>Reserva tu turno para análisis clínicos</p>
-                </div>
-            </div>
+      <div class="grid-2" style="grid-template-columns:1.6fr 1fr;align-items:flex-start;margin-top:28px;">
+
+        <div class="card" id="step-content">
+          <div class="loading-empty">Cargando...</div>
         </div>
 
-        <!-- ── FLOW: CONSULTA MÉDICA ────────────────────────────────── -->
-        <div id="flow-medico" style="display:none">
-
-        <div class="steps-wrapper mb-2">
-            <div class="step-item active" id="step-ind-1">
-                <div class="step-circle" id="sc-1">1</div>
-                <span class="step-label">Especialidad</span>
+        <!-- Resumen -->
+        <div class="card">
+          <h3 style="font-size:16px;margin-bottom:18px;">Resumen de tu cita</h3>
+          <div class="summary-list">
+            <div class="summary-row">
+              <div class="summary-icon"><i data-icon="heart-pulse" data-size="16"></i></div>
+              <div class="summary-info">
+                <div class="summary-label">Especialidad</div>
+                <div class="summary-value" id="r-spec" data-empty="true">—</div>
+              </div>
             </div>
-            <div class="step-item" id="step-ind-2">
-                <div class="step-circle" id="sc-2">2</div>
-                <span class="step-label">Médico</span>
+            <div class="summary-row">
+              <div class="summary-icon"><i data-icon="user" data-size="16"></i></div>
+              <div class="summary-info">
+                <div class="summary-label">Médico</div>
+                <div class="summary-value" id="r-doc" data-empty="true">—</div>
+              </div>
             </div>
-            <div class="step-item" id="step-ind-3">
-                <div class="step-circle" id="sc-3">3</div>
-                <span class="step-label">Fecha y Hora</span>
+            <div class="summary-row">
+              <div class="summary-icon"><i data-icon="calendar" data-size="16"></i></div>
+              <div class="summary-info">
+                <div class="summary-label">Fecha</div>
+                <div class="summary-value" id="r-fecha" data-empty="true">—</div>
+              </div>
             </div>
-            <div class="step-item" id="step-ind-4">
-                <div class="step-circle" id="sc-4">4</div>
-                <span class="step-label">Confirmación</span>
+            <div class="summary-row">
+              <div class="summary-icon"><i data-icon="clock" data-size="16"></i></div>
+              <div class="summary-info">
+                <div class="summary-label">Hora</div>
+                <div class="summary-value" id="r-hora" data-empty="true">—</div>
+              </div>
             </div>
+          </div>
+          <div class="divider" style="margin:20px 0;"></div>
+          <p style="font-size:12px;color:var(--text-3);line-height:1.5;">
+            Tu cita queda pendiente de confirmación por el médico. Recibirás notificación por correo cuando sea aprobada.
+          </p>
         </div>
+      </div>
 
-        <!-- Barra de progreso -->
-        <div class="progress-wrapper">
-            <div class="progress-bar-label">
-                <span id="progress-label">Paso 1 de 4</span>
-                <span id="progress-pct">25%</span>
-            </div>
-            <div class="progress" role="progressbar">
-                <div class="progress-bar" id="progress-bar" style="width: 25%"></div>
-            </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  MC.loadNav('nav-user.html');
+
+  let STEP = 1;
+  let DATA = { spec: null, specName: '', doc: null, docName: '', fecha: null, hora: null, motivo: '' };
+  let ESPECIALIDADES = [];
+  let MEDICOS = [];
+  let HORARIOS = [];
+
+  function updateStepper() {
+    document.querySelectorAll('.step').forEach(s => {
+      const n = parseInt(s.dataset.step);
+      const state = n < STEP ? 'done' : n === STEP ? 'active' : 'pending';
+      s.dataset.state = state;
+      const bullet = s.querySelector('.step-bullet');
+      bullet.innerHTML = state === 'done'
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<span>' + n + '</span>';
+    });
+  }
+
+  function updateResumen() {
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      el.textContent = val || '—';
+      el.dataset.empty = val ? 'false' : 'true';
+    };
+    set('r-spec',  DATA.specName);
+    set('r-doc',   DATA.docName);
+    set('r-fecha', DATA.fecha ? MC.fechaLarga(DATA.fecha) : '');
+    set('r-hora',  DATA.hora ? MC.horaLabel(DATA.hora) : '');
+  }
+
+  async function step1() {
+    const c = document.getElementById('step-content');
+    c.innerHTML = '<h2 style="font-size:22px;margin-bottom:4px;">¿Qué especialidad necesitas?</h2><p style="color:var(--text-2);margin-bottom:22px;">Selecciona la que mejor describa tu motivo de consulta.</p><div class="grid-2" id="spec-grid"><div class="loading-empty">Cargando especialidades...</div></div>';
+
+    try {
+      ESPECIALIDADES = await fetch('/api/especialidades.php').then(r => r.json());
+      ESPECIALIDADES = (ESPECIALIDADES || []).filter(e => e.activo);
+    } catch { ESPECIALIDADES = []; }
+
+    const grid = document.getElementById('spec-grid');
+    if (!ESPECIALIDADES.length) {
+      grid.innerHTML = '<div class="loading-empty">No hay especialidades disponibles.</div>';
+      return;
+    }
+    grid.innerHTML = ESPECIALIDADES.map(e => `
+      <button class="pick-card" data-id="${e.id_especialidad}" data-name="${e.nombre_especialidad}">
+        <div class="pick-icon"><i data-icon="heart-pulse" data-size="18"></i></div>
+        <div style="flex:1;">
+          <div class="pick-title">${e.nombre_especialidad}</div>
+          <div class="pick-sub">${e.descripcion || 'Consulta especializada'}</div>
         </div>
+      </button>
+    `).join('');
+    MCIcons.render(grid);
 
-        <!-- Tarjeta principal -->
-        <div class="form-card">
+    grid.querySelectorAll('.pick-card').forEach(b => {
+      b.addEventListener('click', () => {
+        grid.querySelectorAll('.pick-card').forEach(x => x.removeAttribute('data-active'));
+        b.setAttribute('data-active', 'true');
+        DATA.spec = b.dataset.id;
+        DATA.specName = b.dataset.name;
+        DATA.doc = null; DATA.docName = '';
+        updateResumen();
+      });
+    });
 
-            <!-- PASO 1: ESPECIALIDAD -->
-            <div class="booking-step active" id="step-1">
-                <div class="form-card-header">
-                    <h2>Selecciona una Especialidad</h2>
-                    <p>Elige el área médica que necesitas y describe brevemente tu motivo de consulta.</p>
-                </div>
-                <div class="form-card-body">
+    c.appendChild(stepActions(true));
+  }
 
-                    <div class="search-box">
-                        <span class="material-symbols-outlined">search</span>
-                        <input type="text" id="buscar-especialidad" placeholder="Buscar especialidad…" oninput="filtrarEspecialidades(this.value)">
-                    </div>
+  async function step2() {
+    const c = document.getElementById('step-content');
+    c.innerHTML = `<h2 style="font-size:22px;margin-bottom:4px;">Elige a tu médico</h2><p style="color:var(--text-2);margin-bottom:22px;">Especialistas disponibles en ${DATA.specName}.</p><div class="stack" id="doc-list"><div class="loading-empty">Cargando médicos...</div></div>`;
 
-                    <div class="spec-grid" id="spec-grid">
-                        <p style="color:#94a3b8;">Cargando especialidades...</p>
-                    </div>
+    try {
+      const todos = await fetch('/api/medicos.php').then(r => r.json());
+      MEDICOS = (todos || []).filter(m => m.activo && String(m.id_especialidad) === String(DATA.spec));
+    } catch { MEDICOS = []; }
 
-                    <div class="motivo-area">
-                        <label for="motivo">Motivo de consulta <span class="label-opcional">(opcional)</span></label>
-                        <textarea id="motivo" rows="3" placeholder="Describe brevemente tus síntomas o el motivo de tu visita…"></textarea>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <div></div>
-                        <button class="btn-nav-next" id="btn-next-1" onclick="irPaso(2)" disabled>
-                            Continuar <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
+    const list = document.getElementById('doc-list');
+    if (!MEDICOS.length) {
+      list.innerHTML = '<div class="loading-empty">No hay médicos disponibles en esta especialidad.</div>';
+    } else {
+      list.innerHTML = MEDICOS.map(m => `
+        <button class="doc-pick" data-id="${m.id_medico}" data-name="${MC.drLabel(m.genero)} ${m.nombre_completo}">
+          <div class="doc-pick-avatar">${MC.iniciales(m.nombre_completo)}</div>
+          <div class="doc-pick-info">
+            <div class="row" style="gap:8px;">
+              <strong style="font-size:16px;color:var(--text);">${MC.drLabel(m.genero)} ${m.nombre_completo}</strong>
+              <span class="badge primary"><span class="badge-dot"></span>${m.nombre_especialidad}</span>
             </div>
-
-            <!-- PASO 2: MÉDICO -->
-            <div class="booking-step" id="step-2">
-                <div class="form-card-header">
-                    <h2>Elige a tu Médico</h2>
-                    <p>Selecciona al especialista de tu preferencia.</p>
-                </div>
-                <div class="form-card-body">
-
-                    <div class="context-pill">
-                        <span class="material-symbols-outlined">stethoscope</span>
-                        <span id="pill-spec">Especialidad seleccionada</span>
-                    </div>
-
-                    <div class="doctor-list" id="doctor-list-container">
-                        <p style="color:#94a3b8;text-align:center;padding:20px;">Cargando médicos…</p>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn-nav-back" onclick="irPaso(1)">
-                            <span class="material-symbols-outlined">arrow_back</span> Anterior
-                        </button>
-                        <button class="btn-nav-next" id="btn-next-2" onclick="irPaso(3)" disabled>
-                            Continuar <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
+            <div class="doc-pick-meta">
+              <span><i data-icon="briefcase" data-size="13"></i> ${m.cedula_profesional || 'Certificado'}</span>
+              <span><i data-icon="star" data-size="13" style="color:var(--warm);"></i> Atención de calidad</span>
             </div>
-
-            <!-- PASO 3: FECHA Y HORA -->
-            <div class="booking-step" id="step-3">
-                <div class="form-card-header">
-                    <h2>Selecciona Fecha y Hora</h2>
-                    <p>Elige el día y el horario que mejor te convenga.</p>
-                </div>
-                <div class="form-card-body">
-
-                    <div class="context-pills-row">
-                        <div class="context-pill">
-                            <span class="material-symbols-outlined">stethoscope</span>
-                            <span id="pill-spec-3"></span>
-                        </div>
-                        <div class="context-pill">
-                            <span class="material-symbols-outlined">person</span>
-                            <span id="pill-doc-3"></span>
-                        </div>
-                    </div>
-
-                    <div class="date-input-wrapper mt-3">
-                        <label for="appointment-date">Selecciona el día</label>
-                        <input type="text" id="appointment-date" placeholder="Selecciona una fecha..." readonly>
-                    </div>
-
-                    <span class="time-section-label">Horarios disponibles</span>
-                    <div class="slots-grid" id="slots-grid">
-                        <p style="color:#94a3b8;grid-column:1/-1;">Selecciona médico y fecha primero.</p>
-                    </div>
-                    <div class="slots-legend">
-                        <span><span class="legend-dot legend-available"></span> Disponible</span>
-                        <span><span class="legend-dot legend-unavailable"></span> No disponible</span>
-                        <span><span class="legend-dot legend-selected"></span> Seleccionado</span>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn-nav-back" id="btn-back-3" onclick="new URLSearchParams(location.search).get('medico') ? history.back() : irPaso(2)">
-                            <span class="material-symbols-outlined">arrow_back</span> Anterior
-                        </button>
-                        <button class="btn-nav-next" id="btn-next-3" onclick="irPaso(4)" disabled>
-                            Ver Resumen <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PASO 4: CONFIRMACIÓN -->
-            <div class="booking-step" id="step-4">
-                <div class="form-card-header">
-                    <h2>Confirmar Cita</h2>
-                    <p>Revisa los detalles antes de confirmar tu cita.</p>
-                </div>
-                <div class="form-card-body">
-
-                    <div class="summary-card">
-                        <div class="summary-row">
-                            <div class="summary-icon"><span class="material-symbols-outlined">stethoscope</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Especialidad</div>
-                                <div class="val" id="sum-spec">—</div>
-                            </div>
-                        </div>
-                        <div class="summary-row">
-                            <div class="summary-icon"><span class="material-symbols-outlined">person</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Médico</div>
-                                <div class="val" id="sum-doc">—</div>
-                            </div>
-                        </div>
-                        <div class="summary-row">
-                            <div class="summary-icon"><span class="material-symbols-outlined">calendar_month</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Fecha</div>
-                                <div class="val" id="sum-date">—</div>
-                            </div>
-                        </div>
-                        <div class="summary-row">
-                            <div class="summary-icon"><span class="material-symbols-outlined">schedule</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Hora</div>
-                                <div class="val" id="sum-time">—</div>
-                            </div>
-                        </div>
-                        <div class="summary-row" id="sum-consultorio-row" style="display:none;">
-                            <div class="summary-icon"><span class="material-symbols-outlined">meeting_room</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Consultorio</div>
-                                <div class="val" id="sum-consultorio">—</div>
-                            </div>
-                        </div>
-                        <div class="summary-row" id="sum-motivo-row" style="display:none;">
-                            <div class="summary-icon"><span class="material-symbols-outlined">description</span></div>
-                            <div class="summary-row-info">
-                                <div class="lbl">Motivo</div>
-                                <div class="val" id="sum-motivo">—</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="confirm-banner">
-                        <span class="material-symbols-outlined">info</span>
-                        <div>
-                            <strong>Recibirás una confirmación por correo</strong>
-                            <p>Presenta tu identificación el día de la cita con 10 minutos de anticipación.</p>
-                        </div>
-                    </div>
-
-                    <div class="nav-buttons">
-                        <button class="btn-nav-back" onclick="irPaso(3)">
-                            <span class="material-symbols-outlined">arrow_back</span> Modificar
-                        </button>
-                        <button class="btn-confirm" onclick="confirmarCita()">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            Confirmar y Agendar
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- /form-card medico -->
-        </div><!-- /flow-medico -->
-
-        <!-- ── FLOW: LABORATORIO CLÍNICO ───────────────────────────── -->
-        <div id="flow-lab" style="display:none">
-
-            <div class="steps-wrapper mb-2">
-                <div class="step-item active" id="lab-step-ind-1">
-                    <div class="step-circle" id="lab-sc-1">1</div>
-                    <span class="step-label">Tipo de Análisis</span>
-                </div>
-                <div class="step-item" id="lab-step-ind-2">
-                    <div class="step-circle" id="lab-sc-2">2</div>
-                    <span class="step-label">Fecha y Hora</span>
-                </div>
-                <div class="step-item" id="lab-step-ind-3">
-                    <div class="step-circle" id="lab-sc-3">3</div>
-                    <span class="step-label">Confirmación</span>
-                </div>
-            </div>
-
-            <div class="progress-wrapper">
-                <div class="progress-bar-label">
-                    <span id="lab-progress-label">Paso 1 de 3</span>
-                    <span id="lab-progress-pct">33%</span>
-                </div>
-                <div class="progress" role="progressbar">
-                    <div class="progress-bar" id="lab-progress-bar" style="width: 33%"></div>
-                </div>
-            </div>
-
-            <div class="form-card" id="lab-form-card">
-
-                <!-- LAB PASO 1: TIPO DE ANÁLISIS -->
-                <div class="booking-step active" id="lab-step-1">
-                    <div class="form-card-header">
-                        <h2>Selecciona el tipo de análisis</h2>
-                        <p>Elige el estudio que necesitas. Si no está en la lista, selecciona "Otro".</p>
-                    </div>
-                    <div class="form-card-body">
-                        <div class="analisis-grid-ag" id="lab-analisis-grid"></div>
-                        <div id="lab-otro-wrapper" style="display:none; margin-bottom:20px;">
-                            <label style="font-size:.9rem;font-weight:600;color:#334155;margin-bottom:6px;display:block;">
-                                Describe el análisis
-                            </label>
-                            <input type="text" id="lab-otro-txt"
-                                   placeholder="Ej. Perfil hormonal completo…"
-                                   style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;">
-                        </div>
-                        <div class="motivo-area">
-                            <label for="lab-notas">Notas adicionales <span class="label-opcional">(opcional)</span></label>
-                            <textarea id="lab-notas" rows="3"
-                                      placeholder="Indica si vas en ayuno, si tienes indicación médica, etc.…"></textarea>
-                        </div>
-                        <div class="nav-buttons">
-                            <div></div>
-                            <button class="btn-nav-next" id="lab-btn-next-1" onclick="labIrPaso(2)" disabled>
-                                Continuar <span class="material-symbols-outlined">arrow_forward</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LAB PASO 2: FECHA Y HORA -->
-                <div class="booking-step" id="lab-step-2">
-                    <div class="form-card-header">
-                        <h2>Selecciona Fecha y Hora</h2>
-                        <p>Elige el día y el turno disponible en el laboratorio.</p>
-                    </div>
-                    <div class="form-card-body">
-                        <div class="context-pill" style="margin-bottom:18px;">
-                            <span class="material-symbols-outlined">science</span>
-                            <span id="lab-pill-analisis">—</span>
-                        </div>
-                        <div class="date-input-wrapper mt-3">
-                            <label>Selecciona el día</label>
-                            <input type="text" id="lab-date" placeholder="Selecciona una fecha..." readonly>
-                        </div>
-                        <span class="time-section-label">Horarios disponibles</span>
-                        <div class="slots-grid" id="lab-slots-grid">
-                            <p style="color:#94a3b8;grid-column:1/-1;">Selecciona una fecha primero.</p>
-                        </div>
-                        <div class="slots-legend">
-                            <span><span class="legend-dot legend-available"></span> Disponible</span>
-                            <span><span class="legend-dot legend-unavailable"></span> No disponible</span>
-                            <span><span class="legend-dot legend-selected"></span> Seleccionado</span>
-                        </div>
-                        <div class="nav-buttons">
-                            <button class="btn-nav-back" onclick="labIrPaso(1)">
-                                <span class="material-symbols-outlined">arrow_back</span> Anterior
-                            </button>
-                            <button class="btn-nav-next" id="lab-btn-next-2" onclick="labIrPaso(3)" disabled>
-                                Ver Resumen <span class="material-symbols-outlined">arrow_forward</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- LAB PASO 3: CONFIRMACIÓN -->
-                <div class="booking-step" id="lab-step-3">
-                    <div class="form-card-header">
-                        <h2>Confirmar Cita de Laboratorio</h2>
-                        <p>Revisa los detalles antes de agendar tu turno.</p>
-                    </div>
-                    <div class="form-card-body">
-                        <div class="summary-card">
-                            <div class="summary-row">
-                                <div class="summary-icon"><span class="material-symbols-outlined">science</span></div>
-                                <div class="summary-row-info">
-                                    <div class="lbl">Análisis</div>
-                                    <div class="val" id="lab-sum-analisis">—</div>
-                                </div>
-                            </div>
-                            <div class="summary-row">
-                                <div class="summary-icon"><span class="material-symbols-outlined">calendar_month</span></div>
-                                <div class="summary-row-info">
-                                    <div class="lbl">Fecha</div>
-                                    <div class="val" id="lab-sum-date">—</div>
-                                </div>
-                            </div>
-                            <div class="summary-row">
-                                <div class="summary-icon"><span class="material-symbols-outlined">schedule</span></div>
-                                <div class="summary-row-info">
-                                    <div class="lbl">Hora</div>
-                                    <div class="val" id="lab-sum-time">—</div>
-                                </div>
-                            </div>
-                            <div class="summary-row" id="lab-sum-notas-row" style="display:none;">
-                                <div class="summary-icon"><span class="material-symbols-outlined">description</span></div>
-                                <div class="summary-row-info">
-                                    <div class="lbl">Notas</div>
-                                    <div class="val" id="lab-sum-notas">—</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="confirm-banner">
-                            <span class="material-symbols-outlined">info</span>
-                            <div>
-                                <strong>Preséntate con 10 minutos de anticipación</strong>
-                                <p>Trae tu identificación. Si el análisis requiere ayuno, sigue las indicaciones de tu médico.</p>
-                            </div>
-                        </div>
-                        <div class="nav-buttons">
-                            <button class="btn-nav-back" onclick="labIrPaso(2)">
-                                <span class="material-symbols-outlined">arrow_back</span> Modificar
-                            </button>
-                            <button class="btn-confirm" id="lab-btn-confirmar" onclick="labConfirmarCita()">
-                                <span class="material-symbols-outlined">check_circle</span>
-                                Confirmar y Agendar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div><!-- /lab-form-card -->
-        </div><!-- /flow-lab -->
-
-    </main>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
-
-    <script>
-        const booking = {
-            specialty: '', specialtyId: null,
-            doctor: '',    doctorId: null,
-            date: '',      time: '',
-            motivo: ''
-        };
-        let currentStep   = 1;
-        let sesionUsuario = null;
-        const TOTAL_STEPS = 4;
-
-        // Flatpickr — calendario de fechas
-        const DIAS_NUM = {
-            'Domingo': 0, 'Lunes': 1, 'Martes': 2, 'Miércoles': 3,
-            'Jueves': 4,  'Viernes': 5, 'Sábado': 6
-        };
-        let diasDisponibles = new Set();
-
-        const calPicker = flatpickr('#appointment-date', {
-            locale: 'es',
-            minDate: 'today',
-            dateFormat: 'Y-m-d',
-            disableMobile: true,
-            onDayCreate(dObj, dStr, fp, dayElem) {
-                if (diasDisponibles.size === 0) return;
-                const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-                if (dayElem.dateObj < hoy) return;
-                const dow = dayElem.dateObj.getDay();
-                if (diasDisponibles.has(dow)) {
-                    dayElem.classList.add('dia-disponible');
-                } else {
-                    dayElem.classList.add('flatpickr-disabled');
-                    dayElem.title = 'El médico no atiende este día';
-                }
-            },
-            onChange(selectedDates, dateStr) {
-                if (dateStr) verificarPaso3(dateStr);
-            }
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;">Consulta</div>
+            <div style="font-family:var(--font-display);font-size:20px;font-weight:500;color:var(--text);">$ —</div>
+          </div>
+        </button>
+      `).join('');
+      MCIcons.render(list);
+      list.querySelectorAll('.doc-pick').forEach(b => {
+        b.addEventListener('click', () => {
+          list.querySelectorAll('.doc-pick').forEach(x => x.removeAttribute('data-active'));
+          b.setAttribute('data-active', 'true');
+          DATA.doc = b.dataset.id;
+          DATA.docName = b.dataset.name;
+          updateResumen();
         });
+      });
+    }
+    c.appendChild(stepActions(true));
+  }
 
-        async function cargarDisponibilidadMedico(medicoId) {
-            try {
-                const dias = await fetch(`/api/horarios.php?medico=${medicoId}&dias=1`).then(r => r.json());
-                diasDisponibles = new Set(
-                    Array.isArray(dias)
-                        ? dias.map(d => DIAS_NUM[d]).filter(n => n !== undefined)
-                        : []
-                );
-            } catch {
-                diasDisponibles = new Set();
-            }
-            calPicker.set('minDate', 'today'); // fuerza redraw con nuevos días
-        }
+  async function step3() {
+    const c = document.getElementById('step-content');
+    c.innerHTML = `<h2 style="font-size:22px;margin-bottom:4px;">Selecciona fecha y hora</h2><p style="color:var(--text-2);margin-bottom:22px;">Horarios disponibles para los próximos 14 días.</p><div id="date-section"><div class="loading-empty">Cargando disponibilidad...</div></div><div class="field" style="margin-top:24px;"><label>Motivo de la consulta (opcional)</label><textarea class="input" id="motivo-input" style="resize:vertical;min-height:80px;font-family:inherit;" placeholder="Cuéntale brevemente al médico el motivo de tu visita.">${DATA.motivo}</textarea></div>`;
 
-        const iconosEspec = {
-            'Cardiología': 'cardiology', 'Pediatría': 'child_care',
-            'Traumatología': 'orthopedics', 'Neurología': 'neurology',
-            'Dermatología': 'dermatology', 'Oftalmología': 'visibility',
-            'Medicina General': 'stethoscope', 'Ginecología': 'female',
-            'Ortopedia': 'bone', 'Psiquiatría': 'psychology',
-        };
+    try {
+      HORARIOS = await fetch('/api/horarios.php?medico=' + DATA.doc).then(r => r.json()) || [];
+    } catch { HORARIOS = []; }
 
-        // Cargar sesión, especialidades y médicos al iniciar
-        (async function init() {
-            const auth = await fetch('/api/auth-status.php').then(r => r.json());
-            if (!auth.loggedIn) { window.location.replace('/index.html'); return; }
-            sesionUsuario = auth;
+    renderFechas();
+    document.getElementById('motivo-input').addEventListener('input', e => DATA.motivo = e.target.value);
+    c.appendChild(stepActions(true));
+  }
 
-            const [especResp, medicosResp] = await Promise.all([
-                fetch('/api/especialidades.php').then(r => r.json()),
-                fetch('/api/medicos.php').then(r => r.json()),
-            ]);
+  function renderFechas() {
+    const days = [];
+    const hoy = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(hoy); d.setDate(hoy.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      const dia = d.toLocaleDateString('es', { weekday: 'short' }).toUpperCase().slice(0,3);
+      days.push({ iso, day: d.getDate(), dia });
+    }
+    const sec = document.getElementById('date-section');
+    sec.innerHTML = `
+      <div class="date-pill-row" id="date-row">
+        ${days.map(d => `
+          <button class="date-pill" data-iso="${d.iso}">
+            <span class="date-pill-day">${d.dia}</span>
+            <span class="date-pill-d">${d.day}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div id="time-section" style="margin-top:24px;color:var(--text-3);font-size:13px;">
+        Selecciona un día para ver los horarios disponibles.
+      </div>
+    `;
+    sec.querySelectorAll('.date-pill').forEach(b => {
+      b.addEventListener('click', () => {
+        sec.querySelectorAll('.date-pill').forEach(x => x.removeAttribute('data-active'));
+        b.setAttribute('data-active', 'true');
+        DATA.fecha = b.dataset.iso;
+        updateResumen();
+        renderHoras();
+      });
+    });
+  }
 
-            window._medicos = Array.isArray(medicosResp) ? medicosResp : [];
+  function renderHoras() {
+    const sec = document.getElementById('time-section');
+    // Horarios estándar — en producción se calcula a partir de HORARIOS del médico
+    const horas = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','15:00','15:30','16:00','16:30','17:00'];
+    sec.innerHTML = `
+      <div class="row between" style="margin-bottom:12px;">
+        <strong style="font-size:14px;">Horarios disponibles</strong>
+        <span style="font-size:12px;color:var(--text-3);">${MC.fechaLarga(DATA.fecha)}</span>
+      </div>
+      <div class="time-grid" id="time-grid">
+        ${horas.map(t => `<button class="time-chip" data-time="${t}">${t}</button>`).join('')}
+      </div>`;
+    sec.querySelectorAll('.time-chip').forEach(b => {
+      b.addEventListener('click', () => {
+        sec.querySelectorAll('.time-chip').forEach(x => x.removeAttribute('data-active'));
+        b.setAttribute('data-active', 'true');
+        DATA.hora = b.dataset.time;
+        updateResumen();
+      });
+    });
+  }
 
-            const specs = Array.isArray(especResp) ? especResp.filter(e => e.activo) : [];
-            const grid  = document.getElementById('spec-grid');
-            if (specs.length) {
-                grid.innerHTML = specs.map(e => `
-                    <div class="spec-card" data-spec="${e.nombre_especialidad}" data-spec-id="${e.id_especialidad}" onclick="seleccionarEspecialidad(this)">
-                        <div class="spec-icon"><span class="material-symbols-outlined">${iconosEspec[e.nombre_especialidad] ?? 'medical_services'}</span></div>
-                        <h3>${e.nombre_especialidad}</h3>
-                    </div>`).join('');
-            } else {
-                grid.innerHTML = '<p style="color:#94a3b8;">No hay especialidades disponibles.</p>';
-            }
+  async function step4() {
+    const c = document.getElementById('step-content');
+    c.innerHTML = '<div class="loading-empty">Enviando tu solicitud...</div>';
 
-            // Si viene ?medico=X, pre-seleccionar y saltar al paso 3
-            const paramMedico = new URLSearchParams(window.location.search).get('medico');
-            if (paramMedico) {
-                const m = window._medicos.find(x => x.id_medico == paramMedico && x.activo);
-                if (m) {
-                    booking.specialty    = m.nombre_especialidad;
-                    booking.specialtyId  = null;
-                    booking.doctor       = m.nombre_completo;
-                    booking.doctorId     = m.id_medico;
-                    booking.doctorGenero = m.genero ?? null;
-                    document.getElementById('pill-spec').textContent   = booking.specialty;
-                    document.getElementById('pill-spec-3').textContent = booking.specialty;
-                    document.getElementById('pill-doc-3').textContent  = booking.doctor;
-                    await cargarDisponibilidadMedico(booking.doctorId);
-                    irPaso(3);
-                }
-            }
-        })();
+    const auth = await MC.requireAuth();
+    if (!auth || !auth.id_paciente) return;
 
-        /* ── Navegación ─────────────────────────────────── */
-        function updateProgress(step) {
-            const pct = Math.round((step / TOTAL_STEPS) * 100);
-            document.getElementById('progress-bar').style.width = pct + '%';
-            document.getElementById('progress-pct').textContent = pct + '%';
-            document.getElementById('progress-label').textContent = `Paso ${step} de ${TOTAL_STEPS}`;
-            for (let i = 1; i <= TOTAL_STEPS; i++) {
-                const ind = document.getElementById(`step-ind-${i}`);
-                const sc  = document.getElementById(`sc-${i}`);
-                ind.classList.remove('active', 'done');
-                if (i < step) {
-                    ind.classList.add('done');
-                    sc.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span>';
-                } else if (i === step) {
-                    ind.classList.add('active');
-                    sc.textContent = i;
-                } else {
-                    sc.textContent = i;
-                }
-            }
-        }
+    try {
+      const res = await fetch('/api/citas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_paciente: auth.id_paciente,
+          id_medico: DATA.doc,
+          fecha_cita: DATA.fecha,
+          hora_inicio: DATA.hora,
+          motivo_consulta: DATA.motivo,
+        }),
+      });
+      const result = await res.json();
+      if (!result.success && result.error) throw new Error(result.error);
+    } catch (e) {
+      c.innerHTML = `<div class="alert alert-error show">${e.message || 'No se pudo crear la cita.'}</div><a href="agendar-cita.html" class="btn btn-primary">Intentar de nuevo</a>`;
+      return;
+    }
 
-        function irPaso(step) {
-            if (step === 2) cargarMedicos();
-            document.getElementById(`step-${currentStep}`).classList.remove('active');
-            document.getElementById(`step-${step}`).classList.add('active');
-            currentStep = step;
-            updateProgress(step);
-            if (step === 4) llenarResumen();
-            document.querySelector('.steps-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    c.innerHTML = `
+      <div class="confirm-illust">
+        <div class="confirm-check"><i data-icon="check" data-size="32"></i></div>
+      </div>
+      <h2 style="font-size:24px;text-align:center;margin-bottom:6px;">¡Cita solicitada!</h2>
+      <p style="color:var(--text-2);text-align:center;margin-bottom:28px;">
+        Tu cita queda pendiente de confirmación del médico. Recibirás un correo cuando sea aprobada.
+      </p>
+      <div class="confirm-card">
+        <div class="confirm-row"><span class="confirm-label">Especialidad</span><strong>${DATA.specName}</strong></div>
+        <div class="confirm-row"><span class="confirm-label">Médico</span><strong>${DATA.docName}</strong></div>
+        <div class="confirm-row"><span class="confirm-label">Fecha y hora</span><strong>${MC.fechaLarga(DATA.fecha)} · ${MC.horaLabel(DATA.hora)}</strong></div>
+      </div>
+      <div class="row" style="gap:12px;margin-top:24px;justify-content:center;">
+        <a href="mis-citas.html" class="btn btn-ghost"><i data-icon="calendar"></i>Ver mis citas</a>
+        <a href="inicio-usuario.html" class="btn btn-primary">Volver al inicio<i data-icon="arrow-right"></i></a>
+      </div>`;
+    MCIcons.render(c);
+  }
 
-        /* ── Paso 1: Especialidad ───────────────────────── */
-        function seleccionarEspecialidad(card) {
-            document.querySelectorAll('.spec-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            booking.specialty   = card.dataset.spec;
-            booking.specialtyId = card.dataset.specId ? parseInt(card.dataset.specId) : null;
-            document.getElementById('btn-next-1').disabled = false;
-        }
+  function stepActions(showBack) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'step-actions';
+    wrapper.innerHTML = `
+      <button class="btn btn-ghost" id="btn-back" ${STEP === 1 ? 'disabled' : ''}><i data-icon="chevron-left"></i>Atrás</button>
+      <button class="btn btn-primary" id="btn-next">${STEP === 3 ? 'Confirmar cita' : 'Continuar'}<i data-icon="arrow-right"></i></button>
+    `;
+    setTimeout(() => {
+      MCIcons.render(wrapper);
+      wrapper.querySelector('#btn-back').addEventListener('click', () => { if (STEP > 1) { STEP--; updateStepper(); renderStep(); } });
+      wrapper.querySelector('#btn-next').addEventListener('click', () => {
+        if (STEP === 1 && !DATA.spec)  return MC.toast('Selecciona una especialidad', 'error');
+        if (STEP === 2 && !DATA.doc)   return MC.toast('Selecciona un médico', 'error');
+        if (STEP === 3 && (!DATA.fecha || !DATA.hora)) return MC.toast('Selecciona fecha y hora', 'error');
+        if (STEP < 4) { STEP++; updateStepper(); renderStep(); }
+      });
+    }, 0);
+    return wrapper;
+  }
 
-        function filtrarEspecialidades(query) {
-            const q = query.toLowerCase();
-            document.querySelectorAll('.spec-card').forEach(card => {
-                card.style.display = card.dataset.spec.toLowerCase().includes(q) ? '' : 'none';
-            });
-        }
+  function renderStep() {
+    if (STEP === 1) step1();
+    else if (STEP === 2) step2();
+    else if (STEP === 3) step3();
+    else step4();
+  }
 
-        document.getElementById('btn-next-1').addEventListener('click', () => {
-            document.getElementById('pill-spec').textContent = booking.specialty;
-        }, true);
+  updateStepper();
+  renderStep();
+  updateResumen();
+</script>
 
-        /* ── Paso 2: Médicos desde la API ───────────────── */
-        function cargarMedicos() {
-            const lista = document.getElementById('doctor-list-container');
-            if (!lista) return;
-            const todos = window._medicos || [];
-            const filtrados = booking.specialty
-                ? todos.filter(m => m.nombre_especialidad === booking.specialty && m.activo)
-                : todos.filter(m => m.activo);
-
-            if (!filtrados.length) {
-                lista.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">No hay médicos disponibles para esta especialidad.</p>';
-                return;
-            }
-
-            lista.innerHTML = filtrados.map(m => `
-                <div class="doctor-card" data-doc="${m.nombre_completo}" data-doc-id="${m.id_medico}" data-genero="${m.genero ?? ''}" onclick="seleccionarDoctor(this)">
-                    <div class="doc-avatar-sm">${m.foto_perfil
-                        ? `<img src="${m.foto_perfil}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-                        : `<span class="material-symbols-outlined">person</span>`}</div>
-                    <div class="doctor-card-info">
-                        <h3>${m.genero === 'M' ? 'Dr.' : m.genero === 'F' ? 'Dra.' : 'Dr(a).'} ${m.nombre_completo}</h3>
-                        <p>${m.nombre_especialidad}${m.costo_consulta ? ' · $' + parseFloat(m.costo_consulta).toFixed(2) : ''}</p>
-                    </div>
-                    <button class="doc-select-btn">Seleccionar</button>
-                </div>`).join('');
-        }
-
-        function seleccionarDoctor(card) {
-            document.querySelectorAll('.doctor-card').forEach(c => {
-                c.classList.remove('selected');
-                c.querySelector('.doc-select-btn').textContent = 'Seleccionar';
-            });
-            card.classList.add('selected');
-            card.querySelector('.doc-select-btn').textContent = '✓ Seleccionado';
-            booking.doctor      = card.dataset.doc;
-            booking.doctorId    = parseInt(card.dataset.docId);
-            booking.doctorGenero = card.dataset.genero || null;
-            booking.time     = '';
-            booking.date     = '';
-            calPicker.clear();
-            document.getElementById('btn-next-2').disabled = false;
-            cargarDisponibilidadMedico(booking.doctorId);
-        }
-
-        /* ── Paso 3: Fecha y hora ───────────────────────── */
-        function selectTime(btn, time, idConsultorio, consultorioLabel) {
-            document.querySelectorAll('.time-slot:not(.ocupado)').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            booking.time             = time;
-            booking.consultorioId    = idConsultorio || null;
-            booking.consultorioLabel = consultorioLabel || null;
-            document.getElementById('btn-next-3').disabled = false;
-        }
-
-        async function verificarPaso3(fechaStr) {
-            booking.date  = fechaStr ?? booking.date;
-            booking.time  = '';
-            document.getElementById('btn-next-3').disabled = true;
-            document.getElementById('pill-spec-3').textContent = booking.specialty;
-            document.getElementById('pill-doc-3').textContent  = booking.doctor;
-
-            const grid = document.getElementById('slots-grid');
-            if (!booking.date || !booking.doctorId) return;
-
-            grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">Cargando horarios...</p>';
-
-            const res   = await fetch(`/api/horarios.php?medico=${booking.doctorId}&fecha=${booking.date}`).then(r => r.json());
-            const slots = res.slots ?? [];
-
-            if (!slots.length) {
-                grid.innerHTML = `<p style="color:#94a3b8;grid-column:1/-1;">${res.mensaje ?? 'Sin horarios disponibles este día.'}</p>`;
-                return;
-            }
-
-            grid.innerHTML = slots.map(s => {
-                if (s.ocupado) return `<button class="time-slot ocupado" disabled>${s.label}</button>`;
-                const idCon  = s.id_consultorio ?? 'null';
-                const labCon = s.consultorio ? s.consultorio.replace(/'/g, "\\'") : '';
-                return `<button class="time-slot" onclick="selectTime(this,'${s.hora}',${idCon},'${labCon}')">${s.label}</button>`;
-            }).join('');
-        }
-
-        /* ── Paso 4: Resumen ────────────────────────────── */
-        function llenarResumen() {
-            document.getElementById('sum-spec').textContent = booking.specialty || '—';
-            const _dr = booking.doctorGenero === 'M' ? 'Dr.' : booking.doctorGenero === 'F' ? 'Dra.' : 'Dr(a).';
-            document.getElementById('sum-doc').textContent  = _dr + ' ' + (booking.doctor || '—');
-            document.getElementById('sum-time').textContent = booking.time || '—';
-            if (booking.date) {
-                const [y, m, d] = booking.date.split('-');
-                const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-                document.getElementById('sum-date').textContent = `${d} ${meses[parseInt(m,10)-1]} ${y}`;
-            }
-            const consultorioRow = document.getElementById('sum-consultorio-row');
-            if (booking.consultorioLabel) {
-                document.getElementById('sum-consultorio').textContent = 'Consultorio ' + booking.consultorioLabel;
-                consultorioRow.style.display = 'flex';
-            } else {
-                consultorioRow.style.display = 'none';
-            }
-
-            const motivo = document.getElementById('motivo').value.trim();
-            booking.motivo = motivo;
-            const motivoRow = document.getElementById('sum-motivo-row');
-            if (motivo) {
-                document.getElementById('sum-motivo').textContent = motivo;
-                motivoRow.style.display = 'flex';
-            } else {
-                motivoRow.style.display = 'none';
-            }
-        }
-
-        /* ── Confirmar y guardar en BD ──────────────────── */
-        function timeToDb(t) {
-            // "08:00 AM" → "08:00:00" / "05:30 PM" → "17:30:00"
-            const [hhmm, ampm] = t.split(' ');
-            let [h, m] = hhmm.split(':').map(Number);
-            if (ampm === 'PM' && h !== 12) h += 12;
-            if (ampm === 'AM' && h === 12) h = 0;
-            const fin = h + 1 > 23 ? 23 : h + 1;
-            const pad = n => String(n).padStart(2, '0');
-            return { inicio: `${pad(h)}:${pad(m)}:00`, fin: `${pad(fin)}:${pad(m)}:00` };
-        }
-
-        /* ── Selector de modo ───────────────────────────── */
-        function seleccionarModo(modo) {
-            document.getElementById('tipo-selector').style.display = 'none';
-            document.getElementById('page-subtitle').style.display = 'none';
-            document.getElementById('flow-medico').style.display   = modo === 'medico' ? '' : 'none';
-            document.getElementById('flow-lab').style.display      = modo === 'lab'    ? '' : 'none';
-            if (modo === 'lab') labInit();
-        }
-
-        /* ── LAB: Datos de reserva ──────────────────────── */
-        const labBooking = {
-            tipoAnalisis: '', date: '', horaInicio: '', horaFin: '',
-            slotLabel: '', notas: '',
-        };
-        let labCurrentStep  = 1;
-        const LAB_TOTAL     = 3;
-        let   labCalPicker  = null;
-        let   labDiasDisp   = new Set();
-
-        const LAB_TIPOS = [
-            { label: 'Hemograma completo',      icon: 'bloodtype'       },
-            { label: 'Química sanguínea',        icon: 'science'         },
-            { label: 'Glucosa en ayunas',        icon: 'glucose'         },
-            { label: 'Perfil lipídico',          icon: 'monitor_heart'   },
-            { label: 'Examen general de orina',  icon: 'water_drop'      },
-            { label: 'Cultivo y antibiograma',   icon: 'biotech'         },
-            { label: 'Hormonas tiroideas (TSH)', icon: 'labs'            },
-            { label: 'Prueba de embarazo',       icon: 'child_friendly'  },
-            { label: 'Perfil hepático',          icon: 'medical_services'},
-            { label: 'Perfil renal',             icon: 'medical_services'},
-            { label: 'Otro',                     icon: 'add_circle'      },
-        ];
-
-        const DIAS_NUM_LAB = { 'Domingo':0,'Lunes':1,'Martes':2,'Miércoles':3,'Jueves':4,'Viernes':5,'Sábado':6 };
-
-        function labInit() {
-            // Render tipos de análisis
-            document.getElementById('lab-analisis-grid').innerHTML = LAB_TIPOS.map(t => `
-                <div class="analisis-card-ag" data-tipo="${t.label}"
-                     onclick="labSeleccionarAnalisis(this,'${t.label}')">
-                    <span class="material-symbols-outlined">${t.icon}</span>${t.label}
-                </div>`).join('');
-
-            document.getElementById('lab-otro-txt')
-                    .addEventListener('input', labVerificarPaso1);
-
-            // Flatpickr (lazy: solo crearlo una vez)
-            if (!labCalPicker) {
-                labCalPicker = flatpickr('#lab-date', {
-                    locale:        'es',
-                    minDate:       'today',
-                    dateFormat:    'Y-m-d',
-                    disableMobile: true,
-                    onDayCreate(dObj, dStr, fp, dayElem) {
-                        if (!labDiasDisp.size) return;
-                        const hoy = new Date(); hoy.setHours(0,0,0,0);
-                        if (dayElem.dateObj < hoy) return;
-                        const dow = dayElem.dateObj.getDay();
-                        if (labDiasDisp.has(dow)) {
-                            dayElem.classList.add('dia-disponible');
-                        } else {
-                            dayElem.classList.add('flatpickr-disabled');
-                            dayElem.title = 'El laboratorio no atiende este día';
-                        }
-                    },
-                    onChange(selectedDates, dateStr) {
-                        if (dateStr) labCargarSlots(dateStr);
-                    }
-                });
-            }
-
-            // Cargar días disponibles
-            fetch('/api/horarios-laboratorio.php?dias=1')
-                .then(r => r.json()).catch(() => [])
-                .then(dias => {
-                    labDiasDisp = new Set(
-                        Array.isArray(dias) ? dias.map(d => DIAS_NUM_LAB[d]).filter(n => n !== undefined) : []
-                    );
-                    labCalPicker.set('minDate', 'today');
-                });
-        }
-
-        function labSeleccionarAnalisis(el, tipo) {
-            document.querySelectorAll('.analisis-card-ag').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            labBooking.tipoAnalisis = tipo;
-            document.getElementById('lab-otro-wrapper').style.display = tipo === 'Otro' ? '' : 'none';
-            if (tipo === 'Otro') document.getElementById('lab-otro-txt').focus();
-            labVerificarPaso1();
-        }
-
-        function labVerificarPaso1() {
-            let tipo = labBooking.tipoAnalisis;
-            if (tipo === 'Otro') tipo = document.getElementById('lab-otro-txt').value.trim();
-            document.getElementById('lab-btn-next-1').disabled = !tipo;
-        }
-
-        async function labCargarSlots(fecha) {
-            const grid = document.getElementById('lab-slots-grid');
-            grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">Cargando horarios…</p>';
-            labBooking.horaInicio = '';
-            labBooking.horaFin    = '';
-            document.getElementById('lab-btn-next-2').disabled = true;
-
-            const data = await fetch(`/api/horarios-laboratorio.php?fecha=${fecha}`)
-                .then(r => r.json()).catch(() => null);
-
-            if (!data?.slots?.length) {
-                grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">No hay turnos disponibles este día.</p>';
-                return;
-            }
-            grid.innerHTML = data.slots.map(s => `
-                <button class="${s.ocupado ? 'time-slot ocupado' : 'time-slot'}"
-                        ${s.ocupado ? 'disabled' : ''}
-                        onclick="labSeleccionarSlot(this,'${s.hora}','${s.hora_fin}','${s.label}')">
-                    ${s.label}
-                </button>`).join('');
-        }
-
-        function labSeleccionarSlot(btn, hora, horaFin, label) {
-            document.querySelectorAll('#lab-slots-grid .time-slot:not(.ocupado)')
-                    .forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            labBooking.horaInicio = hora;
-            labBooking.horaFin    = horaFin;
-            labBooking.slotLabel  = label;
-            document.getElementById('lab-btn-next-2').disabled = false;
-        }
-
-        function labIrPaso(n) {
-            if (labCurrentStep === 1) {
-                if (labBooking.tipoAnalisis === 'Otro') {
-                    labBooking.tipoAnalisis = document.getElementById('lab-otro-txt').value.trim() || 'Otro';
-                }
-                labBooking.notas = document.getElementById('lab-notas').value.trim();
-            }
-            if (n === 3) labLlenarResumen();
-
-            for (let i = 1; i <= LAB_TOTAL; i++) {
-                document.getElementById(`lab-step-${i}`).classList.toggle('active', i === n);
-            }
-
-            for (let i = 1; i <= LAB_TOTAL; i++) {
-                const sc  = document.getElementById(`lab-sc-${i}`);
-                const ind = document.getElementById(`lab-step-ind-${i}`);
-                ind.classList.toggle('active', i <= n);
-                if (i < n) {
-                    ind.classList.add('done');
-                    sc.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span>';
-                } else {
-                    sc.textContent = i;
-                }
-            }
-            const pct = Math.round((n / LAB_TOTAL) * 100);
-            document.getElementById('lab-progress-bar').style.width   = pct + '%';
-            document.getElementById('lab-progress-pct').textContent   = pct + '%';
-            document.getElementById('lab-progress-label').textContent = `Paso ${n} de ${LAB_TOTAL}`;
-            labCurrentStep = n;
-            document.getElementById('flow-lab').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function labLlenarResumen() {
-            const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-            labBooking.date = document.getElementById('lab-date').value;
-            const [y, m, d] = labBooking.date.split('-');
-            document.getElementById('lab-sum-analisis').textContent = labBooking.tipoAnalisis;
-            document.getElementById('lab-sum-date').textContent     = `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
-            document.getElementById('lab-sum-time').textContent     = labBooking.slotLabel || labBooking.horaInicio;
-
-            const notasRow = document.getElementById('lab-sum-notas-row');
-            if (labBooking.notas) {
-                document.getElementById('lab-sum-notas').textContent = labBooking.notas;
-                notasRow.style.display = '';
-            } else {
-                notasRow.style.display = 'none';
-            }
-            document.getElementById('lab-pill-analisis').textContent = labBooking.tipoAnalisis;
-        }
-
-        async function labConfirmarCita() {
-            const btn = document.getElementById('lab-btn-confirmar');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Agendando…';
-
-            labBooking.date = document.getElementById('lab-date').value;
-
-            try {
-                const r = await fetch('/api/citas-laboratorio.php', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fecha_cita:     labBooking.date,
-                        hora_inicio:    labBooking.horaInicio,
-                        hora_fin:       labBooking.horaFin,
-                        tipo_analisis:  labBooking.tipoAnalisis,
-                        notas_paciente: labBooking.notas || null,
-                    }),
-                });
-                const datos = await r.json();
-                if (!r.ok) throw new Error(datos.error ?? 'No se pudo agendar la cita');
-
-                document.getElementById('lab-form-card').innerHTML = `
-                    <div style="text-align:center;padding:60px 30px;">
-                        <span class="material-symbols-outlined"
-                              style="font-size:64px;color:#22c55e;display:block;margin-bottom:16px;">check_circle</span>
-                        <h2 style="margin-bottom:8px;">¡Cita de laboratorio agendada!</h2>
-                        <p style="color:#64748b;margin-bottom:6px;">
-                            <strong>${labBooking.tipoAnalisis}</strong> – ${document.getElementById('lab-sum-date').textContent}
-                            a las <strong>${labBooking.slotLabel}</strong>
-                        </p>
-                        <p style="color:#94a3b8;font-size:.9rem;margin-bottom:32px;">
-                            Código: <strong>${datos.codigo_confirmacion}</strong>
-                        </p>
-                        <a href="mis-citas.html" class="btn-confirm" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-                            <span class="material-symbols-outlined">calendar_month</span>
-                            Ver mis citas
-                        </a>
-                    </div>`;
-            } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
-            }
-        }
-
-        async function confirmarCita() {
-            const btn = document.querySelector('#flow-medico .btn-confirm');
-
-            if (!sesionUsuario?.id_paciente) {
-                alert('Tu usuario no tiene un expediente de paciente. Contacta a recepción.');
-                return;
-            }
-            if (!booking.doctorId) {
-                alert('Selecciona un médico antes de confirmar.');
-                return;
-            }
-
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">hourglass_empty</span> Guardando…';
-            btn.disabled  = true;
-
-            const { inicio, fin } = timeToDb(booking.time);
-
-            try {
-                const res  = await fetch('/api/citas.php', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id_paciente:     sesionUsuario.id_paciente,
-                        id_medico:       booking.doctorId,
-                        id_consultorio:  booking.consultorioId || null,
-                        id_estado:       1,
-                        fecha_cita:      booking.date,
-                        hora_inicio:     inicio,
-                        hora_fin:        fin,
-                        motivo_consulta: booking.motivo || null,
-                    })
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    const _drAlert = booking.doctorGenero === 'M' ? 'Dr.' : booking.doctorGenero === 'F' ? 'Dra.' : 'Dr(a).';
-                    alert(`¡Cita agendada exitosamente!\n\n📋 ${booking.specialty}\n👤 ${_drAlert} ${booking.doctor}\n📅 ${booking.date} · ${booking.time}`);
-                    window.location.href = 'mis-citas.html';
-                } else {
-                    alert('Error al guardar la cita: ' + (data.error || 'Error desconocido'));
-                    btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
-                    btn.disabled  = false;
-                }
-            } catch {
-                alert('No se pudo conectar con el servidor.');
-                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
-                btn.disabled  = false;
-            }
-        }
-    </script>
 </body>
 </html>

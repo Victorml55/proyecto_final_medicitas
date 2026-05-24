@@ -1,605 +1,111 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicios | MediCitas SSL</title>
-    <link rel="stylesheet" href="css/estilo.css">
-    <style>
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-overlay.active { display: flex; }
-
-        .modal {
-            background: #fff;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 620px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 28px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .modal-header h2 {
-            font-size: 1.3rem;
-            color: #005f99;
-            margin: 0;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #94a3b8;
-            line-height: 1;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-        .modal-close:hover { color: #333; }
-
-        .modal-body {
-            overflow-y: auto;
-            padding: 20px 28px 28px;
-        }
-
-        .catalog-category {
-            margin-bottom: 24px;
-        }
-        .catalog-category h3 {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #94a3b8;
-            font-weight: 600;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .catalog-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 12px 0;
-            border-bottom: 1px solid #f8fafc;
-            gap: 16px;
-        }
-        .catalog-item:last-child { border-bottom: none; }
-
-        .catalog-item-info { flex: 1; }
-        .catalog-item-info strong {
-            display: block;
-            color: #0f172a;
-            font-size: 0.95rem;
-            margin-bottom: 3px;
-        }
-        .catalog-item-info span {
-            color: #64748b;
-            font-size: 0.85rem;
-        }
-        .catalog-item-price {
-            color: #005f99;
-            font-weight: 700;
-            font-size: 0.95rem;
-            white-space: nowrap;
-        }
-
-        /* Tabla farmacia */
-        .farmacia-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .farmacia-table thead th {
-            background-color: #f8fafc;
-            color: #64748b;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 10px 14px;
-            text-align: left;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        .farmacia-table tbody tr {
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.15s;
-        }
-        .farmacia-table tbody tr:hover { background-color: #f8fafc; }
-        .farmacia-table tbody td {
-            padding: 11px 14px;
-            color: #0f172a;
-            vertical-align: middle;
-        }
-        .farmacia-table .td-precio {
-            color: #005f99;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .badge-disponible {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-si  { background: #dcfce7; color: #166534; }
-        .badge-no  { background: #fee2e2; color: #991b1b; }
-
-        .farmacia-filtro {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .farmacia-filtro input {
-            flex: 1;
-            min-width: 160px;
-            padding: 9px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .farmacia-filtro input:focus { border-color: #005f99; }
-        .farmacia-filtro select {
-            padding: 9px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            background: #fff;
-            cursor: pointer;
-        }
-        .farmacia-empty {
-            text-align: center;
-            padding: 30px;
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Servicios | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
-        <div class="section-header">
-            <h1>Nuestros Servicios</h1>
-            <h2>Infraestructura médica de primer nivel y tecnología de vanguardia para tu diagnóstico y tratamiento.</h2>
+      <div class="page-header">
+        <p class="eyebrow">Sanatorio Santa Lucía</p>
+        <h1>Nuestros servicios</h1>
+        <p>Una experiencia integral de salud diseñada alrededor del paciente.</p>
+      </div>
+
+      <div class="grid-2" style="gap:20px;">
+        <div class="service-card" data-tone="primary">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="stethoscope" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Consulta médica general</h3>
+            <p>Atención primaria y orientación con médicos certificados disponibles todo el día.</p>
+            <a href="agendar-cita.html" class="btn btn-soft btn-sm">Agendar consulta<i data-icon="arrow-right" data-size="14"></i></a>
+          </div>
         </div>
 
-        <div class="services-list">
-
-            <div class="service-item">
-                <div class="service-info">
-                    <h3>Laboratorio Clínico</h3>
-                    <p>Análisis de sangre, cultivos y pruebas especializadas con resultados precisos y entrega rápida en línea.</p>
-                </div>
-                <button class="btn-service" onclick="abrirModal()">Ver Catálogo</button>
-            </div>
-
-            <div class="service-item">
-                <div class="service-info">
-                    <h3>Imagenología y Rayos X</h3>
-                    <p>Tomografía, ultrasonido, mastografía y radiografías con equipos de última generación para diagnósticos certeros.</p>
-                </div>
-                <button class="btn-service" onclick="pedirLogin()">Agendar Estudio</button>
-            </div>
-
-            <div class="service-item">
-                <div class="service-info">
-                    <h3>Farmacia 24 Hrs</h3>
-                    <p>Amplio surtido de medicamentos de patente y especialidad, material de curación y atención continua.</p>
-                </div>
-                <button class="btn-service" onclick="abrirFarmacia()">Consultar Surtido</button>
-            </div>
-
-            <div class="service-item">
-                <div class="service-info">
-                    <h3>Urgencias y Traslados</h3>
-                    <p>Atención médica inmediata las 24 horas del día, los 365 días del año con personal altamente capacitado.</p>
-                </div>
-                <button class="btn-service" onclick="abrirUrgencias()">Llamar Ahora</button>
-            </div>
-
+        <div class="service-card" data-tone="warm">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="flask" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Laboratorio clínico</h3>
+            <p>Más de 80 estudios disponibles. Resultados digitales en 24 horas, sin filas.</p>
+            <a href="agendar-cita-laboratorio.html" class="btn btn-soft btn-sm">Ver estudios<i data-icon="arrow-right" data-size="14"></i></a>
+          </div>
         </div>
-    </main>
 
-    <!-- Modal surtido farmacia -->
-    <div class="modal-overlay" id="modal-farmacia" onclick="cerrarFarmaciaSiFondo(event)">
-        <div class="modal" style="max-width: 750px;">
-            <div class="modal-header">
-                <h2>Surtido — Farmacia 24 Hrs</h2>
-                <button class="modal-close" onclick="cerrarFarmacia()">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="farmacia-filtro">
-                    <input type="text" id="filtro-nombre" placeholder="Buscar medicamento..." oninput="filtrarFarmacia()">
-                    <select id="filtro-categoria" onchange="filtrarFarmacia()">
-                        <option value="">Todas las categorías</option>
-                    </select>
-                </div>
-                <div style="overflow-x:auto;">
-                    <table class="farmacia-table" id="tabla-farmacia">
-                        <thead>
-                            <tr>
-                                <th>Medicamento</th>
-                                <th>Categoría</th>
-                                <th>Presentación</th>
-                                <th>Precio</th>
-                                <th>Disponible</th>
-                            </tr>
-                        </thead>
-                        <tbody id="farmacia-tbody">
-                            <tr><td colspan="5" class="farmacia-empty">Cargando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="service-card" data-tone="success">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="activity" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Estudios de imagenología</h3>
+            <p>Rayos X, ultrasonido, electrocardiograma y más. Equipos de última generación.</p>
+            <a href="agendar-cita-laboratorio.html" class="btn btn-soft btn-sm">Solicitar estudio<i data-icon="arrow-right" data-size="14"></i></a>
+          </div>
         </div>
+
+        <div class="service-card" data-tone="danger">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="heart-pulse" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Urgencias 24 / 7</h3>
+            <p>Atención inmediata las 24 horas del día, todos los días del año.</p>
+            <a href="tel:+524612345000" class="btn btn-soft btn-sm">Llamar ahora<i data-icon="phone" data-size="14"></i></a>
+          </div>
+        </div>
+
+        <div class="service-card" data-tone="primary">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="pill" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Farmacia interna</h3>
+            <p>Surtimos tu receta al instante. Convenios con principales aseguradoras.</p>
+            <a href="mis-recetas.html" class="btn btn-soft btn-sm">Conocer más<i data-icon="arrow-right" data-size="14"></i></a>
+          </div>
+        </div>
+
+        <div class="service-card" data-tone="warm">
+          <div class="service-icon-wrap"><div class="service-icon"><i data-icon="phone" data-size="22"></i></div></div>
+          <div class="service-body">
+            <h3>Telemedicina</h3>
+            <p>Consulta a tu médico desde donde estés mediante videollamada segura.</p>
+            <a href="agendar-cita.html" class="btn btn-soft btn-sm">Agendar virtual<i data-icon="arrow-right" data-size="14"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-strip" style="margin-top:40px;">
+        <div>
+          <h3 style="font-size:22px;color:white;margin-bottom:6px;">¿Necesitas ayuda eligiendo?</h3>
+          <p style="color:rgba(255,255,255,0.8);font-size:14px;">
+            Nuestros asesores médicos pueden recomendarte el especialista adecuado según tus síntomas.
+          </p>
+        </div>
+        <div class="row" style="gap:12px;">
+          <a href="tel:+524612345000" class="btn" style="background:rgba(255,255,255,0.15);color:white;">
+            <i data-icon="phone"></i>Llamar
+          </a>
+          <a href="medicos.html" class="btn" style="background:white;color:var(--primary);">
+            Ver directorio<i data-icon="arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
     </div>
+  </main>
+</div>
 
-    <!-- Modal urgencias -->
-    <div class="modal-overlay" id="modal-urgencias" onclick="cerrarUrgenciasSiFondo(event)">
-        <div class="modal" style="max-width: 420px;">
-            <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
-                <h2 style="display:flex; align-items:center; gap:10px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#fee2e2;border-radius:50%;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                    </span>
-                    Urgencias y Traslados
-                </h2>
-                <button class="modal-close" onclick="cerrarUrgencias()">✕</button>
-            </div>
-            <div class="modal-body" style="padding-top: 16px;">
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+    if (d.loggedIn) MC.loadNav(d.rol === 'medico' ? 'nav-medico.html' : 'nav-user.html');
+    else MC.loadNav('nav.html');
+  }).catch(() => MC.loadNav('nav.html'));
+</script>
 
-                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">
-                    Contamos con atención médica inmediata las <strong>24 horas</strong>, los <strong>365 días</strong> del año.
-                </p>
-
-                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
-                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
-                        <span style="font-size:1.4rem;">📞</span>
-                        <div>
-                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Línea de urgencias</div>
-                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">(461) 123-4567</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
-                        <span style="font-size:1.4rem;">🚑</span>
-                        <div>
-                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Ambulancias</div>
-                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">Disponibles 24/7</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:14px; background:#f8fafc; border-radius:10px; padding:14px 16px;">
-                        <span style="font-size:1.4rem;">📍</span>
-                        <div>
-                            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;">Dirección</div>
-                            <div style="font-weight:700; color:#0f172a; font-size:1.05rem;">Av. Constitución 100, Celaya</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:10px;">
-                    <a href="tel:++524616155454" class="btn-login"
-                       style="flex:1; text-align:center; text-decoration:none; padding:13px; display:block;">
-                        📞 Llamar ahora
-                    </a>
-                    <a href="https://wa.me/+524616155454?text=Necesito%20atenci%C3%B3n%20de%20urgencias"
-                       target="_blank"
-                       style="flex:1; text-align:center; text-decoration:none; padding:13px; display:block;
-                              background:#25d366; color:white; border-radius:8px; font-weight:600; font-size:1rem;">
-                        WhatsApp
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal inicio de sesión requerido -->
-    <div class="modal-overlay" id="modal-login" onclick="cerrarModalLoginSiFondo(event)">
-        <div class="modal" style="max-width: 420px; text-align: center;">
-            <div class="modal-header" style="justify-content: flex-end; padding: 16px 20px 0; border: none;">
-                <button class="modal-close" onclick="cerrarModalLogin()">✕</button>
-            </div>
-            <div class="modal-body" style="padding: 0 36px 36px;">
-                <div style="width:64px;height:64px;background:#e6f0f9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#005f99" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                    </svg>
-                </div>
-                <h2 style="font-size:1.25rem;color:#0f172a;margin-bottom:10px;">Inicia sesión para continuar</h2>
-                <p style="color:#64748b;font-size:0.92rem;line-height:1.6;margin-bottom:28px;">
-                    Para agendar un estudio de imagenología necesitas tener una cuenta activa.
-                </p>
-                <a href="index.html" class="btn-login" style="display:block;text-decoration:none;padding:13px;">Iniciar sesión</a>
-                <a href="registro.html" style="display:block;margin-top:12px;color:#005f99;font-size:0.88rem;text-decoration:none;font-weight:500;">
-                    ¿No tienes cuenta? <u>Regístrate aquí</u>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal catálogo laboratorio -->
-    <div class="modal-overlay" id="modal-catalogo" onclick="cerrarModalSiFondo(event)">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Catálogo — Laboratorio Clínico</h2>
-                <button class="modal-close" onclick="cerrarModal()">✕</button>
-            </div>
-            <div class="modal-body">
-
-                <div class="catalog-category">
-                    <h3>Hematología</h3>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Biometría Hemática Completa</strong>
-                            <span>Análisis de células sanguíneas: eritrocitos, leucocitos y plaquetas</span>
-                        </div>
-                        <span class="catalog-item-price">$180</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Grupo Sanguíneo y Rh</strong>
-                            <span>Determinación de tipo de sangre y factor Rh</span>
-                        </div>
-                        <span class="catalog-item-price">$120</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Velocidad de Sedimentación</strong>
-                            <span>Indicador de procesos inflamatorios o infecciosos</span>
-                        </div>
-                        <span class="catalog-item-price">$100</span>
-                    </div>
-                </div>
-
-                <div class="catalog-category">
-                    <h3>Química Sanguínea</h3>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Química Sanguínea 6 Elementos</strong>
-                            <span>Glucosa, urea, creatinina, ácido úrico, colesterol y triglicéridos</span>
-                        </div>
-                        <span class="catalog-item-price">$320</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Glucosa en Ayuno</strong>
-                            <span>Medición de nivel de glucosa en sangre</span>
-                        </div>
-                        <span class="catalog-item-price">$80</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Perfil Lipídico</strong>
-                            <span>Colesterol total, HDL, LDL y triglicéridos</span>
-                        </div>
-                        <span class="catalog-item-price">$250</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Hemoglobina Glucosilada (HbA1c)</strong>
-                            <span>Control glucémico de los últimos 3 meses</span>
-                        </div>
-                        <span class="catalog-item-price">$280</span>
-                    </div>
-                </div>
-
-                <div class="catalog-category">
-                    <h3>Orina y Coproscópico</h3>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Examen General de Orina</strong>
-                            <span>Análisis físico, químico y microscópico de orina</span>
-                        </div>
-                        <span class="catalog-item-price">$100</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Urocultivo</strong>
-                            <span>Cultivo bacteriológico de orina con antibiograma</span>
-                        </div>
-                        <span class="catalog-item-price">$350</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Coproscópico General</strong>
-                            <span>Análisis de heces para detección de parásitos</span>
-                        </div>
-                        <span class="catalog-item-price">$120</span>
-                    </div>
-                </div>
-
-                <div class="catalog-category">
-                    <h3>Hormonas y Tiroides</h3>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>TSH (Hormona Estimulante de Tiroides)</strong>
-                            <span>Evaluación de la función tiroidea</span>
-                        </div>
-                        <span class="catalog-item-price">$290</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>T3 y T4 Libre</strong>
-                            <span>Perfil tiroideo completo</span>
-                        </div>
-                        <span class="catalog-item-price">$420</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Prueba de Embarazo (Beta-HCG)</strong>
-                            <span>Detección cuantitativa de gonadotropina coriónica</span>
-                        </div>
-                        <span class="catalog-item-price">$200</span>
-                    </div>
-                </div>
-
-                <div class="catalog-category">
-                    <h3>Cultivos y Microbiología</h3>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Hemocultivo</strong>
-                            <span>Cultivo bacteriológico de sangre con antibiograma</span>
-                        </div>
-                        <span class="catalog-item-price">$480</span>
-                    </div>
-                    <div class="catalog-item">
-                        <div class="catalog-item-info">
-                            <strong>Cultivo Faríngeo</strong>
-                            <span>Detección de microorganismos en faringe</span>
-                        </div>
-                        <span class="catalog-item-price">$320</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <script>
-        fetch('nav.html')
-            .then(r => r.text())
-            .then(data => { document.getElementById('nav-container').innerHTML = data; });
-
-        let farmaciaData = [];
-
-        async function abrirFarmacia() {
-            document.getElementById('modal-farmacia').classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            if (farmaciaData.length === 0) {
-                try {
-                    const res  = await fetch('api/farmacia.php');
-                    const json = await res.json();
-
-                    if (json.success) {
-                        farmaciaData = json.data;
-                        poblarCategorias();
-                        renderTabla(farmaciaData);
-                    } else {
-                        document.getElementById('farmacia-tbody').innerHTML =
-                            '<tr><td colspan="5" class="farmacia-empty">No se pudo cargar el catálogo.</td></tr>';
-                    }
-                } catch {
-                    document.getElementById('farmacia-tbody').innerHTML =
-                        '<tr><td colspan="5" class="farmacia-empty">Error de conexión.</td></tr>';
-                }
-            }
-        }
-
-        function poblarCategorias() {
-            const cats = [...new Set(farmaciaData.map(m => m.categoria))].sort();
-            const sel  = document.getElementById('filtro-categoria');
-            cats.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c; opt.textContent = c;
-                sel.appendChild(opt);
-            });
-        }
-
-        function renderTabla(datos) {
-            const tbody = document.getElementById('farmacia-tbody');
-            if (!datos.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="farmacia-empty">Sin resultados.</td></tr>';
-                return;
-            }
-            tbody.innerHTML = datos.map(m => `
-                <tr>
-                    <td><strong>${m.nombre}</strong></td>
-                    <td>${m.categoria}</td>
-                    <td>${m.presentacion ?? '—'}</td>
-                    <td class="td-precio">${m.precio ? '$' + parseFloat(m.precio).toFixed(2) : '—'}</td>
-                    <td><span class="badge-disponible ${m.disponible === 't' || m.disponible === true ? 'badge-si' : 'badge-no'}">
-                        ${m.disponible === 't' || m.disponible === true ? 'Sí' : 'No'}
-                    </span></td>
-                </tr>`).join('');
-        }
-
-        function filtrarFarmacia() {
-            const texto = document.getElementById('filtro-nombre').value.toLowerCase();
-            const cat   = document.getElementById('filtro-categoria').value;
-            const filtrado = farmaciaData.filter(m =>
-                m.nombre.toLowerCase().includes(texto) &&
-                (cat === '' || m.categoria === cat)
-            );
-            renderTabla(filtrado);
-        }
-
-        function cerrarFarmacia() {
-            document.getElementById('modal-farmacia').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function cerrarFarmaciaSiFondo(e) {
-            if (e.target === document.getElementById('modal-farmacia')) cerrarFarmacia();
-        }
-
-        function abrirUrgencias() {
-            document.getElementById('modal-urgencias').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarUrgencias() {
-            document.getElementById('modal-urgencias').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function cerrarUrgenciasSiFondo(e) {
-            if (e.target === document.getElementById('modal-urgencias')) cerrarUrgencias();
-        }
-
-        function pedirLogin() {
-            document.getElementById('modal-login').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarModalLogin() {
-            document.getElementById('modal-login').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function cerrarModalLoginSiFondo(e) {
-            if (e.target === document.getElementById('modal-login')) cerrarModalLogin();
-        }
-
-        function abrirModal() {
-            document.getElementById('modal-catalogo').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function cerrarModal() {
-            document.getElementById('modal-catalogo').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function cerrarModalSiFondo(e) {
-            if (e.target === document.getElementById('modal-catalogo')) cerrarModal();
-        }
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { cerrarModal(); cerrarModalLogin(); cerrarFarmacia(); cerrarUrgencias(); }
-        });
-    </script>
 </body>
 </html>

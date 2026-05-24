@@ -1,379 +1,133 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <title>Perfil Médico | MediCitas SSL</title>
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(d=>{
-            if (!d.loggedIn) window.location.replace('/index.html');
-        });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="css/estilo.css">
-    <style>
-        .perfil-wrap {
-            max-width: 860px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #005f99;
-            font-weight: 500;
-            font-size: .95rem;
-            text-decoration: none;
-        }
-        .back-link:hover { text-decoration: underline; }
-
-        /* ── Tarjeta principal del médico ── */
-        .perfil-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 36px;
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-            box-shadow: 0 4px 6px rgba(0,0,0,.03);
-        }
-        .perfil-avatar {
-            width: 120px;
-            height: 120px;
-            background: #f1f5f9;
-            border: 3px solid #e2e8f0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        .perfil-avatar .material-symbols-outlined { font-size: 60px; color: #94a3b8; }
-        .perfil-info h2 {
-            font-size: 1.75rem;
-            color: #0f172a;
-            margin: 0 0 10px;
-        }
-        .perfil-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .perfil-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-        .perfil-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .9rem;
-            color: #475569;
-        }
-        .perfil-meta-item .material-symbols-outlined { font-size: 18px; color: #94a3b8; }
-        .perfil-bio {
-            color: #64748b;
-            font-size: .95rem;
-            line-height: 1.65;
-            margin: 0;
-        }
-        .perfil-cta {
-            margin-top: 22px;
-        }
-
-        /* ── Sección de calificaciones ── */
-        .rating-section {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 30px 36px;
-            box-shadow: 0 4px 6px rgba(0,0,0,.03);
-        }
-        .rating-section h3 {
-            font-size: 1.1rem;
-            color: #0f172a;
-            margin: 0 0 20px;
-            font-weight: 600;
-        }
-        .rating-summary {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-        .rating-big {
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .rating-big .numero {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1;
-        }
-        .rating-big .estrellas { margin: 6px 0 4px; }
-        .rating-big .total-txt {
-            font-size: .8rem;
-            color: #94a3b8;
-        }
-        .rating-bars {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .rating-bar-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: .82rem;
-            color: #64748b;
-        }
-        .rating-bar-row .label { width: 28px; text-align: right; flex-shrink: 0; }
-        .rating-bar-row .bar-bg {
-            flex: 1;
-            height: 8px;
-            background: #f1f5f9;
-            border-radius: 99px;
-            overflow: hidden;
-        }
-        .rating-bar-row .bar-fill {
-            height: 100%;
-            background: #f59e0b;
-            border-radius: 99px;
-            transition: width .4s;
-        }
-        .rating-bar-row .cnt { width: 22px; flex-shrink: 0; }
-
-        /* ── Reseñas ── */
-        .reviews-section h3 {
-            font-size: 1.1rem;
-            color: #0f172a;
-            font-weight: 600;
-            margin: 0 0 16px;
-        }
-        .review-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px 24px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,.02);
-        }
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .review-author {
-            font-weight: 600;
-            color: #1e293b;
-            font-size: .95rem;
-        }
-        .review-date {
-            font-size: .8rem;
-            color: #94a3b8;
-        }
-        .review-stars { margin-bottom: 10px; }
-        .review-text {
-            color: #475569;
-            font-size: .9rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-        .sin-resenas {
-            color: #94a3b8;
-            font-size: .95rem;
-            text-align: center;
-            padding: 30px 0;
-        }
-
-        @media (max-width: 640px) {
-            .perfil-card { flex-direction: column; align-items: center; text-align: center; }
-            .perfil-badges { justify-content: center; }
-            .perfil-meta { justify-content: center; }
-            .rating-summary { flex-direction: column; align-items: center; }
-            .rating-bars { width: 100%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil de médico | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
-        <div class="perfil-wrap" id="perfil-wrap">
-            <p style="color:#94a3b8;text-align:center;padding:40px 0;">Cargando perfil...</p>
+      <a href="medicos.html" class="btn btn-ghost btn-sm" style="margin-bottom:18px;">
+        <i data-icon="chevron-left"></i>Volver al directorio
+      </a>
+
+      <div id="perfil-content">
+        <div class="card" style="text-align:center;padding:60px 20px;">
+          <div class="loading-empty">Cargando perfil...</div>
         </div>
-    </main>
+      </div>
 
-    <script>
-        fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
+    </div>
+  </main>
+</div>
 
-        const params   = new URLSearchParams(location.search);
-        const idMedico = parseInt(params.get('id'));
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+    MC.loadNav(d.rol === 'medico' ? 'nav-medico.html' : 'nav-user.html');
+  }).catch(() => MC.loadNav('nav-user.html'));
 
-        function renderEstrellas(cal, size='20px') {
-            let h = '';
-            for (let i = 1; i <= 5; i++) {
-                if (cal >= i) {
-                    h += `<span class="material-symbols-outlined" style="font-size:${size};font-variation-settings:'FILL' 1;color:#f59e0b;vertical-align:middle;">star</span>`;
-                } else if (cal >= i - 0.5) {
-                    h += `<span class="material-symbols-outlined" style="font-size:${size};color:#f59e0b;vertical-align:middle;">star_half</span>`;
-                } else {
-                    h += `<span class="material-symbols-outlined" style="font-size:${size};color:#d1d5db;vertical-align:middle;">star_outline</span>`;
-                }
-            }
-            return h;
-        }
+  (async function () {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) { document.getElementById('perfil-content').innerHTML = '<div class="loading-empty">Falta el médico.</div>'; return; }
 
-        function calcularExperiencia(fechaInicio) {
-            if (!fechaInicio) return null;
-            const inicio = new Date(fechaInicio);
-            const hoy    = new Date();
-            let años = hoy.getFullYear() - inicio.getFullYear();
-            if (hoy < new Date(hoy.getFullYear(), inicio.getMonth(), inicio.getDate())) años--;
-            return años > 0 ? años : null;
-        }
+    try {
+      const m = await fetch('/api/medicos.php?id=' + id).then(r => r.json());
+      if (!m || !m.id_medico) throw new Error();
 
-        function formatFecha(isoStr) {
-            if (!isoStr) return '';
-            const d = new Date(isoStr);
-            return d.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-        }
+      const titulo = MC.drLabel(m.genero);
+      const exp = m.fecha_inicio ? Math.max(0, new Date().getFullYear() - new Date(m.fecha_inicio).getFullYear()) : null;
 
-        async function cargarPerfil() {
-            if (!idMedico) {
-                document.getElementById('perfil-wrap').innerHTML =
-                    '<p style="color:#ef4444;text-align:center;padding:40px 0;">Médico no especificado.</p>';
-                return;
-            }
+      document.getElementById('perfil-content').innerHTML = `
+      <div class="card flush" style="overflow:hidden;">
+        <div class="doc-hero">
+          <div class="doc-hero-bg"></div>
+          <div class="doc-hero-content">
+            <div class="doc-hero-avatar">${MC.iniciales(m.nombre_completo)}</div>
+            <div class="doc-hero-info">
+              <p style="color:rgba(255,255,255,0.75);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;">Especialista certificado</p>
+              <h1 style="color:white;font-size:38px;margin:6px 0 10px;">${titulo} ${m.nombre_completo}</h1>
+              <div class="row" style="gap:10px;flex-wrap:wrap;">
+                <span class="badge" style="background:rgba(255,255,255,0.18);color:white;">
+                  <span class="badge-dot" style="background:oklch(0.85 0.18 150);"></span>${m.nombre_especialidad || 'Especialista'}
+                </span>
+                ${exp !== null ? `<span class="badge" style="background:rgba(255,255,255,0.18);color:white;"><i data-icon="briefcase" data-size="12"></i>${exp} años de experiencia</span>` : ''}
+                ${m.cedula_profesional ? `<span class="badge" style="background:rgba(255,255,255,0.18);color:white;">Cédula ${m.cedula_profesional}</span>` : ''}
+              </div>
+            </div>
+            <div class="doc-hero-cta">
+              <a href="agendar-cita.html?medico=${m.id_medico}" class="btn btn-lg" style="background:white;color:var(--primary);">
+                Agendar cita<i data-icon="arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
 
-            const [medData, valData] = await Promise.all([
-                fetch(`/api/medicos.php?id=${idMedico}`).then(r => r.json()),
-                fetch(`/api/valoraciones.php?medico=${idMedico}`).then(r => r.json()),
-            ]);
+        <div class="doc-body">
+          <div class="grid-2" style="grid-template-columns:1.6fr 1fr;margin-top:8px;align-items:flex-start;">
+            <div class="stack">
+              <section>
+                <h3 style="font-size:18px;margin-bottom:10px;">Sobre ${titulo} ${m.nombre_completo.split(' ')[0]}</h3>
+                <p style="color:var(--text-2);line-height:1.7;font-size:14px;">
+                  ${m.biografia || 'Especialista certificado del Sanatorio Santa Lucía con amplia experiencia clínica. Cree en una medicina cercana, basada en escuchar al paciente y explicar cada paso del diagnóstico y tratamiento.'}
+                </p>
+              </section>
 
-            if (medData.error) {
-                document.getElementById('perfil-wrap').innerHTML =
-                    `<p style="color:#ef4444;text-align:center;padding:40px 0;">${medData.error}</p>`;
-                return;
-            }
+              <section>
+                <h3 style="font-size:18px;margin-bottom:12px;">Información profesional</h3>
+                <div class="info-grid">
+                  <div class="info-item"><span class="info-label">Cédula</span><span class="info-value">${m.cedula_profesional || '—'}</span></div>
+                  <div class="info-item"><span class="info-label">Especialidad</span><span class="info-value" data-highlight>${m.nombre_especialidad || '—'}</span></div>
+                  ${exp !== null ? `<div class="info-item"><span class="info-label">Experiencia</span><span class="info-value">${exp} años</span></div>` : ''}
+                  <div class="info-item"><span class="info-label">Consultorio</span><span class="info-value">${m.consultorio || 'A confirmar'}</span></div>
+                </div>
+              </section>
+            </div>
 
-            const m    = medData;
-            const titulo = m.genero === 'M' ? 'Dr.' : m.genero === 'F' ? 'Dra.' : 'Dr(a).';
-            const nombreCompleto = `${m.nombre} ${m.apellido_paterno}${m.apellido_materno ? ' ' + m.apellido_materno : ''}`;
-            const exp  = calcularExperiencia(m.fecha_inicio);
-            const avatar = m.foto_perfil
-                ? `<img src="${m.foto_perfil}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-                : `<span class="material-symbols-outlined">person</span>`;
-
-            // ── Barra de distribución de estrellas ──
-            const conteos = [0, 0, 0, 0, 0]; // índice 0=1★ … 4=5★
-            (valData.valoraciones || []).forEach(v => {
-                const idx = Math.min(Math.max(parseInt(v.calificacion), 1), 5) - 1;
-                conteos[idx]++;
-            });
-            const total = valData.total || 0;
-            const barsHtml = [5,4,3,2,1].map(n => {
-                const cnt = conteos[n-1];
-                const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
-                return `<div class="rating-bar-row">
-                    <span class="label">${n}★</span>
-                    <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
-                    <span class="cnt">${cnt}</span>
-                </div>`;
-            }).join('');
-
-            // ── Reseñas ──
-            const reviewsHtml = (valData.valoraciones || []).length === 0
-                ? '<p class="sin-resenas">Este médico aún no tiene reseñas.</p>'
-                : (valData.valoraciones || []).map(v => `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <span class="review-author">${v.nombre_paciente}</span>
-                            <span class="review-date">${formatFecha(v.fecha_valoracion)}</span>
-                        </div>
-                        <div class="review-stars">${renderEstrellas(parseInt(v.calificacion), '18px')}</div>
-                        ${v.comentario ? `<p class="review-text">${v.comentario}</p>` : ''}
-                    </div>`).join('');
-
-            document.getElementById('perfil-wrap').innerHTML = `
-                <a href="medicos.html" class="back-link">
-                    <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
-                    Volver al directorio
+            <div class="stack" style="position:sticky;top:24px;">
+              <div class="card">
+                <h3 style="font-size:15px;margin-bottom:14px;">Información de la consulta</h3>
+                <div class="stack" style="gap:12px;">
+                  <div class="summary-row"><div class="summary-icon"><i data-icon="map-pin" data-size="16"></i></div><div class="summary-info"><div class="summary-label">Consultorio</div><div class="summary-value">${m.consultorio || 'A confirmar'}</div></div></div>
+                  <div class="summary-row"><div class="summary-icon"><i data-icon="clock" data-size="16"></i></div><div class="summary-info"><div class="summary-label">Duración</div><div class="summary-value">30–45 min</div></div></div>
+                  <div class="summary-row"><div class="summary-icon"><i data-icon="mail" data-size="16"></i></div><div class="summary-info"><div class="summary-label">Contacto</div><div class="summary-value">${m.email || '—'}</div></div></div>
+                </div>
+                <a href="agendar-cita.html?medico=${m.id_medico}" class="btn btn-primary" style="width:100%;margin-top:14px;">
+                  Ver agenda disponible<i data-icon="arrow-right"></i>
                 </a>
+              </div>
 
-                <div class="perfil-card">
-                    <div class="perfil-avatar">${avatar}</div>
-                    <div class="perfil-info">
-                        <h2>${titulo} ${nombreCompleto}</h2>
-                        <div class="perfil-badges">
-                            <span class="doc-badge" style="margin-bottom:0;">${m.nombre_especialidad}</span>
-                            ${exp !== null ? `<span class="doc-badge" style="margin-bottom:0;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;">${exp} años de experiencia</span>` : ''}
-                            ${valData.promedio !== null ? `<span class="doc-badge" style="margin-bottom:0;background:#fffbeb;color:#b45309;border:1px solid #fde68a;">
-                                <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;color:#f59e0b;vertical-align:middle;">star</span>
-                                ${valData.promedio} / 5
-                            </span>` : ''}
-                        </div>
-                        <div class="perfil-meta">
-                            ${m.costo_consulta ? `<span class="perfil-meta-item">
-                                <span class="material-symbols-outlined">payments</span>
-                                $${parseFloat(m.costo_consulta).toFixed(2)} por consulta
-                            </span>` : ''}
-                            ${m.duracion_consulta ? `<span class="perfil-meta-item">
-                                <span class="material-symbols-outlined">schedule</span>
-                                ${m.duracion_consulta} minutos
-                            </span>` : ''}
-                            ${m.universidad ? `<span class="perfil-meta-item">
-                                <span class="material-symbols-outlined">school</span>
-                                ${m.universidad}
-                            </span>` : ''}
-                        </div>
-                        <p class="perfil-bio">${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}</p>
-                        <div class="perfil-cta">
-                            <a href="agendar-cita.html?medico=${m.id_medico}" class="btn-primary">Agendar Cita</a>
-                        </div>
-                    </div>
+              <div class="card" style="background:var(--warm-soft);border-color:transparent;">
+                <div class="row" style="gap:12px;align-items:flex-start;">
+                  <i data-icon="phone" data-size="20" style="color:var(--warm-ink);margin-top:2px;"></i>
+                  <div>
+                    <strong style="display:block;margin-bottom:4px;">¿Necesitas ayuda?</strong>
+                    <p style="font-size:13px;color:var(--text-2);">
+                      Habla con un asesor médico al <strong>461 234 5000</strong>.
+                    </p>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      MCIcons.render(document.getElementById('perfil-content'));
 
-                <div class="rating-section">
-                    <h3>Calificación general</h3>
-                    ${total === 0
-                        ? '<p class="sin-resenas" style="margin:0;">Sin calificaciones aún.</p>'
-                        : `<div class="rating-summary">
-                            <div class="rating-big">
-                                <div class="numero">${valData.promedio ?? '—'}</div>
-                                <div class="estrellas">${renderEstrellas(valData.promedio || 0, '22px')}</div>
-                                <div class="total-txt">${total} reseña${total !== 1 ? 's' : ''}</div>
-                            </div>
-                            <div class="rating-bars">${barsHtml}</div>
-                        </div>`
-                    }
-                </div>
+    } catch (e) {
+      document.getElementById('perfil-content').innerHTML = '<div class="card" style="text-align:center;padding:60px 20px;"><div class="loading-empty">No se pudo cargar el perfil del médico.</div></div>';
+    }
+  })();
+</script>
 
-                <div class="reviews-section">
-                    <h3>Reseñas de pacientes</h3>
-                    ${reviewsHtml}
-                </div>`;
-        }
-
-        cargarPerfil();
-    </script>
 </body>
 </html>

@@ -1,178 +1,129 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <title>Mis Recetas | MediCitas SSL</title>
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(d=>{
-            if (!d.loggedIn) window.location.replace('/index.html');
-        });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="css/estilo.css">
-    <style>
-        .recetas-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-top: 24px;
-        }
-        .receta-card {
-            background: var(--bg-card, #1e293b);
-            border: 1px solid var(--border, rgba(148,163,184,.15));
-            border-radius: 14px;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .receta-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(37,99,235,.15);
-            color: #60a5fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 22px;
-        }
-        .receta-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .receta-nombre {
-            font-weight: 600;
-            font-size: .97rem;
-            color: var(--text-primary, #f1f5f9);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .receta-meta {
-            font-size: .82rem;
-            color: var(--text-muted, #94a3b8);
-            margin-top: 3px;
-        }
-        .receta-actions {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .btn-download {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: .85rem;
-            font-weight: 500;
-            background: var(--accent, #2563eb);
-            color: #fff;
-            text-decoration: none;
-            transition: background .2s;
-        }
-        .btn-download:hover { background: #1d4ed8; }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-        }
-        .empty-state .material-symbols-outlined {
-            font-size: 56px;
-            display: block;
-            margin-bottom: 16px;
-            opacity: .4;
-        }
-        @media (max-width: 600px) {
-            .receta-card { flex-wrap: wrap; }
-            .receta-actions { width: 100%; }
-            .btn-download { flex: 1; justify-content: center; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis recetas | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
-        <div class="section-header" style="text-align:left; margin-bottom:30px;">
-            <h1>Mis Recetas</h1>
-            <p>Recetas médicas en PDF emitidas durante tus consultas.</p>
+      <div class="page-header row between">
+        <div>
+          <p class="eyebrow">Tu medicación</p>
+          <h1>Mis recetas</h1>
+          <p>Consulta tu medicación activa, recordatorios y renovaciones.</p>
         </div>
+      </div>
 
-        <div id="lista-recetas">
-            <p style="color:#94a3b8;">Cargando...</p>
+      <div class="grid-3" style="margin-bottom:28px;">
+        <div class="stat-card" data-tone="primary">
+          <div class="stat-head"><div class="stat-icon"><i data-icon="pill" data-size="18"></i></div></div>
+          <div class="stat-n" id="stat-activas">—</div>
+          <div class="stat-label">Recetas activas</div>
         </div>
-    </main>
+        <div class="stat-card" data-tone="warm">
+          <div class="stat-head"><div class="stat-icon"><i data-icon="bell" data-size="18"></i></div></div>
+          <div class="stat-n" id="stat-total">—</div>
+          <div class="stat-label">Total emitidas</div>
+        </div>
+        <div class="stat-card" data-tone="success">
+          <div class="stat-head"><div class="stat-icon"><i data-icon="check" data-size="18"></i></div></div>
+          <div class="stat-n" id="stat-ultima">—</div>
+          <div class="stat-label">Días desde última</div>
+        </div>
+      </div>
 
-    <script>
-        fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
-            const nav = auth.id_medico ? 'nav-medico.html' : 'nav-user.html';
-            fetch(nav).then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
-        });
+      <div class="section-title">
+        <h2>Historial de recetas</h2>
+      </div>
 
-        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      <div class="stack" id="lista-recetas">
+        <div class="loading-empty">Cargando recetas...</div>
+      </div>
 
-        function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
+    </div>
+  </main>
+</div>
 
-        function formatFecha(str) {
-            if (!str) return '—';
-            const d = new Date(str);
-            return `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
-        }
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  MC.loadNav('nav-user.html');
 
-        (async function () {
-            const datos = await fetch('/api/resultados.php').then(r => r.json());
-            const el    = document.getElementById('lista-recetas');
+  (async function () {
+    const auth = await MC.requireAuth();
+    if (!auth || !auth.id_paciente) return;
 
-            const recetas = Array.isArray(datos) ? datos.filter(a => a.categoria === 'receta') : [];
+    try {
+      const recetas = await fetch('/api/recetas.php?paciente=' + auth.id_paciente).then(r => r.json()) || [];
 
-            if (!recetas.length) {
-                el.innerHTML = `
-                    <div class="empty-state">
-                        <span class="material-symbols-outlined">medication</span>
-                        <p>No tienes recetas médicas disponibles todavía.</p>
-                        <p style="font-size:.85rem;margin-top:6px;">Aparecerán aquí después de tus consultas.</p>
-                    </div>`;
-                return;
-            }
+      const activas = recetas.filter(r => r.activa);
+      document.getElementById('stat-activas').textContent = activas.length;
+      document.getElementById('stat-total').textContent = recetas.length;
 
-            el.innerHTML = `<div class="recetas-list">` +
-                recetas.map(r => {
-                    const meta = [
-                        r.fecha_subida ? formatFecha(r.fecha_subida) : null,
-                        r.nombre_medico ? drLabel(r.genero_medico) + ' ' + r.nombre_medico : null,
-                        r.fecha_cita    ? 'Cita: ' + formatFecha(r.fecha_cita) : null,
-                    ].filter(Boolean).join(' · ');
+      if (recetas.length) {
+        const ult = new Date(recetas[0].fecha_emision || recetas[0].fecha);
+        const dias = Math.floor((new Date() - ult) / 86400000);
+        document.getElementById('stat-ultima').textContent = dias >= 0 ? dias : '—';
+      }
 
-                    return `
-                    <div class="receta-card">
-                        <div class="receta-icon">
-                            <span class="material-symbols-outlined">picture_as_pdf</span>
-                        </div>
-                        <div class="receta-info">
-                            <div class="receta-nombre">${r.nombre_archivo}</div>
-                            <div class="receta-meta">${meta}</div>
-                        </div>
-                        <div class="receta-actions">
-                            <a href="/api/descargar-resultado.php?id=${r.id_archivo}"
-                               target="_blank" class="btn-download">
-                                <span class="material-symbols-outlined" style="font-size:18px;">download</span>
-                                Ver / Descargar
-                            </a>
-                        </div>
-                    </div>`;
-                }).join('') +
-            `</div>`;
-        })();
-    </script>
+      const lista = document.getElementById('lista-recetas');
+      if (!recetas.length) {
+        lista.innerHTML = `
+          <div class="card" style="text-align:center;padding:60px 20px;">
+            <i data-icon="pill" data-size="32" style="color:var(--text-3);margin-bottom:12px;"></i>
+            <h3 style="font-size:18px;margin-bottom:6px;">Aún no tienes recetas</h3>
+            <p style="color:var(--text-2);">Tus recetas aparecerán aquí después de cada consulta.</p>
+          </div>`;
+        MCIcons.render(lista);
+        return;
+      }
+
+      lista.innerHTML = recetas.map(r => {
+        const status = r.activa
+          ? '<span class="badge success"><span class="badge-dot"></span>Activa</span>'
+          : '<span class="badge muted"><span class="badge-dot"></span>Histórica</span>';
+        const meds = (r.medicamentos || []).map(m => `
+          <div class="med-row">
+            <div class="med-icon"><i data-icon="pill" data-size="18"></i></div>
+            <div class="med-info">
+              <strong>${m.nombre || ''} ${m.dosis ? '· ' + m.dosis : ''}</strong>
+              <span>${m.frecuencia || ''} ${m.duracion ? '· ' + m.duracion : ''}</span>
+            </div>
+          </div>`).join('');
+
+        return `
+        <div class="receta-card ${r.activa ? '' : 'expired'}">
+          <div class="receta-head">
+            <div>
+              <div class="row" style="gap:10px;margin-bottom:4px;">
+                <strong style="font-family:var(--font-display);font-size:18px;">Receta #${r.id_receta || r.id || '—'}</strong>
+                ${status}
+              </div>
+              <span style="font-size:13px;color:var(--text-3);">
+                Emitida el ${MC.fechaLarga(r.fecha_emision || r.fecha)} por ${MC.drLabel(r.genero_medico)} ${r.nombre_medico || ''}
+              </span>
+            </div>
+            <button class="btn btn-ghost btn-sm"><i data-icon="file-text" data-size="14"></i>Descargar PDF</button>
+          </div>
+          <div class="med-list">${meds || '<div class="loading-empty" style="padding:14px 0;">Sin medicamentos especificados</div>'}</div>
+        </div>`;
+      }).join('');
+      MCIcons.render(lista);
+
+    } catch (e) {
+      document.getElementById('lista-recetas').innerHTML = '<div class="loading-empty">No se pudieron cargar las recetas.</div>';
+    }
+  })();
+</script>
+
 </body>
 </html>

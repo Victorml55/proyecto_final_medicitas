@@ -1,636 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <title>Mis Citas | Portal Médico</title>
-    <script>
-        fetch('/api/auth-status.php').then(r => r.json()).then(d => {
-            if (!d.loggedIn || d.rol !== 'medico') window.location.replace('/index.html');
-        });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="stylesheet" href="css/estilo.css">
-    <style>
-        .appointment-card {
-            cursor: pointer;
-            transition: box-shadow .2s, transform .15s;
-        }
-        .appointment-card:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,.08);
-            transform: translateY(-2px);
-        }
-
-        /* ── Modal paciente ── */
-        .modal-pac-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 16px;
-            background: rgba(37,99,235,.07);
-            border-radius: 10px;
-            margin-bottom: 16px;
-        }
-        .modal-pac-avatar {
-            width: 46px; height: 46px;
-            border-radius: 50%;
-            background: rgba(148,163,184,.18);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; color: #64748b;
-        }
-        .modal-pac-nombre { font-weight: 600; font-size: 1rem; color: #0f172a; }
-        .modal-detail-row {
-            display: flex; align-items: flex-start; gap: 10px;
-            color: #475569; font-size: .93rem; padding: 5px 0;
-        }
-        .modal-detail-row .material-symbols-outlined {
-            font-size: 18px; color: #94a3b8; flex-shrink: 0; margin-top: 1px;
-        }
-        .modal-sep { border: none; border-top: 1px solid #e2e8f0; margin: 14px 0; }
-
-        /* ── Sección concluir ── */
-        .sec-title {
-            font-size: .77rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .06em; color: #94a3b8; margin: 14px 0 8px;
-        }
-
-        /* Upload */
-        .upload-zone {
-            border: 1px dashed #94a3b8; border-radius: 8px;
-            padding: 14px 16px; background: #f8fafc; margin-bottom: 6px;
-        }
-        .upload-zone input[type=file] { display: none; }
-        .btn-pick-file {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 7px 14px; border-radius: 7px;
-            background: #fff; border: 1px solid #d1d5db;
-            color: #475569; cursor: pointer; font-size: .84rem;
-            font-weight: 500; transition: border-color .2s;
-        }
-        .btn-pick-file:hover { border-color: #3b82f6; color: #3b82f6; }
-        .file-queue { display: flex; flex-direction: column; gap: 5px; }
-        .file-tag {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 10px; border-radius: 6px;
-            font-size: .82rem;
-            background: #fef9c3; border: 1px solid #fde68a; color: #92400e;
-        }
-        .file-tag .material-symbols-outlined { font-size: 15px; }
-        .file-tag button {
-            background: none; border: none; cursor: pointer;
-            color: #b45309; padding: 0; margin-left: auto;
-            display: flex; align-items: center;
-        }
-
-        /* Botón confirmar */
-        .btn-confirmar {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            width: 100%; padding: 11px; margin-top: 14px;
-            background: #2563eb; color: #fff; border: none;
-            border-radius: 8px; font-size: .94rem; font-weight: 600;
-            cursor: pointer; transition: background .15s;
-        }
-        .btn-confirmar:hover { background: #1d4ed8; }
-        .btn-confirmar:disabled { opacity: .55; cursor: not-allowed; }
-
-        /* Botón concluir */
-        .btn-concluir {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            width: 100%; padding: 11px; margin-top: 14px;
-            background: #10b981; color: #fff; border: none;
-            border-radius: 8px; font-size: .94rem; font-weight: 600;
-            cursor: pointer; transition: background .15s;
-        }
-        .btn-concluir:hover { background: #059669; }
-        .btn-concluir:disabled { opacity: .55; cursor: not-allowed; }
-
-        /* Botón subir (post-conclusión) */
-        .btn-subir {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            width: 100%; padding: 9px; margin-top: 10px;
-            background: #2563eb; color: #fff; border: none;
-            border-radius: 8px; font-size: .9rem; font-weight: 600;
-            cursor: pointer; transition: background .15s;
-        }
-        .btn-subir:hover { background: #1d4ed8; }
-        .btn-subir:disabled { opacity: .55; cursor: not-allowed; }
-
-        /* Botón cancelar cita confirmada (médico) */
-        .btn-cancelar-med {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            width: 100%; padding: 9px; margin-top: 10px;
-            background: #fff; color: #dc2626;
-            border: 2px solid #dc2626; border-radius: 8px;
-            font-size: .9rem; font-weight: 600;
-            cursor: pointer; transition: background .15s, color .15s;
-        }
-        .btn-cancelar-med:hover:not(:disabled) { background: #fef2f2; }
-        .btn-cancelar-med:disabled { opacity: .45; cursor: not-allowed; }
-
-        /* Vista sólo lectura (archivos) */
-        .ro-card {
-            background: rgba(37,99,235,.05);
-            border: 1px solid rgba(37,99,235,.14);
-            border-radius: 10px; padding: 14px 16px; margin-top: 6px;
-        }
-        .ro-card.verde {
-            background: rgba(16,185,129,.04);
-            border-color: rgba(16,185,129,.2);
-        }
-        .ro-card-title {
-            font-weight: 600; font-size: .88rem;
-            display: flex; align-items: center; gap: 6px;
-            margin-bottom: 10px;
-        }
-        .ro-card-title.verde { color: #065f46; }
-        .ro-card-title.azul  { color: #1e40af; }
-        .res-ro {
-            display: flex; align-items: center; gap: 8px;
-            padding: 7px 10px; background: #f8fafc;
-            border: 1px solid #e2e8f0; border-radius: 7px;
-            margin-bottom: 5px; font-size: .84rem;
-        }
-        .res-ro .material-symbols-outlined { font-size: 17px; color: #94a3b8; flex-shrink: 0; }
-        .res-ro a {
-            color: #2563eb; text-decoration: none; font-weight: 500;
-            margin-left: auto; display: flex; align-items: center; gap: 4px;
-        }
-        .res-ro a:hover { text-decoration: underline; }
-        .empty-ro { font-size: .84rem; color: #94a3b8; padding: 4px 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi agenda | Portal médico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body class="cuerpo-pagina">
+<body>
 
-    <div id="nav-container"></div>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
 
-    <main class="contenido-pagina">
-        <div class="section-header" style="text-align:left; margin-bottom:40px;">
-            <h1>Mis Citas</h1>
-            <p>Consulta tu agenda de pacientes.</p>
+      <div class="page-header row between">
+        <div>
+          <p class="eyebrow" id="header-fecha">Cargando...</p>
+          <h1>Mi agenda</h1>
+          <p id="header-sub">—</p>
         </div>
-
-        <h2 class="section-subtitle">Próximas Citas</h2>
-        <div class="appointments-list" id="lista-proximas">
-            <p style="color:#94a3b8;">Cargando...</p>
+        <div class="view-toggle">
+          <button data-view="week" data-active="true">Semana</button>
+          <button data-view="list">Lista</button>
         </div>
+      </div>
 
-        <h2 class="section-subtitle" style="margin-top:50px;">Historial</h2>
-        <div class="appointments-list" id="lista-historial">
-            <p style="color:#94a3b8;">Cargando...</p>
-        </div>
-    </main>
+      <div id="view-content">
+        <div class="loading-empty">Cargando agenda...</div>
+      </div>
 
-    <!-- Modal detalle de cita (médico) -->
-    <div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this)cerrarModal()">
-        <div class="modal" style="max-width:600px;">
-            <div class="modal-header">
-                <h3>Detalle de la cita</h3>
-                <button class="modal-close" onclick="cerrarModal()">×</button>
-            </div>
-            <div class="modal-body" id="modal-cuerpo"></div>
-            <div class="modal-footer">
-                <button onclick="cerrarModal()"
-                        style="padding:8px 22px;border-radius:8px;border:2px solid #005f99;background:white;color:#005f99;font-size:.9rem;font-weight:600;cursor:pointer;">
-                    Cerrar
-                </button>
-            </div>
-        </div>
     </div>
+  </main>
+</div>
 
-    <script>
-        fetch('nav-medico.html').then(r => r.text()).then(d => {
-            document.getElementById('nav-container').innerHTML = d;
-        });
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  MC.loadNav('nav-medico.html');
 
-        const mesesC = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-        const mesesL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
-                        'septiembre','octubre','noviembre','diciembre'];
-        let todasCitas = [];
-        let citaActual = null;
-        // archivosQ: [{ file, desc, categoria }] — null = eliminado
-        let archivosQ  = [];
+  let CITAS = [];
+  let VIEW = 'week';
+  let TAB = 'proximas';
 
-        function horaLabel(h) {
-            if (!h) return '—';
-            const [hh, mm] = h.split(':');
-            const n = parseInt(hh);
-            return `${n > 12 ? n-12 : n || 12}:${mm} ${n >= 12 ? 'PM' : 'AM'}`;
-        }
+  function renderWeek() {
+    const inicio = new Date(); inicio.setDate(inicio.getDate() - inicio.getDay() + 1);
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(inicio); d.setDate(inicio.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      const dia = d.toLocaleDateString('es', { weekday: 'short' }).toUpperCase().slice(0,3);
+      const citasDia = CITAS.filter(c => c.fecha_cita === iso).sort((a,b) => a.hora_inicio.localeCompare(b.hora_inicio));
+      days.push({ iso, day: d.getDate(), dia, citas: citasDia });
+    }
 
-        // ── Tarjeta de cita ──────────────────────────────────────────────────
-        function tarjetaCita(c, futura) {
-            const f   = c.fecha_cita.split('T')[0].split('-');
-            const mes = mesesC[parseInt(f[1])-1].toUpperCase();
-            const col = c.color || '#94a3b8';
-            return `
-            <div class="appointment-card ${futura ? '' : 'past-appointment'}"
-                 onclick="abrirModal(${c.id_cita})">
-                <div class="date-block">
-                    <span class="date-month">${mes}</span>
-                    <span class="date-day">${parseInt(f[2])}</span>
-                    <span class="date-year">${f[0]}</span>
-                </div>
-                <div class="appointment-info">
-                    <div class="appointment-header">
-                        <h3>${c.nombre_paciente}</h3>
-                        <span class="status-badge" style="background:${col}22;color:${col};">${c.nombre_estado}</span>
-                    </div>
-                    <div class="appointment-meta">
-                        <span><span class="material-symbols-outlined">schedule</span> ${horaLabel(c.hora_inicio)}</span>
-                        ${c.numero_consultorio ? `<span><span class="material-symbols-outlined">meeting_room</span> Consultorio ${c.numero_consultorio}</span>` : ''}
-                        ${c.motivo_consulta    ? `<span><span class="material-symbols-outlined">description</span> ${c.motivo_consulta}</span>` : ''}
-                    </div>
-                </div>
-                <div style="padding-left:8px;flex-shrink:0;">
-                    <span class="material-symbols-outlined" style="color:#94a3b8;font-size:20px;">chevron_right</span>
-                </div>
-            </div>`;
-        }
-
-        // ── Cargar citas ────────────────────────────────────────────────────
-        async function cargarCitas() {
-            const auth = await fetch('/api/auth-status.php').then(r => r.json());
-            if (!auth.loggedIn || auth.rol !== 'medico') {
-                window.location.replace('/index.html'); return;
-            }
-
-            const citas = await fetch(`/api/citas.php?medico=${auth.id_medico}`).then(r => r.json());
-            todasCitas  = citas;
-            const hoy   = new Date().toISOString().split('T')[0];
-
-            const terminada = c => ['Cancelada','Rechazada','Concluida'].includes(c.nombre_estado);
-            const proximas  = citas.filter(c => c.fecha_cita >= hoy && !terminada(c))
-                                   .sort((a,b) => a.fecha_cita.localeCompare(b.fecha_cita) || a.hora_inicio.localeCompare(b.hora_inicio));
-            const historial = citas.filter(c => c.fecha_cita < hoy || terminada(c))
-                                   .sort((a,b) => b.fecha_cita.localeCompare(a.fecha_cita));
-
-            const elP = document.getElementById('lista-proximas');
-            const elH = document.getElementById('lista-historial');
-
-            elP.innerHTML = proximas.length
-                ? proximas.map(c => tarjetaCita(c, true)).join('')
-                : '<p style="color:#94a3b8;padding:20px 0;">No tienes citas próximas.</p>';
-            elH.innerHTML = historial.length
-                ? historial.map(c => tarjetaCita(c, false)).join('')
-                : '<p style="color:#94a3b8;padding:20px 0;">Sin historial de citas.</p>';
-        }
-
-        // ── Modal ───────────────────────────────────────────────────────────
-        async function abrirModal(idCita) {
-            const c = todasCitas.find(x => x.id_cita === idCita);
-            if (!c) return;
-            citaActual = c;
-            archivosQ  = [];
-
-            const f     = c.fecha_cita.split('T')[0].split('-');
-            const fecha = `${parseInt(f[2])} de ${mesesL[parseInt(f[1])-1]} de ${f[0]}`;
-            const col   = c.color || '#94a3b8';
-
-            let html = `
-                <div class="modal-pac-row">
-                    <div class="modal-pac-avatar">
-                        <span class="material-symbols-outlined" style="font-size:26px;">person</span>
-                    </div>
-                    <div style="flex:1;">
-                        <div class="modal-pac-nombre">${c.nombre_paciente}</div>
-                        <div style="font-size:.83rem;color:#64748b;margin-top:1px;">Paciente</div>
-                    </div>
-                    <span class="status-badge" style="background:${col}22;color:${col};">${c.nombre_estado}</span>
-                </div>
-                <div class="modal-detail-row">
-                    <span class="material-symbols-outlined">calendar_today</span>
-                    <span>${fecha}</span>
-                </div>
-                <div class="modal-detail-row">
-                    <span class="material-symbols-outlined">schedule</span>
-                    <span>${horaLabel(c.hora_inicio)}</span>
-                </div>
-                ${c.numero_consultorio ? `<div class="modal-detail-row">
-                    <span class="material-symbols-outlined">meeting_room</span>
-                    <span>Consultorio ${c.numero_consultorio}</span>
-                </div>` : ''}
-                ${c.motivo_consulta ? `<div class="modal-detail-row">
-                    <span class="material-symbols-outlined">description</span>
-                    <span>${c.motivo_consulta}</span>
-                </div>` : ''}`;
-
-            if (c.nombre_estado === 'Pendiente') {
-                html += htmlFormConfirmar();
-            } else if (c.nombre_estado === 'Confirmada') {
-                html += htmlFormConcluir();
-            } else if (c.nombre_estado === 'Concluida') {
-                html += '<hr class="modal-sep">';
-                html += await htmlArchivosRO(idCita);
-                html += htmlFormSubirResultados();
-            } else {
-                html += `<hr class="modal-sep"><p style="font-size:.87rem;color:#94a3b8;">
-                    Estado actual: <strong>${c.nombre_estado}</strong>. No hay acciones disponibles.</p>`;
-            }
-
-            document.getElementById('modal-cuerpo').innerHTML = html;
-            document.getElementById('modal-backdrop').classList.add('active');
-        }
-
-        function cerrarModal() {
-            document.getElementById('modal-backdrop').classList.remove('active');
-            citaActual = null;
-            archivosQ  = [];
-        }
-
-        // ── Formulario confirmar (cita Pendiente) ───────────────────────────
-        function htmlFormConfirmar() {
-            return `
-            <hr class="modal-sep">
-            <div class="sec-title">Acción requerida</div>
-            <p style="font-size:.87rem;color:#64748b;margin-bottom:14px;">
-                Esta cita está pendiente de confirmación.
-            </p>
-            <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarCita()">
-                <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>
-                Confirmar cita
-            </button>`;
-        }
-
-        async function confirmarCita() {
-            const btn = document.getElementById('btn-confirmar');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_top</span> Confirmando...';
-            try {
-                const r = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=confirmar`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: '{}',
-                });
-                if (!r.ok) {
-                    const e = await r.json().catch(() => ({}));
-                    throw new Error(e.error ?? 'No se pudo confirmar la cita');
-                }
-                cerrarModal();
-                cargarCitas();
-            } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Confirmar cita';
-            }
-        }
-
-        // ── Cancelar cita Confirmada (médico) ───────────────────────────────
-        async function cancelarCitaConfirmada() {
-            if (!confirm('¿Estás seguro de que deseas cancelar esta cita confirmada? El paciente será notificado.')) return;
-            const btn = document.getElementById('btn-cancelar-med');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_top</span> Cancelando...';
-            try {
-                const r = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=cancelar-medico`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: '{}',
-                });
-                const data = await r.json().catch(() => ({}));
-                if (!r.ok) throw new Error(data.error ?? 'No se pudo cancelar la cita');
-                cerrarModal();
-                cargarCitas();
-            } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">cancel</span> Cancelar cita';
-            }
-        }
-
-        // ── Formulario concluir (cita Confirmada) ───────────────────────────
-        function htmlFormConcluir() {
-            return `
-            <hr class="modal-sep">
-
-            <div class="sec-title">Receta Médica (PDF)
-                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;font-size:.73rem;"> — opcional</span>
+    document.getElementById('view-content').innerHTML = `
+      <div class="card flush">
+        <div class="card-head">
+          <div class="row" style="gap:10px;">
+            <button class="btn btn-ghost btn-sm"><i data-icon="chevron-left" data-size="14"></i></button>
+            <h3>Semana actual</h3>
+            <button class="btn btn-ghost btn-sm"><i data-icon="chevron-right" data-size="14"></i></button>
+          </div>
+        </div>
+        <div class="week-grid">
+          ${days.map(d => `
+            <div class="week-col" data-empty="${d.citas.length === 0}">
+              <div class="week-col-head">
+                <span class="week-day-name">${d.dia}</span>
+                <span class="week-day-num">${d.day}</span>
+                <span class="week-day-count">${d.citas.length > 0 ? d.citas.length + ' citas' : 'Sin citas'}</span>
+              </div>
+              <div class="week-col-body">
+                ${d.citas.slice(0, 4).map(c => `
+                  <div class="week-appt" data-status="${c.id_estado == 3 ? 'done' : 'upcoming'}">
+                    <strong>${MC.horaLabel(c.hora_inicio)}</strong>
+                    <span class="week-appt-patient">${c.nombre_paciente || 'Paciente'}</span>
+                    <span class="week-appt-reason">${c.motivo_consulta || 'Consulta'}</span>
+                  </div>
+                `).join('')}
+                ${d.citas.length > 4 ? `<div class="week-more">+ ${d.citas.length - 4} más</div>` : ''}
+              </div>
             </div>
-            <div class="upload-zone">
-                <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
-                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">upload_file</span>
-                    Solo archivos PDF — máx. 10 MB
-                </div>
-                <div style="text-align:center;">
-                    <label class="btn-pick-file">
-                        <span class="material-symbols-outlined" style="font-size:16px;">picture_as_pdf</span>
-                        Seleccionar receta (PDF)
-                        <input type="file" id="f-receta" accept=".pdf"
-                               onchange="archivoSeleccionado(this,'receta','rec-queue')">
-                    </label>
-                </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    MCIcons.render(document.getElementById('view-content'));
+  }
+
+  function renderList() {
+    const hoyISO = new Date().toISOString().split('T')[0];
+    const proximas = CITAS.filter(c => c.fecha_cita >= hoyISO && c.id_estado != 3 && c.id_estado != 4);
+    const pasadas  = CITAS.filter(c => c.fecha_cita <  hoyISO || c.id_estado == 3 || c.id_estado == 4);
+    const items = TAB === 'proximas' ? proximas : pasadas;
+
+    document.getElementById('view-content').innerHTML = `
+      <div class="row between" style="margin-bottom:22px;">
+        <div class="tabs">
+          <button class="tab" data-tab="proximas" ${TAB==='proximas'?'data-active="true"':''}>
+            Próximas <span class="tab-count">${proximas.length}</span>
+          </button>
+          <button class="tab" data-tab="pasadas" ${TAB==='pasadas'?'data-active="true"':''}>
+            Pasadas <span class="tab-count">${pasadas.length}</span>
+          </button>
+        </div>
+      </div>
+      <div class="stack">
+        ${items.length === 0 ? '<div class="loading-empty">Sin citas en esta vista.</div>' : items.map(c => {
+          const f = MC.fechaCorta(c.fecha_cita);
+          return `
+          <div class="appt-row">
+            <div class="appt-date">
+              <div class="appt-day-name">${f.month}</div>
+              <div class="appt-day">${f.day}</div>
+              <div class="appt-month">${MC.horaLabel(c.hora_inicio)}</div>
             </div>
-            <div id="rec-queue" class="file-queue" style="margin-bottom:6px;"></div>
-
-            <div class="sec-title" style="margin-top:10px;">Resultados de Laboratorio
-                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;font-size:.73rem;"> — opcional</span>
+            <div class="appt-body">
+              <div class="row" style="gap:10px;margin-bottom:6px;">
+                <h3 style="font-size:17px;">${c.nombre_paciente || 'Paciente'}</h3>
+                ${c.id_estado == 1 ? '<span class="badge warning"><span class="badge-dot"></span>Pendiente</span>' :
+                  c.id_estado == 2 ? '<span class="badge success"><span class="badge-dot"></span>Confirmada</span>' :
+                  c.id_estado == 3 ? '<span class="badge muted"><span class="badge-dot"></span>Atendido</span>' : ''}
+              </div>
+              <div style="color:var(--text-2);font-size:14px;">${c.motivo_consulta || 'Consulta'}</div>
             </div>
-            <div class="upload-zone">
-                <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
-                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">lab_panel</span>
-                    PDF, imágenes, Word, Excel — máx. 10 MB por archivo
-                </div>
-                <div style="text-align:center;">
-                    <label class="btn-pick-file">
-                        <span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>
-                        Seleccionar archivo
-                        <input type="file" id="f-archivo"
-                               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                               onchange="archivoSeleccionado(this,'resultado','file-queue')">
-                    </label>
-                </div>
+            <div class="appt-actions">
+              ${c.id_estado == 3
+                ? '<button class="btn btn-ghost btn-sm"><i data-icon="file-text"></i>Ver notas</button>'
+                : '<button class="btn btn-primary btn-sm">Ver ficha<i data-icon="arrow-right" data-size="14"></i></button>'}
             </div>
-            <div id="file-queue" class="file-queue" style="margin-bottom:6px;"></div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    MCIcons.render(document.getElementById('view-content'));
+    document.querySelectorAll('.tab[data-tab]').forEach(t => {
+      t.addEventListener('click', () => { TAB = t.dataset.tab; renderList(); });
+    });
+  }
 
-            <button class="btn-concluir" id="btn-concluir" onclick="guardarYConcluir()">
-                <span class="material-symbols-outlined" style="font-size:18px;">task_alt</span>
-                Guardar y marcar como Concluida
-            </button>
-            ${(() => {
-                const fecha  = citaActual.fecha_cita.split('T')[0];
-                const tsCita = new Date(fecha + 'T' + citaActual.hora_inicio).getTime();
-                const puedeCanc = (tsCita - Date.now()) > 30 * 60 * 1000;
-                return `<button class="btn-cancelar-med" id="btn-cancelar-med"
-                    ${puedeCanc ? '' : 'disabled'}
-                    onclick="cancelarCitaConfirmada()">
-                    <span class="material-symbols-outlined" style="font-size:18px;">cancel</span>
-                    Cancelar cita${!puedeCanc ? ' (menos de 30 min)' : ''}
-                </button>`;
-            })()}`;
-        }
+  function render() {
+    VIEW === 'week' ? renderWeek() : renderList();
+  }
 
-        // ── Formulario subir resultados (cita ya Concluida) ─────────────────
-        function htmlFormSubirResultados() {
-            return `
-            <hr class="modal-sep">
-            <div class="sec-title">Subir resultados adicionales</div>
-            <div class="upload-zone">
-                <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
-                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">lab_panel</span>
-                    PDF, imágenes, Word, Excel — máx. 10 MB por archivo
-                </div>
-                <div style="text-align:center;">
-                    <label class="btn-pick-file">
-                        <span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>
-                        Seleccionar archivo
-                        <input type="file" id="f-archivo-post"
-                               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                               onchange="archivoSeleccionado(this,'resultado','post-queue')">
-                    </label>
-                </div>
-            </div>
-            <div id="post-queue" class="file-queue" style="margin-bottom:6px;"></div>
-            <button class="btn-subir" id="btn-subir-post" onclick="subirResultadosPost()">
-                <span class="material-symbols-outlined" style="font-size:17px;">cloud_upload</span>
-                Subir resultados
-            </button>`;
-        }
+  document.querySelectorAll('.view-toggle button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.view-toggle button').forEach(x => x.removeAttribute('data-active'));
+      b.setAttribute('data-active', 'true');
+      VIEW = b.dataset.view;
+      render();
+    });
+  });
 
-        // ── Agregar archivo a la cola ────────────────────────────────────────
-        function archivoSeleccionado(input, categoria, queueId) {
-            if (!input.files || !input.files[0]) return;
-            const file = input.files[0];
+  (async function () {
+    const auth = await MC.requireAuth('medico');
+    if (!auth) return;
+    document.getElementById('header-fecha').textContent = MC.fechaLarga(new Date().toISOString().split('T')[0]);
+    try {
+      CITAS = await fetch('/api/citas.php?medico=' + auth.id_medico).then(r => r.json()) || [];
+      document.getElementById('header-sub').textContent = CITAS.length + ' consultas en total.';
+      render();
+    } catch (e) {
+      document.getElementById('view-content').innerHTML = '<div class="loading-empty">No se pudo cargar la agenda.</div>';
+    }
+  })();
+</script>
 
-            const idx = archivosQ.length;
-            archivosQ.push({ file, categoria });
-
-            const tag = document.createElement('div');
-            tag.className = 'file-tag';
-            tag.id = 'ftag-' + idx;
-            tag.innerHTML = `
-                <span class="material-symbols-outlined">${categoria === 'receta' ? 'picture_as_pdf' : 'attach_file'}</span>
-                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${file.name}</span>
-                <button type="button" onclick="quitarArchivo(${idx},'${queueId}')">
-                    <span class="material-symbols-outlined" style="font-size:15px;">close</span>
-                </button>`;
-            document.getElementById(queueId).appendChild(tag);
-            input.value = '';
-        }
-
-        function quitarArchivo(idx, queueId) {
-            archivosQ[idx] = null;
-            const el = document.getElementById('ftag-' + idx);
-            if (el) el.remove();
-        }
-
-        // ── Subir archivos en cola (helper) ──────────────────────────────────
-        async function subirArchivos(filtroCategoria) {
-            for (const entry of archivosQ) {
-                if (!entry) continue;
-                if (filtroCategoria && entry.categoria !== filtroCategoria) continue;
-                const fd = new FormData();
-                fd.append('id_cita',   citaActual.id_cita);
-                fd.append('categoria', entry.categoria);
-                fd.append('archivo',   entry.file);
-                const r = await fetch('/api/resultados.php', { method: 'POST', body: fd });
-                if (!r.ok) {
-                    const e = await r.json().catch(() => ({}));
-                    throw new Error(e.error ?? 'Error al subir ' + entry.file.name);
-                }
-            }
-        }
-
-        // ── Guardar y concluir (cita Confirmada) ─────────────────────────────
-        async function guardarYConcluir() {
-            const btn = document.getElementById('btn-concluir');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_top</span> Guardando...';
-
-            try {
-                await subirArchivos();   // sube receta y resultados
-
-                const r2 = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=concluir`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: '{}',
-                });
-                if (!r2.ok) {
-                    const e = await r2.json().catch(() => ({}));
-                    throw new Error(e.error ?? 'No se pudo concluir la cita');
-                }
-
-                cerrarModal();
-                cargarCitas();
-
-            } catch (err) {
-                alert(err.message);
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">task_alt</span> Guardar y marcar como Concluida';
-            }
-        }
-
-        // ── Subir resultados adicionales (cita ya Concluida) ─────────────────
-        async function subirResultadosPost() {
-            const btn = document.getElementById('btn-subir-post');
-            const pendientes = archivosQ.filter(e => e !== null);
-            if (!pendientes.length) {
-                alert('Selecciona al menos un archivo.');
-                return;
-            }
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:17px;">hourglass_top</span> Subiendo...';
-
-            try {
-                await subirArchivos('resultado');
-                // Refrescar sección de archivos
-                archivosQ = [];
-                document.getElementById('post-queue').innerHTML = '';
-                const secArchivos = document.getElementById('sec-archivos-ro');
-                if (secArchivos) {
-                    secArchivos.innerHTML = '<p style="color:#94a3b8;font-size:.83rem;">Actualizando...</p>';
-                    secArchivos.innerHTML = await htmlArchivosRO(citaActual.id_cita);
-                }
-            } catch (err) {
-                alert(err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:17px;">cloud_upload</span> Subir resultados';
-            }
-        }
-
-        // ── Vista de archivos (sólo lectura) ─────────────────────────────────
-        async function htmlArchivosRO(idCita) {
-            try {
-                const archivos = await fetch(`/api/resultados.php?id_cita=${idCita}`).then(r => r.json());
-                if (!Array.isArray(archivos)) return '';
-
-                const recetas    = archivos.filter(a => a.categoria === 'receta');
-                const resultados = archivos.filter(a => a.categoria !== 'receta');
-
-                const fileRow = a => `
-                    <div class="res-ro">
-                        <span class="material-symbols-outlined">${a.tipo_archivo === 'pdf' ? 'picture_as_pdf' : 'description'}</span>
-                        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre_archivo}</span>
-                        <a href="/api/descargar-resultado.php?id=${a.id_archivo}" target="_blank">
-                            <span class="material-symbols-outlined" style="font-size:17px;">download</span>Ver
-                        </a>
-                    </div>`;
-
-                let html = '<div id="sec-archivos-ro">';
-
-                html += `<div class="ro-card">
-                    <div class="ro-card-title azul">
-                        <span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta Médica
-                    </div>
-                    ${recetas.length ? recetas.map(fileRow).join('') : '<p class="empty-ro">Sin receta subida para esta consulta.</p>'}
-                </div>`;
-
-                html += `<div class="ro-card verde" style="margin-top:10px;">
-                    <div class="ro-card-title verde">
-                        <span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio
-                    </div>
-                    ${resultados.length ? resultados.map(fileRow).join('') : '<p class="empty-ro">Sin resultados subidos para esta consulta.</p>'}
-                </div>`;
-
-                html += '</div>';
-                return html;
-            } catch { return ''; }
-        }
-
-        cargarCitas();
-    </script>
 </body>
 </html>

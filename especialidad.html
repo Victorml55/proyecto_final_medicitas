@@ -1,49 +1,87 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Especialidades | MediCitas SSL</title>
-    <link rel="stylesheet" href="css/estilo.css">
-<body class="cuerpo-pagina">
-    
-<div id="nav-container"></div>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Especialidades | MediCitas SSL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
 
-    <main class="contenido-pagina">
-        <div class="section-header">
-            <h1>Nuestras Especialidades</h1>
-            <p>Atención médica de excelencia con los mejores especialistas de la región.</p>
+<div class="proto-shell">
+  <div id="nav-container"></div>
+  <main>
+    <div class="page">
+
+      <div class="page-header">
+        <p class="eyebrow">Nuestras áreas de atención</p>
+        <h1>Especialidades médicas</h1>
+        <p>Atención médica de excelencia con los mejores especialistas certificados de la región.</p>
+      </div>
+
+      <div class="grid-3" id="lista-especialidades" style="gap:18px;">
+        <div class="loading-empty" style="grid-column:1/-1;">Cargando especialidades...</div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/icons.js"></script>
+<script>
+  fetch('/api/auth-status.php').then(r => r.json()).then(d => {
+    if (d.loggedIn) MC.loadNav(d.rol === 'medico' ? 'nav-medico.html' : 'nav-user.html');
+    else MC.loadNav('nav.html');
+  }).catch(() => MC.loadNav('nav.html'));
+
+  (async function () {
+    try {
+      const data = await fetch('/api/especialidades.php').then(r => r.json());
+      const activas = (data || []).filter(e => e.activo);
+
+      // Conteo de médicos por especialidad
+      let medicos = [];
+      try { medicos = await fetch('/api/medicos.php').then(r => r.json()) || []; } catch {}
+      const counts = {};
+      medicos.filter(m => m.activo).forEach(m => {
+        counts[m.id_especialidad] = (counts[m.id_especialidad] || 0) + 1;
+      });
+
+      const grid = document.getElementById('lista-especialidades');
+      if (!activas.length) {
+        grid.innerHTML = '<div class="loading-empty" style="grid-column:1/-1;">No hay especialidades disponibles.</div>';
+        return;
+      }
+
+      grid.innerHTML = activas.map(e => `
+        <div class="spec-card">
+          <div class="spec-icon-wrap">
+            <div class="spec-icon"><i data-icon="heart-pulse" data-size="26"></i></div>
+            <span class="spec-doc-count">${counts[e.id_especialidad] || 0} médicos</span>
+          </div>
+          <h3>${e.nombre_especialidad}</h3>
+          <p>${e.descripcion || 'Atención médica especializada con profesionales certificados.'}</p>
+          <div class="spec-actions">
+            <a href="medicos.html" class="btn btn-soft btn-sm">
+              <i data-icon="users" data-size="14"></i>Ver médicos
+            </a>
+            <a href="agendar-cita.html?especialidad=${e.id_especialidad}" class="btn btn-ghost btn-sm">
+              Agendar<i data-icon="arrow-right" data-size="14"></i>
+            </a>
+          </div>
         </div>
+      `).join('');
+      MCIcons.render(grid);
 
-        <div class="specialties-grid" id="specialties-grid">
-            <p id="cargando">Cargando especialidades...</p>
-        </div>
-    </main>
+    } catch (e) {
+      document.getElementById('lista-especialidades').innerHTML =
+        '<div class="loading-empty" style="grid-column:1/-1;">No se pudieron cargar las especialidades.</div>';
+    }
+  })();
+</script>
 
-    <script>
-        fetch('nav.html')
-            .then(r => r.text())
-            .then(data => { document.getElementById('nav-container').innerHTML = data; });
-
-        fetch('api/especialidades.php')
-            .then(r => r.json())
-            .then(especialidades => {
-                const grid = document.getElementById('specialties-grid');
-                const activas = especialidades.filter(e => e.activo);
-                if (activas.length === 0) {
-                    grid.innerHTML = '<p>No hay especialidades disponibles.</p>';
-                    return;
-                }
-                grid.innerHTML = activas.map(e => `
-                    <div class="specialty-card">
-                        <h2>${e.nombre_especialidad}</h2>
-                        <p>${e.descripcion ?? ''}</p>
-                    </div>`).join('');
-            })
-            .catch(() => {
-                document.getElementById('specialties-grid').innerHTML =
-                    '<p>Error al cargar las especialidades.</p>';
-            });
-    </script>
 </body>
 </html>
