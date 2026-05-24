@@ -40,6 +40,40 @@
             font-family: 'Inter', sans-serif;
         }
         .flatpickr-input:focus { outline: none; border-color: #005f99; }
+
+        /* Selector de tipo de cita */
+        .tipo-selector-wrapper { max-width: 600px; margin: 0 auto 40px; }
+        .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .tipo-card {
+            border: 2px solid #e2e8f0; border-radius: 16px;
+            padding: 28px 20px; cursor: pointer; text-align: center;
+            transition: border-color .15s, background .15s, box-shadow .15s;
+            background: #fff;
+        }
+        .tipo-card:hover { border-color: #005f99; background: #f0f8ff; box-shadow: 0 4px 12px rgba(0,95,153,.1); }
+        .tipo-card .material-symbols-outlined { font-size: 40px; color: #005f99; margin-bottom: 10px; display: block; }
+        .tipo-card h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .tipo-card p { font-size: .85rem; color: #64748b; margin: 0; }
+        @media (max-width: 500px) { .tipo-grid { grid-template-columns: 1fr; } }
+
+        /* Lab: análisis cards */
+        .analisis-grid-ag {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 10px; margin-bottom: 20px;
+        }
+        .analisis-card-ag {
+            border: 2px solid #e2e8f0; border-radius: 10px;
+            padding: 11px 14px; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            font-size: .88rem; font-weight: 500; color: #334155;
+            background: #fff;
+            transition: border-color .12s, background .12s;
+            user-select: none;
+        }
+        .analisis-card-ag:hover { border-color: #005f99; background: #f0f8ff; }
+        .analisis-card-ag.active { border-color: #005f99; background: #e6f0f9; color: #004477; }
+        .analisis-card-ag .material-symbols-outlined { font-size: 18px; color: #005f99; flex-shrink: 0; }
     </style>
 </head>
 <body class="cuerpo-pagina">
@@ -57,7 +91,26 @@
     <main class="contenido-pagina">
 
         <h1 class="page-title">Agendar Cita</h1>
-        <p class="page-subtitle">Completa los pasos para reservar tu cita médica.</p>
+        <p class="page-subtitle" id="page-subtitle">¿Qué tipo de cita deseas agendar?</p>
+
+        <!-- Selector de tipo -->
+        <div class="tipo-selector-wrapper" id="tipo-selector">
+            <div class="tipo-grid">
+                <div class="tipo-card" onclick="seleccionarModo('medico')">
+                    <span class="material-symbols-outlined">stethoscope</span>
+                    <h3>Consulta Médica</h3>
+                    <p>Agenda con un especialista de tu elección</p>
+                </div>
+                <div class="tipo-card" onclick="seleccionarModo('lab')">
+                    <span class="material-symbols-outlined">science</span>
+                    <h3>Laboratorio Clínico</h3>
+                    <p>Reserva tu turno para análisis clínicos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── FLOW: CONSULTA MÉDICA ────────────────────────────────── -->
+        <div id="flow-medico" style="display:none">
 
         <div class="steps-wrapper mb-2">
             <div class="step-item active" id="step-ind-1">
@@ -269,7 +322,163 @@
                 </div>
             </div>
 
-        </div><!-- /form-card -->
+        </div><!-- /form-card medico -->
+        </div><!-- /flow-medico -->
+
+        <!-- ── FLOW: LABORATORIO CLÍNICO ───────────────────────────── -->
+        <div id="flow-lab" style="display:none">
+
+            <div class="steps-wrapper mb-2">
+                <div class="step-item active" id="lab-step-ind-1">
+                    <div class="step-circle" id="lab-sc-1">1</div>
+                    <span class="step-label">Tipo de Análisis</span>
+                </div>
+                <div class="step-item" id="lab-step-ind-2">
+                    <div class="step-circle" id="lab-sc-2">2</div>
+                    <span class="step-label">Fecha y Hora</span>
+                </div>
+                <div class="step-item" id="lab-step-ind-3">
+                    <div class="step-circle" id="lab-sc-3">3</div>
+                    <span class="step-label">Confirmación</span>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-bar-label">
+                    <span id="lab-progress-label">Paso 1 de 3</span>
+                    <span id="lab-progress-pct">33%</span>
+                </div>
+                <div class="progress" role="progressbar">
+                    <div class="progress-bar" id="lab-progress-bar" style="width: 33%"></div>
+                </div>
+            </div>
+
+            <div class="form-card" id="lab-form-card">
+
+                <!-- LAB PASO 1: TIPO DE ANÁLISIS -->
+                <div class="booking-step active" id="lab-step-1">
+                    <div class="form-card-header">
+                        <h2>Selecciona el tipo de análisis</h2>
+                        <p>Elige el estudio que necesitas. Si no está en la lista, selecciona "Otro".</p>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="analisis-grid-ag" id="lab-analisis-grid"></div>
+                        <div id="lab-otro-wrapper" style="display:none; margin-bottom:20px;">
+                            <label style="font-size:.9rem;font-weight:600;color:#334155;margin-bottom:6px;display:block;">
+                                Describe el análisis
+                            </label>
+                            <input type="text" id="lab-otro-txt"
+                                   placeholder="Ej. Perfil hormonal completo…"
+                                   style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;">
+                        </div>
+                        <div class="motivo-area">
+                            <label for="lab-notas">Notas adicionales <span class="label-opcional">(opcional)</span></label>
+                            <textarea id="lab-notas" rows="3"
+                                      placeholder="Indica si vas en ayuno, si tienes indicación médica, etc.…"></textarea>
+                        </div>
+                        <div class="nav-buttons">
+                            <div></div>
+                            <button class="btn-nav-next" id="lab-btn-next-1" onclick="labIrPaso(2)" disabled>
+                                Continuar <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LAB PASO 2: FECHA Y HORA -->
+                <div class="booking-step" id="lab-step-2">
+                    <div class="form-card-header">
+                        <h2>Selecciona Fecha y Hora</h2>
+                        <p>Elige el día y el turno disponible en el laboratorio.</p>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="context-pill" style="margin-bottom:18px;">
+                            <span class="material-symbols-outlined">science</span>
+                            <span id="lab-pill-analisis">—</span>
+                        </div>
+                        <div class="date-input-wrapper mt-3">
+                            <label>Selecciona el día</label>
+                            <input type="text" id="lab-date" placeholder="Selecciona una fecha..." readonly>
+                        </div>
+                        <span class="time-section-label">Horarios disponibles</span>
+                        <div class="slots-grid" id="lab-slots-grid">
+                            <p style="color:#94a3b8;grid-column:1/-1;">Selecciona una fecha primero.</p>
+                        </div>
+                        <div class="slots-legend">
+                            <span><span class="legend-dot legend-available"></span> Disponible</span>
+                            <span><span class="legend-dot legend-unavailable"></span> No disponible</span>
+                            <span><span class="legend-dot legend-selected"></span> Seleccionado</span>
+                        </div>
+                        <div class="nav-buttons">
+                            <button class="btn-nav-back" onclick="labIrPaso(1)">
+                                <span class="material-symbols-outlined">arrow_back</span> Anterior
+                            </button>
+                            <button class="btn-nav-next" id="lab-btn-next-2" onclick="labIrPaso(3)" disabled>
+                                Ver Resumen <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LAB PASO 3: CONFIRMACIÓN -->
+                <div class="booking-step" id="lab-step-3">
+                    <div class="form-card-header">
+                        <h2>Confirmar Cita de Laboratorio</h2>
+                        <p>Revisa los detalles antes de agendar tu turno.</p>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="summary-card">
+                            <div class="summary-row">
+                                <div class="summary-icon"><span class="material-symbols-outlined">science</span></div>
+                                <div class="summary-row-info">
+                                    <div class="lbl">Análisis</div>
+                                    <div class="val" id="lab-sum-analisis">—</div>
+                                </div>
+                            </div>
+                            <div class="summary-row">
+                                <div class="summary-icon"><span class="material-symbols-outlined">calendar_month</span></div>
+                                <div class="summary-row-info">
+                                    <div class="lbl">Fecha</div>
+                                    <div class="val" id="lab-sum-date">—</div>
+                                </div>
+                            </div>
+                            <div class="summary-row">
+                                <div class="summary-icon"><span class="material-symbols-outlined">schedule</span></div>
+                                <div class="summary-row-info">
+                                    <div class="lbl">Hora</div>
+                                    <div class="val" id="lab-sum-time">—</div>
+                                </div>
+                            </div>
+                            <div class="summary-row" id="lab-sum-notas-row" style="display:none;">
+                                <div class="summary-icon"><span class="material-symbols-outlined">description</span></div>
+                                <div class="summary-row-info">
+                                    <div class="lbl">Notas</div>
+                                    <div class="val" id="lab-sum-notas">—</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="confirm-banner">
+                            <span class="material-symbols-outlined">info</span>
+                            <div>
+                                <strong>Preséntate con 10 minutos de anticipación</strong>
+                                <p>Trae tu identificación. Si el análisis requiere ayuno, sigue las indicaciones de tu médico.</p>
+                            </div>
+                        </div>
+                        <div class="nav-buttons">
+                            <button class="btn-nav-back" onclick="labIrPaso(2)">
+                                <span class="material-symbols-outlined">arrow_back</span> Modificar
+                            </button>
+                            <button class="btn-confirm" id="lab-btn-confirmar" onclick="labConfirmarCita()">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                Confirmar y Agendar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /lab-form-card -->
+        </div><!-- /flow-lab -->
+
     </main>
 
     <!-- Bootstrap JS -->
@@ -559,8 +768,233 @@
             return { inicio: `${pad(h)}:${pad(m)}:00`, fin: `${pad(fin)}:${pad(m)}:00` };
         }
 
+        /* ── Selector de modo ───────────────────────────── */
+        function seleccionarModo(modo) {
+            document.getElementById('tipo-selector').style.display = 'none';
+            document.getElementById('page-subtitle').style.display = 'none';
+            document.getElementById('flow-medico').style.display   = modo === 'medico' ? '' : 'none';
+            document.getElementById('flow-lab').style.display      = modo === 'lab'    ? '' : 'none';
+            if (modo === 'lab') labInit();
+        }
+
+        /* ── LAB: Datos de reserva ──────────────────────── */
+        const labBooking = {
+            tipoAnalisis: '', date: '', horaInicio: '', horaFin: '',
+            slotLabel: '', notas: '',
+        };
+        let labCurrentStep  = 1;
+        const LAB_TOTAL     = 3;
+        let   labCalPicker  = null;
+        let   labDiasDisp   = new Set();
+
+        const LAB_TIPOS = [
+            { label: 'Hemograma completo',      icon: 'bloodtype'       },
+            { label: 'Química sanguínea',        icon: 'science'         },
+            { label: 'Glucosa en ayunas',        icon: 'glucose'         },
+            { label: 'Perfil lipídico',          icon: 'monitor_heart'   },
+            { label: 'Examen general de orina',  icon: 'water_drop'      },
+            { label: 'Cultivo y antibiograma',   icon: 'biotech'         },
+            { label: 'Hormonas tiroideas (TSH)', icon: 'labs'            },
+            { label: 'Prueba de embarazo',       icon: 'child_friendly'  },
+            { label: 'Perfil hepático',          icon: 'medical_services'},
+            { label: 'Perfil renal',             icon: 'medical_services'},
+            { label: 'Otro',                     icon: 'add_circle'      },
+        ];
+
+        const DIAS_NUM_LAB = { 'Domingo':0,'Lunes':1,'Martes':2,'Miércoles':3,'Jueves':4,'Viernes':5,'Sábado':6 };
+
+        function labInit() {
+            // Render tipos de análisis
+            document.getElementById('lab-analisis-grid').innerHTML = LAB_TIPOS.map(t => `
+                <div class="analisis-card-ag" data-tipo="${t.label}"
+                     onclick="labSeleccionarAnalisis(this,'${t.label}')">
+                    <span class="material-symbols-outlined">${t.icon}</span>${t.label}
+                </div>`).join('');
+
+            document.getElementById('lab-otro-txt')
+                    .addEventListener('input', labVerificarPaso1);
+
+            // Flatpickr (lazy: solo crearlo una vez)
+            if (!labCalPicker) {
+                labCalPicker = flatpickr('#lab-date', {
+                    locale:        'es',
+                    minDate:       'today',
+                    dateFormat:    'Y-m-d',
+                    disableMobile: true,
+                    onDayCreate(dObj, dStr, fp, dayElem) {
+                        if (!labDiasDisp.size) return;
+                        const hoy = new Date(); hoy.setHours(0,0,0,0);
+                        if (dayElem.dateObj < hoy) return;
+                        const dow = dayElem.dateObj.getDay();
+                        if (labDiasDisp.has(dow)) {
+                            dayElem.classList.add('dia-disponible');
+                        } else {
+                            dayElem.classList.add('flatpickr-disabled');
+                            dayElem.title = 'El laboratorio no atiende este día';
+                        }
+                    },
+                    onChange(selectedDates, dateStr) {
+                        if (dateStr) labCargarSlots(dateStr);
+                    }
+                });
+            }
+
+            // Cargar días disponibles
+            fetch('/api/horarios-laboratorio.php?dias=1')
+                .then(r => r.json()).catch(() => [])
+                .then(dias => {
+                    labDiasDisp = new Set(
+                        Array.isArray(dias) ? dias.map(d => DIAS_NUM_LAB[d]).filter(n => n !== undefined) : []
+                    );
+                    labCalPicker.set('minDate', 'today');
+                });
+        }
+
+        function labSeleccionarAnalisis(el, tipo) {
+            document.querySelectorAll('.analisis-card-ag').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            labBooking.tipoAnalisis = tipo;
+            document.getElementById('lab-otro-wrapper').style.display = tipo === 'Otro' ? '' : 'none';
+            if (tipo === 'Otro') document.getElementById('lab-otro-txt').focus();
+            labVerificarPaso1();
+        }
+
+        function labVerificarPaso1() {
+            let tipo = labBooking.tipoAnalisis;
+            if (tipo === 'Otro') tipo = document.getElementById('lab-otro-txt').value.trim();
+            document.getElementById('lab-btn-next-1').disabled = !tipo;
+        }
+
+        async function labCargarSlots(fecha) {
+            const grid = document.getElementById('lab-slots-grid');
+            grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">Cargando horarios…</p>';
+            labBooking.horaInicio = '';
+            labBooking.horaFin    = '';
+            document.getElementById('lab-btn-next-2').disabled = true;
+
+            const data = await fetch(`/api/horarios-laboratorio.php?fecha=${fecha}`)
+                .then(r => r.json()).catch(() => null);
+
+            if (!data?.slots?.length) {
+                grid.innerHTML = '<p style="color:#94a3b8;grid-column:1/-1;">No hay turnos disponibles este día.</p>';
+                return;
+            }
+            grid.innerHTML = data.slots.map(s => `
+                <button class="${s.ocupado ? 'time-slot ocupado' : 'time-slot'}"
+                        ${s.ocupado ? 'disabled' : ''}
+                        onclick="labSeleccionarSlot(this,'${s.hora}','${s.hora_fin}','${s.label}')">
+                    ${s.label}
+                </button>`).join('');
+        }
+
+        function labSeleccionarSlot(btn, hora, horaFin, label) {
+            document.querySelectorAll('#lab-slots-grid .time-slot:not(.ocupado)')
+                    .forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            labBooking.horaInicio = hora;
+            labBooking.horaFin    = horaFin;
+            labBooking.slotLabel  = label;
+            document.getElementById('lab-btn-next-2').disabled = false;
+        }
+
+        function labIrPaso(n) {
+            if (labCurrentStep === 1) {
+                if (labBooking.tipoAnalisis === 'Otro') {
+                    labBooking.tipoAnalisis = document.getElementById('lab-otro-txt').value.trim() || 'Otro';
+                }
+                labBooking.notas = document.getElementById('lab-notas').value.trim();
+            }
+            if (n === 3) labLlenarResumen();
+
+            for (let i = 1; i <= LAB_TOTAL; i++) {
+                document.getElementById(`lab-step-${i}`).classList.toggle('active', i === n);
+            }
+
+            for (let i = 1; i <= LAB_TOTAL; i++) {
+                const sc  = document.getElementById(`lab-sc-${i}`);
+                const ind = document.getElementById(`lab-step-ind-${i}`);
+                ind.classList.toggle('active', i <= n);
+                if (i < n) {
+                    ind.classList.add('done');
+                    sc.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span>';
+                } else {
+                    sc.textContent = i;
+                }
+            }
+            const pct = Math.round((n / LAB_TOTAL) * 100);
+            document.getElementById('lab-progress-bar').style.width   = pct + '%';
+            document.getElementById('lab-progress-pct').textContent   = pct + '%';
+            document.getElementById('lab-progress-label').textContent = `Paso ${n} de ${LAB_TOTAL}`;
+            labCurrentStep = n;
+            document.getElementById('flow-lab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function labLlenarResumen() {
+            const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            labBooking.date = document.getElementById('lab-date').value;
+            const [y, m, d] = labBooking.date.split('-');
+            document.getElementById('lab-sum-analisis').textContent = labBooking.tipoAnalisis;
+            document.getElementById('lab-sum-date').textContent     = `${parseInt(d)} ${meses[parseInt(m)-1]} ${y}`;
+            document.getElementById('lab-sum-time').textContent     = labBooking.slotLabel || labBooking.horaInicio;
+
+            const notasRow = document.getElementById('lab-sum-notas-row');
+            if (labBooking.notas) {
+                document.getElementById('lab-sum-notas').textContent = labBooking.notas;
+                notasRow.style.display = '';
+            } else {
+                notasRow.style.display = 'none';
+            }
+            document.getElementById('lab-pill-analisis').textContent = labBooking.tipoAnalisis;
+        }
+
+        async function labConfirmarCita() {
+            const btn = document.getElementById('lab-btn-confirmar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Agendando…';
+
+            labBooking.date = document.getElementById('lab-date').value;
+
+            try {
+                const r = await fetch('/api/citas-laboratorio.php', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fecha_cita:     labBooking.date,
+                        hora_inicio:    labBooking.horaInicio,
+                        hora_fin:       labBooking.horaFin,
+                        tipo_analisis:  labBooking.tipoAnalisis,
+                        notas_paciente: labBooking.notas || null,
+                    }),
+                });
+                const datos = await r.json();
+                if (!r.ok) throw new Error(datos.error ?? 'No se pudo agendar la cita');
+
+                document.getElementById('lab-form-card').innerHTML = `
+                    <div style="text-align:center;padding:60px 30px;">
+                        <span class="material-symbols-outlined"
+                              style="font-size:64px;color:#22c55e;display:block;margin-bottom:16px;">check_circle</span>
+                        <h2 style="margin-bottom:8px;">¡Cita de laboratorio agendada!</h2>
+                        <p style="color:#64748b;margin-bottom:6px;">
+                            <strong>${labBooking.tipoAnalisis}</strong> – ${document.getElementById('lab-sum-date').textContent}
+                            a las <strong>${labBooking.slotLabel}</strong>
+                        </p>
+                        <p style="color:#94a3b8;font-size:.9rem;margin-bottom:32px;">
+                            Código: <strong>${datos.codigo_confirmacion}</strong>
+                        </p>
+                        <a href="mis-citas.html" class="btn-confirm" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            Ver mis citas
+                        </a>
+                    </div>`;
+            } catch (err) {
+                alert(err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Confirmar y Agendar';
+            }
+        }
+
         async function confirmarCita() {
-            const btn = document.querySelector('.btn-confirm');
+            const btn = document.querySelector('#flow-medico .btn-confirm');
 
             if (!sesionUsuario?.id_paciente) {
                 alert('Tu usuario no tiene un expediente de paciente. Contacta a recepción.');
