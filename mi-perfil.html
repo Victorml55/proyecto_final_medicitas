@@ -201,36 +201,13 @@
         </div>
     </div>
 
-    <!-- Modal: Cambiar Contraseña -->
-    <div class="modal-backdrop" id="modal-password">
-        <div class="modal" style="max-width: 440px;">
-            <div class="modal-header">
-                <h3>Cambiar Contraseña</h3>
-                <button class="modal-close" onclick="cerrarModal('modal-password')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="alerta-password" class="alert-msg"></div>
-                <div style="display:flex;flex-direction:column;gap:16px;">
-                    <div class="modal-field">
-                        <label>Contraseña Actual</label>
-                        <input type="password" id="p-actual" autocomplete="current-password">
-                    </div>
-                    <div class="modal-field">
-                        <label>Nueva Contraseña</label>
-                        <input type="password" id="p-nuevo" autocomplete="new-password">
-                    </div>
-                    <div class="modal-field">
-                        <label>Confirmar Nueva Contraseña</label>
-                        <input type="password" id="p-confirmar" autocomplete="new-password">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline" onclick="cerrarModal('modal-password')">Cancelar</button>
-                <button class="btn-primary" onclick="guardarPassword()">Cambiar Contraseña</button>
-            </div>
-        </div>
-    </div>
+    <!-- Toast: Cambiar Contraseña -->
+    <div id="toast-password" style="
+        display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+        background:#0f172a; color:#fff; padding:14px 24px; border-radius:10px;
+        font-size:0.95rem; z-index:2000; box-shadow:0 6px 24px rgba(0,0,0,0.25);
+        max-width:380px; text-align:center;
+    "></div>
 
     <script>
         fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
@@ -299,12 +276,27 @@
             document.getElementById('modal-editar').classList.add('active');
         }
 
-        function abrirModalPassword() {
-            document.getElementById('p-actual').value    = '';
-            document.getElementById('p-nuevo').value     = '';
-            document.getElementById('p-confirmar').value = '';
-            setAlerta('alerta-password', '', '');
-            document.getElementById('modal-password').classList.add('active');
+        async function abrirModalPassword() {
+            const btn = document.querySelector('[onclick="abrirModalPassword()"]');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            const res = await fetch('/api/recuperar.php', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ email: perfilActual.email })
+            }).then(r => r.json()).catch(() => ({ error: 'Error de red.' }));
+
+            btn.disabled = false;
+            btn.textContent = 'Cambiar Contraseña';
+
+            const toast = document.getElementById('toast-password');
+            toast.textContent = res.error
+                ? res.error
+                : 'Te enviamos un enlace a ' + perfilActual.email + ' para restablecer tu contraseña.';
+            toast.style.background = res.error ? '#991b1b' : '#166534';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 5000);
         }
 
         function cerrarModal(id) {
@@ -360,23 +352,6 @@
             setTimeout(() => cerrarModal('modal-editar'), 1200);
         }
 
-        async function guardarPassword() {
-            const body = {
-                password_actual:    document.getElementById('p-actual').value,
-                password_nuevo:     document.getElementById('p-nuevo').value,
-                password_confirmar: document.getElementById('p-confirmar').value,
-            };
-
-            setAlerta('alerta-password', '', '');
-            const res = await fetch('/api/cambiar-password.php', {
-                method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
-            }).then(r => r.json());
-
-            if (res.error) { setAlerta('alerta-password', 'error', res.error); return; }
-
-            setAlerta('alerta-password', 'success', 'Contraseña cambiada correctamente.');
-            setTimeout(() => cerrarModal('modal-password'), 1200);
-        }
     </script>
 </body>
 </html>
