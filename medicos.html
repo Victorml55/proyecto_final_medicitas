@@ -65,16 +65,23 @@
                 const exp = calcularExperiencia(m.fecha_inicio);
                 return `
                 <div class="directory-card">
-                    <div class="doc-avatar">${avatar}</div>
+                    <a href="perfil-medico.html?id=${m.id_medico}" style="display:contents;text-decoration:none;color:inherit;">
+                        <div class="doc-avatar" style="cursor:pointer;">${avatar}</div>
+                    </a>
                     <div class="doc-info">
-                        <h3>${titulo} ${m.nombre_completo}</h3>
+                        <h3>
+                            <a href="perfil-medico.html?id=${m.id_medico}" style="color:inherit;text-decoration:none;">
+                                ${titulo} ${m.nombre_completo}
+                            </a>
+                        </h3>
                         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
                             <span class="doc-badge" style="margin-bottom:0;">${m.nombre_especialidad}</span>
                             ${exp !== null ? `<span class="doc-badge" style="margin-bottom:0;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;">${exp} años de experiencia</span>` : ''}
                         </div>
                         <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}</p>
                     </div>
-                    <div class="doc-action">
+                    <div class="doc-action" style="display:flex;flex-direction:column;gap:8px;align-items:stretch;">
+                        <a href="perfil-medico.html?id=${m.id_medico}" class="btn-primary" style="background:#f1f5f9;color:#005f99;border:1px solid #bfdbfe;text-align:center;">Ver perfil</a>
                         <a href="agendar-cita.html?medico=${m.id_medico}" class="btn-primary">Agendar Cita</a>
                     </div>
                 </div>`;

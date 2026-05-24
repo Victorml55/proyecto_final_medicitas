@@ -29,7 +29,7 @@ switch ($metodo) {
                         m.fecha_inicio, m.biografia, m.costo_consulta,
                         m.duracion_consulta, m.activo,
                         u.nombre, u.apellido_paterno, u.apellido_materno,
-                        u.email, u.telefono,
+                        u.email, u.telefono, u.foto_perfil, u.genero,
                         e.nombre_especialidad
                  FROM medicos m
                  JOIN usuarios      u ON u.id_usuario      = m.id_usuario
