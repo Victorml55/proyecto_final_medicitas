@@ -91,7 +91,24 @@
                     </div>
                 </div>
 
-                <div class="profile-card">
+                <div class="profile-card" id="card-consulta" style="display:none">
+                    <div class="card-header">
+                        <span class="material-symbols-outlined">payments</span>
+                        <h3>Datos de Consulta</h3>
+                    </div>
+                    <div class="card-body info-grid">
+                        <div class="info-group">
+                            <label>Costo de Consulta</label>
+                            <p class="highlight-value" id="p-costo-consulta">—</p>
+                        </div>
+                        <div class="info-group">
+                            <label>Duración de Consulta</label>
+                            <p id="p-duracion-consulta">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-card" id="card-medicos-basicos">
                     <div class="card-header">
                         <span class="material-symbols-outlined">medical_information</span>
                         <h3>Datos Médicos Básicos</h3>
@@ -163,6 +180,16 @@
                             <option value="F">Femenino</option>
                             <option value="Otro">Otro</option>
                         </select>
+                    </div>
+
+                    <span class="modal-section-title" id="seccion-consulta" style="display:none">Datos de Consulta</span>
+                    <div class="modal-field" id="campo-costo" style="display:none">
+                        <label>Costo de Consulta ($)</label>
+                        <input type="number" id="e-costo" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="modal-field" id="campo-duracion" style="display:none">
+                        <label>Duración de Consulta (min)</label>
+                        <input type="number" id="e-duracion" min="5" max="240" step="5" placeholder="30">
                     </div>
 
                     <span class="modal-section-title" id="seccion-medica">Datos Médicos</span>
@@ -254,9 +281,18 @@
             document.getElementById('p-emergencia-nombre').textContent = p.contacto_emergencia_nombre ?? '—';
             document.getElementById('p-emergencia-tel').textContent    = p.contacto_emergencia_telefono ?? '—';
 
-            const esMedico = !p.id_paciente;
+            const esMedico = !!p.id_medico;
             ['campo-sangre','campo-alergias','campo-cronicas','campo-emerg-nombre','campo-emerg-tel','seccion-medica']
                 .forEach(id => { document.getElementById(id).style.display = esMedico ? 'none' : ''; });
+            ['campo-costo','campo-duracion','seccion-consulta']
+                .forEach(id => { document.getElementById(id).style.display = esMedico ? '' : 'none'; });
+            document.getElementById('card-consulta').style.display       = esMedico ? '' : 'none';
+            document.getElementById('card-medicos-basicos').style.display = esMedico ? 'none' : '';
+
+            if (esMedico) {
+                document.getElementById('p-costo-consulta').textContent    = p.costo_consulta != null ? '$' + parseFloat(p.costo_consulta).toFixed(2) : '—';
+                document.getElementById('p-duracion-consulta').textContent = p.duracion_consulta ? p.duracion_consulta + ' min' : '—';
+            }
         })();
 
         function abrirModalEditar() {
@@ -272,6 +308,8 @@
             document.getElementById('e-cronicas').value          = p.enfermedades_cronicas ?? '';
             document.getElementById('e-emergencia-nombre').value = p.contacto_emergencia_nombre ?? '';
             document.getElementById('e-emergencia-tel').value    = p.contacto_emergencia_telefono ?? '';
+            document.getElementById('e-costo').value             = p.costo_consulta ?? '';
+            document.getElementById('e-duracion').value          = p.duracion_consulta ?? '';
             setAlerta('alerta-editar', '', '');
             document.getElementById('modal-editar').classList.add('active');
         }
@@ -326,6 +364,8 @@
                 enfermedades_cronicas:        document.getElementById('e-cronicas').value.trim(),
                 contacto_emergencia_nombre:   document.getElementById('e-emergencia-nombre').value.trim(),
                 contacto_emergencia_telefono: document.getElementById('e-emergencia-tel').value.trim(),
+                costo_consulta:               document.getElementById('e-costo').value || null,
+                duracion_consulta:            document.getElementById('e-duracion').value || null,
             };
 
             setAlerta('alerta-editar', '', '');
@@ -347,6 +387,8 @@
             document.getElementById('p-cronicas').textContent        = body.enfermedades_cronicas || '—';
             document.getElementById('p-emergencia-nombre').textContent = body.contacto_emergencia_nombre || '—';
             document.getElementById('p-emergencia-tel').textContent    = body.contacto_emergencia_telefono || '—';
+            if (body.costo_consulta != null)    document.getElementById('p-costo-consulta').textContent    = '$' + parseFloat(body.costo_consulta).toFixed(2);
+            if (body.duracion_consulta != null) document.getElementById('p-duracion-consulta').textContent = body.duracion_consulta + ' min';
 
             setAlerta('alerta-editar', 'success', 'Perfil actualizado correctamente.');
             setTimeout(() => cerrarModal('modal-editar'), 1200);

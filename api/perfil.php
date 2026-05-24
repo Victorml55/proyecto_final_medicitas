@@ -20,9 +20,11 @@ try {
                 p.id_paciente, p.numero_expediente, p.tipo_sangre,
                 p.alergias, p.enfermedades_cronicas,
                 p.contacto_emergencia_nombre, p.contacto_emergencia_telefono,
-                p.seguro_medico, p.numero_poliza
+                p.seguro_medico, p.numero_poliza,
+                m.id_medico, m.costo_consulta, m.duracion_consulta
          FROM usuarios u
          LEFT JOIN pacientes p ON p.id_usuario = u.id_usuario
+         LEFT JOIN medicos   m ON m.id_usuario = u.id_usuario
          WHERE u.id_usuario = ?
          LIMIT 1"
     );
