@@ -380,6 +380,43 @@ switch ($metodo) {
             responder(200, ['mensaje' => 'Cita concluida']);
         }
 
+        // ── Cancelar cita Confirmada (médico, >30 min de anticipación) ──────────
+        if ($accionPut === 'cancelar-medico') {
+            if (!isset($_SESSION['id_usuario'])) {
+                responder(401, ['error' => 'No autenticado']);
+            }
+            $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
+            $stmtM->execute([$_SESSION['id_usuario']]);
+            $medico = $stmtM->fetch();
+            if (!$medico) {
+                responder(403, ['error' => 'Solo médicos pueden usar esta acción']);
+            }
+
+            $stmtC = $db->prepare(
+                'SELECT id_estado, fecha_cita, hora_inicio FROM citas WHERE id_cita = ? AND id_medico = ? LIMIT 1'
+            );
+            $stmtC->execute([$id, $medico['id_medico']]);
+            $cita = $stmtC->fetch();
+
+            if (!$cita) {
+                responder(404, ['error' => 'Cita no encontrada o no pertenece a este médico']);
+            }
+            if ((int)$cita['id_estado'] !== 2) {
+                responder(409, ['error' => 'Solo se pueden cancelar citas en estado Confirmada']);
+            }
+
+            $tsCita = strtotime($cita['fecha_cita'] . ' ' . $cita['hora_inicio']);
+            if (($tsCita - time()) < 30 * 60) {
+                responder(409, ['error' => 'Solo puedes cancelar con más de 30 minutos de anticipación']);
+            }
+
+            $stmt = $db->prepare('UPDATE citas SET id_estado = 3 WHERE id_cita = ? RETURNING id_cita');
+            $stmt->execute([$id]);
+            $stmt->fetch()
+                ? responder(200, ['mensaje' => 'Cita cancelada'])
+                : responder(409, ['error' => 'No se pudo cancelar la cita']);
+        }
+
         // ── Actualización completa (comportamiento original) ──────────────────
         $d = leerBody();
         $faltantes = [];
