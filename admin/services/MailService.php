@@ -583,7 +583,127 @@ class MailService {
     }
 
     // ----------------------------------------------------------
-    // 9. Solicitud de cancelación (al médico)
+    // 9. Cita concluida – resumen + encuesta al paciente
+    // ----------------------------------------------------------
+    public static function citaConcluida(string $destinatario, string $nombre, array $cita): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Resumen de tu consulta y encuesta de satisfacción';
+            $mail->Body    = self::templateCitaConcluida($nombre, $cita);
+            $gm  = $cita['genero_medico'] ?? null;
+            $tit = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+            $mail->AltBody = "Hola $nombre,\n\nTu consulta del {$cita['fecha']} a las {$cita['hora']} con {$tit} {$cita['medico']} ha concluido.\n\nCalifica tu experiencia en: {$cita['base_url']}/calificar-cita.html?cita={$cita['id_cita']}\n\nMediCitas";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar resumen de cita concluida: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private static function templateCitaConcluida(string $nombre, array $cita): string {
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $medico       = htmlspecialchars($cita['medico']       ?? 'N/A');
+        $especialidad = htmlspecialchars($cita['especialidad'] ?? '');
+        $idCita       = (int)($cita['id_cita'] ?? 0);
+        $baseUrl      = rtrim($cita['base_url'] ?? '', '/');
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+
+        $urlBase = "{$baseUrl}/calificar-cita.html?cita={$idCita}";
+        $stars   = '';
+        $labels  = ['', 'Muy malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
+        for ($i = 1; $i <= 5; $i++) {
+            $url    = $urlBase . "&cal={$i}";
+            $filled = str_repeat('★', $i) . str_repeat('☆', 5 - $i);
+            $stars .= "<a href=\"{$url}\" style=\"display:inline-block;text-align:center;text-decoration:none;margin:0 4px;\">"
+                    . "<div style=\"font-size:28px;color:#f59e0b;line-height:1;\">{$filled}</div>"
+                    . "<div style=\"font-size:11px;color:#64748b;margin-top:3px;\">{$labels[$i]}</div>"
+                    . "</a>";
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Resumen de consulta</p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#10b981;margin-top:0;">Tu consulta ha concluido ✅</h2>
+                    <p style="color:#444;line-height:1.7;">
+                      Hola <strong>{$nombre}</strong>, tu consulta médica ha finalizado.
+                      Aquí tienes el resumen:
+                    </p>
+
+                    <table width="100%" style="background:#f0fdf4;border-radius:8px;margin:20px 0;border-left:4px solid #10b981;">
+                      <tr><td style="padding:20px;">
+                        <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> {$titMedico} {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
+                      </td></tr>
+                    </table>
+
+                    <!-- Encuesta de satisfacción -->
+                    <table width="100%" style="background:#fffbeb;border-radius:8px;margin:28px 0;border:1px solid #fde68a;">
+                      <tr>
+                        <td style="padding:24px 20px;text-align:center;">
+                          <p style="margin:0 0 6px;color:#92400e;font-weight:bold;font-size:16px;">
+                            ⭐ ¿Cómo fue tu experiencia?
+                          </p>
+                          <p style="margin:0 0 18px;color:#78350f;font-size:13px;">
+                            Tu opinión ayuda a otros pacientes. Toma solo 30 segundos.
+                          </p>
+                          <div style="margin-bottom:18px;">
+                            {$stars}
+                          </div>
+                          <a href="{$urlBase}"
+                             style="display:inline-block;background:#f59e0b;color:#ffffff;padding:12px 28px;
+                                    border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">
+                            Dejar mi calificación →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p style="color:#64748b;font-size:13px;text-align:center;margin:0;">
+                      Si no deseas dejar una reseña, puedes ignorar esta sección.
+                    </p>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">
+                      Este correo fue generado automáticamente por MediCitas. Por favor no respondas a este mensaje.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
+
+    // ----------------------------------------------------------
+    // 10. Solicitud de cancelación (al médico)
     // ----------------------------------------------------------
     public static function solicitudCancelacionMedico(string $destinatario, string $nombre, array $cita): bool {
         try {

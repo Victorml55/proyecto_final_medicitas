@@ -377,6 +377,60 @@ switch ($metodo) {
                 responder(409, ['error' => 'No se puede concluir (debe estar Confirmada y pertenecer a este médico)']);
             }
 
+            // Enviar correo al paciente con resumen y enlace a la encuesta
+            try {
+                require_once __DIR__ . '/../admin/services/MailService.php';
+
+                $qInfo = $db->prepare(
+                    "SELECT c.fecha_cita, c.hora_inicio,
+                            up.email AS email_paciente,
+                            up.nombre || ' ' || up.apellido_paterno AS nombre_paciente,
+                            um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
+                            um.genero AS genero_medico,
+                            esp.nombre_especialidad
+                     FROM citas c
+                     JOIN pacientes    p   ON p.id_paciente   = c.id_paciente
+                     JOIN usuarios     up  ON up.id_usuario   = p.id_usuario
+                     JOIN medicos      m   ON m.id_medico     = c.id_medico
+                     JOIN usuarios     um  ON um.id_usuario   = m.id_usuario
+                     JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
+                     WHERE c.id_cita = ?"
+                );
+                $qInfo->execute([$id]);
+                $info = $qInfo->fetch();
+
+                if ($info) {
+                    $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
+                               . '://' . $_SERVER['HTTP_HOST'];
+
+                    // Formatear fecha y hora legibles
+                    $meses = ['','enero','febrero','marzo','abril','mayo','junio',
+                              'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+                    [$y, $mon, $d] = explode('-', $info['fecha_cita']);
+                    $fechaLeg = (int)$d . ' de ' . $meses[(int)$mon] . ' de ' . $y;
+
+                    [$hh, $mm] = explode(':', $info['hora_inicio']);
+                    $h12      = (int)$hh % 12 ?: 12;
+                    $horaLeg  = sprintf('%d:%s %s', $h12, $mm, (int)$hh >= 12 ? 'PM' : 'AM');
+
+                    MailService::citaConcluida(
+                        $info['email_paciente'],
+                        $info['nombre_paciente'],
+                        [
+                            'fecha'         => $fechaLeg,
+                            'hora'          => $horaLeg,
+                            'medico'        => $info['nombre_medico'],
+                            'genero_medico' => $info['genero_medico'],
+                            'especialidad'  => $info['nombre_especialidad'],
+                            'id_cita'       => $id,
+                            'base_url'      => $baseUrl,
+                        ]
+                    );
+                }
+            } catch (Throwable $e) {
+                error_log('[citas.php] Error email concluir: ' . $e->getMessage());
+            }
+
             responder(200, ['mensaje' => 'Cita concluida']);
         }
 
