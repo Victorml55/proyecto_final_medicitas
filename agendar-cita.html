@@ -444,7 +444,9 @@
 
             lista.innerHTML = filtrados.map(m => `
                 <div class="doctor-card" data-doc="${m.nombre_completo}" data-doc-id="${m.id_medico}" data-genero="${m.genero ?? ''}" onclick="seleccionarDoctor(this)">
-                    <div class="doc-avatar-sm"><span class="material-symbols-outlined">person</span></div>
+                    <div class="doc-avatar-sm">${m.foto_perfil
+                        ? `<img src="${m.foto_perfil}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                        : `<span class="material-symbols-outlined">person</span>`}</div>
                     <div class="doctor-card-info">
                         <h3>${m.genero === 'M' ? 'Dr.' : m.genero === 'F' ? 'Dra.' : 'Dr(a).'} ${m.nombre_completo}</h3>
                         <p>${m.nombre_especialidad}${m.costo_consulta ? ' · $' + parseFloat(m.costo_consulta).toFixed(2) : ''}</p>
