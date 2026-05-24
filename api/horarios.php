@@ -46,11 +46,15 @@ try {
     $db = conectarDB();
 
     // Horarios definidos para ese médico ese día
+    // COALESCE: usa el consultorio del bloque; si es NULL, cae al consultorio por defecto del médico
     $stmt = $db->prepare(
-        "SELECT h.hora_inicio, h.hora_fin, h.id_consultorio,
-                c.numero_consultorio
+        "SELECT h.hora_inicio, h.hora_fin,
+                COALESCE(h.id_consultorio, m.id_consultorio) AS id_consultorio,
+                COALESCE(ch.numero_consultorio, cm.numero_consultorio) AS numero_consultorio
          FROM horarios_medicos h
-         LEFT JOIN consultorios c ON c.id_consultorio = h.id_consultorio
+         JOIN medicos m ON m.id_medico = h.id_medico
+         LEFT JOIN consultorios ch ON ch.id_consultorio = h.id_consultorio
+         LEFT JOIN consultorios cm ON cm.id_consultorio = m.id_consultorio
          WHERE h.id_medico = ? AND h.dia_semana = ? AND h.activo = true
          ORDER BY h.hora_inicio"
     );

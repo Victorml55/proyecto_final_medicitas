@@ -29,14 +29,15 @@ switch ($metodo) {
                         um.genero AS genero_medico,
                         um.foto_perfil AS foto_medico,
                         esp.nombre_especialidad,
-                        co.numero_consultorio,
+                        COALESCE(cc.numero_consultorio, cm.numero_consultorio) AS numero_consultorio,
                         m.duracion_consulta
                  FROM citas c
                  JOIN estados_cita e   ON e.id_estado    = c.id_estado
                  JOIN medicos      m   ON m.id_medico    = c.id_medico
                  JOIN usuarios     um  ON um.id_usuario  = m.id_usuario
                  JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
-                 LEFT JOIN consultorios co ON co.id_consultorio = c.id_consultorio
+                 LEFT JOIN consultorios cc ON cc.id_consultorio = c.id_consultorio
+                 LEFT JOIN consultorios cm ON cm.id_consultorio = m.id_consultorio
                  WHERE c.id_cita = ?"
             );
             $stmt->execute([$id]);
@@ -62,7 +63,7 @@ switch ($metodo) {
                         um.genero AS genero_medico,
                         um.foto_perfil AS foto_medico,
                         esp.nombre_especialidad,
-                        co.numero_consultorio,
+                        COALESCE(cc.numero_consultorio, cm.numero_consultorio) AS numero_consultorio,
                         e.nombre_estado, e.color,
                         m.duracion_consulta
                  FROM citas c
@@ -72,7 +73,8 @@ switch ($metodo) {
                  JOIN usuarios     um  ON um.id_usuario  = m.id_usuario
                  JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
                  JOIN estados_cita e   ON e.id_estado    = c.id_estado
-                 LEFT JOIN consultorios co ON co.id_consultorio = c.id_consultorio
+                 LEFT JOIN consultorios cc ON cc.id_consultorio = c.id_consultorio
+                 LEFT JOIN consultorios cm ON cm.id_consultorio = m.id_consultorio
                  $where
                  ORDER BY c.fecha_cita DESC, c.hora_inicio DESC"
             );
