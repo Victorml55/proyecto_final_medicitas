@@ -57,20 +57,25 @@
                 el.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:30px;">No se encontraron médicos.</p>';
                 return;
             }
-            el.innerHTML = lista.map(m => `
+            el.innerHTML = lista.map(m => {
+                const titulo = m.genero === 'M' ? 'Dr.' : m.genero === 'F' ? 'Dra.' : 'Dr(a).';
+                const avatar = m.foto_perfil
+                    ? `<img src="${m.foto_perfil}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                    : `<span class="material-symbols-outlined">person</span>`;
+                const exp = calcularExperiencia(m.fecha_inicio);
+                return `
                 <div class="directory-card">
-                    <div class="doc-avatar">
-                        <span class="material-symbols-outlined">person</span>
-                    </div>
+                    <div class="doc-avatar">${avatar}</div>
                     <div class="doc-info">
-                        <h3>Dr. ${m.nombre_completo}</h3>
+                        <h3>${titulo} ${m.nombre_completo}</h3>
                         <span class="doc-badge">${m.nombre_especialidad}</span>
-                        <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}${calcularExperiencia(m.fecha_inicio) !== null ? ' · ' + calcularExperiencia(m.fecha_inicio) + ' años de experiencia.' : ''}</p>
+                        <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}${exp !== null ? ' · ' + exp + ' años de experiencia.' : ''}</p>
                     </div>
                     <div class="doc-action">
                         <a href="agendar-cita.html" class="btn-primary">Agendar Cita</a>
                     </div>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         }
 
         function filtrar(q) {

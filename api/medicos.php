@@ -46,7 +46,7 @@ switch ($metodo) {
                 "SELECT m.id_medico, m.cedula_profesional, m.costo_consulta,
                         m.duracion_consulta, m.activo,
                         u.nombre || ' ' || u.apellido_paterno AS nombre_completo,
-                        u.email, u.genero,
+                        u.email, u.genero, u.foto_perfil,
                         e.nombre_especialidad
                  FROM medicos m
                  JOIN usuarios      u ON u.id_usuario      = m.id_usuario
