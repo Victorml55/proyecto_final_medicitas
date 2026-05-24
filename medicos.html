@@ -68,8 +68,11 @@
                     <div class="doc-avatar">${avatar}</div>
                     <div class="doc-info">
                         <h3>${titulo} ${m.nombre_completo}</h3>
-                        <span class="doc-badge">${m.nombre_especialidad}</span>
-                        <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}${exp !== null ? ' · ' + exp + ' años de experiencia.' : ''}</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
+                            <span class="doc-badge" style="margin-bottom:0;">${m.nombre_especialidad}</span>
+                            ${exp !== null ? `<span class="doc-badge" style="margin-bottom:0;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;">${exp} años de experiencia</span>` : ''}
+                        </div>
+                        <p>${m.biografia ?? 'Especialista certificado del Sanatorio Santa Lucía.'}</p>
                     </div>
                     <div class="doc-action">
                         <a href="agendar-cita.html?medico=${m.id_medico}" class="btn-primary">Agendar Cita</a>

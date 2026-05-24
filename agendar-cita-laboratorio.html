@@ -337,7 +337,7 @@
             }
 
             grid.innerHTML = data.slots.map(s => `
-                <button class="slot-btn ${s.ocupado ? 'slot-disabled' : ''}"
+                <button class="time-slot${s.ocupado ? ' ocupado' : ''}"
                         data-hora="${s.hora}"
                         data-fin="${s.hora_fin}"
                         ${s.ocupado ? 'disabled' : ''}
@@ -347,8 +347,8 @@
         }
 
         function seleccionarSlot(btn, hora, horaFin, label) {
-            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('slot-selected'));
-            btn.classList.add('slot-selected');
+            document.querySelectorAll('.time-slot:not(.ocupado)').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
             booking.horaInicio = hora;
             booking.horaFin    = horaFin;
             booking.slotLabel  = label;
