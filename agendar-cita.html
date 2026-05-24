@@ -186,7 +186,7 @@
                     </div>
 
                     <div class="nav-buttons">
-                        <button class="btn-nav-back" onclick="irPaso(2)">
+                        <button class="btn-nav-back" id="btn-back-3" onclick="new URLSearchParams(location.search).get('medico') ? history.back() : irPaso(2)">
                             <span class="material-symbols-outlined">arrow_back</span> Anterior
                         </button>
                         <button class="btn-nav-next" id="btn-next-3" onclick="irPaso(4)" disabled>
@@ -355,6 +355,24 @@
                     </div>`).join('');
             } else {
                 grid.innerHTML = '<p style="color:#94a3b8;">No hay especialidades disponibles.</p>';
+            }
+
+            // Si viene ?medico=X, pre-seleccionar y saltar al paso 3
+            const paramMedico = new URLSearchParams(window.location.search).get('medico');
+            if (paramMedico) {
+                const m = window._medicos.find(x => x.id_medico == paramMedico && x.activo);
+                if (m) {
+                    booking.specialty    = m.nombre_especialidad;
+                    booking.specialtyId  = null;
+                    booking.doctor       = m.nombre_completo;
+                    booking.doctorId     = m.id_medico;
+                    booking.doctorGenero = m.genero ?? null;
+                    document.getElementById('pill-spec').textContent   = booking.specialty;
+                    document.getElementById('pill-spec-3').textContent = booking.specialty;
+                    document.getElementById('pill-doc-3').textContent  = booking.doctor;
+                    await cargarDisponibilidadMedico(booking.doctorId);
+                    irPaso(3);
+                }
             }
         })();
 
