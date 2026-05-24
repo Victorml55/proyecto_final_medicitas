@@ -7,7 +7,7 @@ class Medico extends Sistema {
     function leer() {
         $stmt = $this->db->prepare(
             "SELECT m.id_medico, m.cedula_profesional, m.costo_consulta, m.duracion_consulta,
-                    m.años_experiencia, m.activo,
+                    m.fecha_inicio, m.activo,
                     u.nombre || ' ' || u.apellido_paterno || ' ' || COALESCE(u.apellido_materno,'') AS nombre_completo,
                     u.email,
                     e.nombre_especialidad
@@ -35,15 +35,15 @@ class Medico extends Sistema {
         $stmt = $this->db->prepare(
             "INSERT INTO medicos
                 (id_usuario, id_especialidad, cedula_profesional, universidad,
-                 años_experiencia, biografia, costo_consulta, duracion_consulta, activo)
+                 fecha_inicio, biografia, costo_consulta, duracion_consulta, activo)
              VALUES (?,?,?,?,?,?,?,?,?) RETURNING id_medico"
         );
         $stmt->execute([
             (int)$d['id_usuario'],
             (int)$d['id_especialidad'],
             trim($d['cedula_profesional']),
-            trim($d['universidad']    ?? '') ?: null,
-            ($d['años_experiencia'] ?? '') !== '' ? (int)$d['años_experiencia'] : null,
+            trim($d['universidad']  ?? '') ?: null,
+            trim($d['fecha_inicio'] ?? '') ?: null,
             trim($d['biografia']      ?? '') ?: null,
             (float)$d['costo_consulta'],
             (int)($d['duracion_consulta'] ?: 30),
@@ -56,15 +56,15 @@ class Medico extends Sistema {
         $stmt = $this->db->prepare(
             "UPDATE medicos SET
                 id_usuario=?, id_especialidad=?, cedula_profesional=?, universidad=?,
-                años_experiencia=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?
+                fecha_inicio=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?
              WHERE id_medico=?"
         );
         $stmt->execute([
             (int)$d['id_usuario'],
             (int)$d['id_especialidad'],
             trim($d['cedula_profesional']),
-            trim($d['universidad']    ?? '') ?: null,
-            $d['años_experiencia'] !== '' ? (int)$d['años_experiencia'] : null,
+            trim($d['universidad']  ?? '') ?: null,
+            trim($d['fecha_inicio'] ?? '') ?: null,
             trim($d['biografia']      ?? '') ?: null,
             (float)$d['costo_consulta'],
             (int)($d['duracion_consulta'] ?: 30),

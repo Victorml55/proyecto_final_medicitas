@@ -10,7 +10,7 @@
  *
  * Campos POST/PUT (JSON):
  *   id_usuario*, id_especialidad*, cedula_profesional*,
- *   universidad, años_experiencia, biografia,
+ *   universidad, fecha_inicio, biografia,
  *   costo_consulta*, duracion_consulta, activo
  */
 
@@ -26,7 +26,7 @@ switch ($metodo) {
         if ($id) {
             $stmt = $db->prepare(
                 "SELECT m.id_medico, m.cedula_profesional, m.universidad,
-                        m.años_experiencia, m.biografia, m.costo_consulta,
+                        m.fecha_inicio, m.biografia, m.costo_consulta,
                         m.duracion_consulta, m.activo,
                         u.nombre, u.apellido_paterno, u.apellido_materno,
                         u.email, u.telefono,
@@ -71,7 +71,7 @@ switch ($metodo) {
             $stmt = $db->prepare(
                 "INSERT INTO medicos
                     (id_usuario, id_especialidad, cedula_profesional, universidad,
-                     años_experiencia, biografia, costo_consulta, duracion_consulta, activo)
+                     fecha_inicio, biografia, costo_consulta, duracion_consulta, activo)
                  VALUES (?,?,?,?,?,?,?,?,?) RETURNING *"
             );
             $stmt->execute([
@@ -79,7 +79,7 @@ switch ($metodo) {
                 (int)$d['id_especialidad'],
                 trim($d['cedula_profesional']),
                 trim($d['universidad']       ?? '') ?: null,
-                $d['años_experiencia'] !== '' ? (int)($d['años_experiencia'] ?? 0) : null,
+                trim($d['fecha_inicio']      ?? '') ?: null,
                 trim($d['biografia']         ?? '') ?: null,
                 (float)$d['costo_consulta'],
                 (int)($d['duracion_consulta'] ?? 30),
@@ -106,7 +106,7 @@ switch ($metodo) {
             $stmt = $db->prepare(
                 "UPDATE medicos SET
                     id_usuario=?, id_especialidad=?, cedula_profesional=?, universidad=?,
-                    años_experiencia=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?
+                    fecha_inicio=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?
                  WHERE id_medico=? RETURNING *"
             );
             $stmt->execute([
@@ -114,7 +114,7 @@ switch ($metodo) {
                 (int)$d['id_especialidad'],
                 trim($d['cedula_profesional']),
                 trim($d['universidad']       ?? '') ?: null,
-                $d['años_experiencia'] !== '' ? (int)($d['años_experiencia'] ?? 0) : null,
+                trim($d['fecha_inicio']      ?? '') ?: null,
                 trim($d['biografia']         ?? '') ?: null,
                 (float)$d['costo_consulta'],
                 (int)($d['duracion_consulta'] ?? 30),

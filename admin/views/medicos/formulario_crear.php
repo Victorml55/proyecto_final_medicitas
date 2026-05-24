@@ -48,9 +48,9 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold">Años de experiencia</label>
-                    <input type="number" name="años_experiencia" class="form-control" min="0" max="60"
-                           value="<?= htmlspecialchars($_POST['años_experiencia'] ?? '') ?>">
+                    <label class="form-label fw-semibold">Fecha de inicio de práctica</label>
+                    <input type="date" name="fecha_inicio" class="form-control"
+                           value="<?= htmlspecialchars($_POST['fecha_inicio'] ?? '') ?>">
                 </div>
 
                 <div class="col-md-4">
