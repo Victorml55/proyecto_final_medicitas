@@ -47,28 +47,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtRoles->execute([$usuario['id_usuario']]);
             $roles = $stmtRoles->fetchAll(PDO::FETCH_COLUMN);
 
-            // Cargar permisos del usuario (a través de sus roles)
-            $stmtPermisos = $app->db->prepare(
-                'SELECT DISTINCT p.nombre_permiso
-                 FROM permisos p
-                 JOIN rol_permisos rp ON rp.id_permiso = p.id_permiso
-                 JOIN usuario_roles ur ON ur.id_rol = rp.id_rol
-                 WHERE ur.id_usuario = ?'
-            );
-            $stmtPermisos->execute([$usuario['id_usuario']]);
-            $permisos = $stmtPermisos->fetchAll(PDO::FETCH_COLUMN);
+            if (!in_array('Administrador', $roles, true)) {
+                $error = 'No tienes permiso para acceder al panel de administración.';
+            } else {
+                // Cargar permisos del usuario (a través de sus roles)
+                $stmtPermisos = $app->db->prepare(
+                    'SELECT DISTINCT p.nombre_permiso
+                     FROM permisos p
+                     JOIN rol_permisos rp ON rp.id_permiso = p.id_permiso
+                     JOIN usuario_roles ur ON ur.id_rol = rp.id_rol
+                     WHERE ur.id_usuario = ?'
+                );
+                $stmtPermisos->execute([$usuario['id_usuario']]);
+                $permisos = $stmtPermisos->fetchAll(PDO::FETCH_COLUMN);
 
-            // Regenerar ID de sesión para prevenir session fixation
-            session_regenerate_id(true);
+                // Regenerar ID de sesión para prevenir session fixation
+                session_regenerate_id(true);
 
-            $_SESSION['id_usuario'] = $usuario['id_usuario'];
-            $_SESSION['nombre']     = $usuario['nombre'];
-            $_SESSION['email']      = $usuario['email'];
-            $_SESSION['roles']      = $roles;
-            $_SESSION['permisos']   = $permisos;
+                $_SESSION['id_usuario'] = $usuario['id_usuario'];
+                $_SESSION['nombre']     = $usuario['nombre'];
+                $_SESSION['email']      = $usuario['email'];
+                $_SESSION['roles']      = $roles;
+                $_SESSION['permisos']   = $permisos;
 
-            header('Location: dashboard.php');
-            exit;
+                header('Location: dashboard.php');
+                exit;
+            }
         } else {
             // Mensaje genérico para no revelar si el email existe
             $error = 'Correo o contraseña incorrectos.';
