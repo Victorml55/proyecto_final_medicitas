@@ -1,8 +1,9 @@
 <?php
 /**
- * GET  /api/resultados.php           → archivos del paciente en sesión
+ * GET  /api/resultados.php           → archivos del paciente en sesión (todos los categoria)
  * GET  /api/resultados.php?id_cita=X → archivos de una cita (paciente o médico)
- * POST /api/resultados.php           → sube resultado de laboratorio (médico, multipart)
+ * POST /api/resultados.php           → sube archivo (médico, multipart)
+ *                                      campo 'categoria': 'resultado' (default) | 'receta'
  */
 
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -16,17 +17,19 @@ if (!isset($_SESSION['id_usuario'])) {
 $db  = conectarDB();
 $uid = (int)$_SESSION['id_usuario'];
 
-// ── POST: subir resultado de laboratorio ─────────────────────────────────────
+// ── POST: subir archivo ──────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
     $stmtM->execute([$uid]);
     $medico = $stmtM->fetch();
     if (!$medico) {
-        responder(403, ['error' => 'Solo médicos pueden subir resultados']);
+        responder(403, ['error' => 'Solo médicos pueden subir archivos']);
     }
 
     $id_cita    = isset($_POST['id_cita']) ? (int)$_POST['id_cita'] : 0;
     $descripcion = trim($_POST['descripcion'] ?? '') ?: null;
+    $categoria   = in_array(trim($_POST['categoria'] ?? ''), ['receta', 'resultado'])
+                   ? trim($_POST['categoria']) : 'resultado';
 
     if (!$id_cita) {
         responder(422, ['error' => 'Se requiere id_cita']);
@@ -57,16 +60,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime  = $finfo->file($file['tmp_name']);
-    $tiposPermitidos = [
-        'application/pdf'                                                          => 'pdf',
-        'image/jpeg'                                                               => 'jpg',
-        'image/png'                                                                => 'png',
-        'image/gif'                                                                => 'gif',
-        'application/msword'                                                       => 'doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-        'application/vnd.ms-excel'                                                 => 'xls',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'       => 'xlsx',
-    ];
+
+    // Receta: solo PDF
+    if ($categoria === 'receta') {
+        if ($mime !== 'application/pdf') {
+            responder(422, ['error' => 'La receta debe ser un archivo PDF.']);
+        }
+        $tiposPermitidos = ['application/pdf' => 'pdf'];
+    } else {
+        $tiposPermitidos = [
+            'application/pdf'                                                          => 'pdf',
+            'image/jpeg'                                                               => 'jpg',
+            'image/png'                                                                => 'png',
+            'image/gif'                                                                => 'gif',
+            'application/msword'                                                       => 'doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+            'application/vnd.ms-excel'                                                 => 'xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'       => 'xlsx',
+        ];
+    }
 
     if (!array_key_exists($mime, $tiposPermitidos)) {
         responder(422, ['error' => 'Tipo de archivo no permitido. Use PDF, imágenes, Word o Excel.']);
@@ -78,26 +90,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mkdir($dir, 0755, true);
     }
 
-    $base         = pathinfo($file['name'], PATHINFO_FILENAME);
-    $nombreSeguro = preg_replace('/[^a-zA-Z0-9_-]/', '_', $base);
-    $nombreArchivo = 'r' . $id_cita . '_' . time() . '_' . $nombreSeguro . '.' . $ext;
+    $base          = pathinfo($file['name'], PATHINFO_FILENAME);
+    $nombreSeguro  = preg_replace('/[^a-zA-Z0-9_-]/', '_', $base);
+    $prefix        = $categoria === 'receta' ? 'rec' : 'r';
+    $nombreArchivo = $prefix . $id_cita . '_' . time() . '_' . $nombreSeguro . '.' . $ext;
     $destino       = $dir . $nombreArchivo;
 
     if (!move_uploaded_file($file['tmp_name'], $destino)) {
         responder(500, ['error' => 'No se pudo guardar el archivo en el servidor.']);
     }
 
-    $rutaDB    = 'uploads/resultados/' . $nombreArchivo;
-    $tamañoKB  = (int)ceil($file['size'] / 1024);
+    $rutaDB   = 'uploads/resultados/' . $nombreArchivo;
+    $tamañoKB = (int)ceil($file['size'] / 1024);
 
     $stmtI = $db->prepare(
         "INSERT INTO archivos_adjuntos
-             (id_cita, id_paciente, nombre_archivo, ruta_archivo, tipo_archivo, tamaño_kb, descripcion)
-         VALUES (?,?,?,?,?,?,?) RETURNING id_archivo"
+             (id_cita, id_paciente, nombre_archivo, ruta_archivo, tipo_archivo, tamaño_kb, descripcion, categoria)
+         VALUES (?,?,?,?,?,?,?,?) RETURNING id_archivo"
     );
     $stmtI->execute([
         $id_cita, $id_paciente,
-        $file['name'], $rutaDB, $ext, $tamañoKB, $descripcion,
+        $file['name'], $rutaDB, $ext, $tamañoKB, $descripcion, $categoria,
     ]);
     $id_archivo = $stmtI->fetchColumn();
 
@@ -125,8 +138,8 @@ try {
         }
 
         $stmt = $db->prepare(
-            "SELECT id_archivo, nombre_archivo, tipo_archivo, tamaño_kb, descripcion, fecha_subida
-             FROM archivos_adjuntos WHERE id_cita = ? ORDER BY fecha_subida DESC"
+            "SELECT id_archivo, nombre_archivo, tipo_archivo, tamaño_kb, descripcion, fecha_subida, categoria
+             FROM archivos_adjuntos WHERE id_cita = ? ORDER BY categoria DESC, fecha_subida DESC"
         );
         $stmt->execute([$id_cita]);
         responder(200, $stmt->fetchAll());
@@ -143,7 +156,7 @@ try {
 
     $stmt = $db->prepare(
         "SELECT a.id_archivo, a.nombre_archivo, a.tipo_archivo, a.tamaño_kb,
-                a.descripcion, a.fecha_subida, a.id_cita,
+                a.descripcion, a.fecha_subida, a.id_cita, a.categoria,
                 c.fecha_cita,
                 um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
                 um.genero AS genero_medico
@@ -159,5 +172,5 @@ try {
     responder(200, $stmt->fetchAll());
 
 } catch (PDOException $e) {
-    responder(500, ['error' => 'Error al obtener los resultados.']);
+    responder(500, ['error' => 'Error al obtener los archivos.']);
 }

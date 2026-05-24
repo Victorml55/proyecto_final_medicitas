@@ -428,56 +428,37 @@
             if (c.nombre_estado === 'Concluida') {
                 document.getElementById('section-concluida').style.display = '';
                 document.getElementById('section-concluida').innerHTML =
-                    '<hr class="modal-section-sep"><p style="color:#94a3b8;font-size:.83rem;">Cargando receta...</p>';
-                // Cargar receta y resultados de forma asíncrona
-                Promise.all([
-                    fetch(`/api/recetas.php?id_cita=${idCita}`).then(r => r.json()).catch(() => null),
-                    fetch(`/api/resultados.php?id_cita=${idCita}`).then(r => r.json()).catch(() => []),
-                ]).then(([receta, archivos]) => {
+                    '<hr class="modal-section-sep"><p style="color:#94a3b8;font-size:.83rem;">Cargando archivos...</p>';
+
+                fetch(`/api/resultados.php?id_cita=${idCita}`).then(r => r.json()).catch(() => []).then(archivos => {
+                    const lista = Array.isArray(archivos) ? archivos : [];
+                    const recetas    = lista.filter(a => a.categoria === 'receta');
+                    const resultados = lista.filter(a => a.categoria !== 'receta');
+
+                    const fileRow = a => `
+                        <div class="res-pac-item">
+                            <span class="material-symbols-outlined">${a.tipo_archivo === 'pdf' ? 'picture_as_pdf' : 'description'}</span>
+                            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre_archivo}</span>
+                            <a href="/api/descargar-resultado.php?id=${a.id_archivo}" target="_blank">
+                                <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                            </a>
+                        </div>`;
+
                     let html = '<hr class="modal-section-sep">';
 
-                    // Receta
                     html += '<div class="receta-pac-card">';
                     html += '<div class="receta-pac-title"><span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta médica</div>';
-                    if (receta) {
-                        if (receta.diagnostico) {
-                            html += `<div class="receta-pac-field"><div class="lbl">Diagnóstico</div><div class="val">${receta.diagnostico}</div></div>`;
-                        }
-                        const meds = receta.medicamentos ?? [];
-                        if (meds.length) {
-                            html += meds.map(m => `
-                                <div class="med-pac-item">
-                                    <div class="med-pac-nm">${m.nombre_medicamento}${m.presentacion ? ` <span style="font-weight:400;color:#64748b;font-size:.8rem;">${m.presentacion}</span>` : ''}</div>
-                                    <div class="med-pac-dt">${m.dosis} · ${m.frecuencia}${m.duracion ? ' · ' + m.duracion : ''}</div>
-                                    ${m.indicaciones ? `<div style="font-style:italic;color:#94a3b8;font-size:.8rem;margin-top:2px;">${m.indicaciones}</div>` : ''}
-                                </div>`).join('');
-                        }
-                        if (receta.indicaciones_generales) {
-                            html += `<div class="ind-gen-pac"><strong>Indicaciones generales:</strong> ${receta.indicaciones_generales}</div>`;
-                        }
-                        if (!receta.diagnostico && !(receta.medicamentos?.length) && !receta.indicaciones_generales) {
-                            html += '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Tu médico registró esta consulta sin notas adicionales.</p>';
-                        }
-                    } else {
-                        html += '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Sin receta registrada para esta consulta.</p>';
-                    }
+                    html += recetas.length
+                        ? recetas.map(fileRow).join('')
+                        : '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Sin receta registrada para esta consulta.</p>';
                     html += '</div>';
 
-                    // Resultados
-                    if (Array.isArray(archivos) && archivos.length) {
-                        html += '<div class="receta-pac-card" style="margin-top:10px;border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.04);">';
-                        html += '<div class="receta-pac-title" style="color:#065f46;"><span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio</div>';
-                        html += archivos.map(a => `
-                            <div class="res-pac-item">
-                                <span class="material-symbols-outlined">description</span>
-                                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre_archivo}</span>
-                                ${a.descripcion ? `<span style="color:#64748b;font-style:italic;font-size:.8rem;">${a.descripcion}</span>` : ''}
-                                <a href="/api/descargar-resultado.php?id=${a.id_archivo}" target="_blank">
-                                    <span class="material-symbols-outlined" style="font-size:18px;">download</span>
-                                </a>
-                            </div>`).join('');
-                        html += '</div>';
-                    }
+                    html += '<div class="receta-pac-card" style="margin-top:10px;border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.04);">';
+                    html += '<div class="receta-pac-title" style="color:#065f46;"><span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio</div>';
+                    html += resultados.length
+                        ? resultados.map(fileRow).join('')
+                        : '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Sin resultados de laboratorio para esta consulta.</p>';
+                    html += '</div>';
 
                     document.getElementById('section-concluida').innerHTML = html;
                 });

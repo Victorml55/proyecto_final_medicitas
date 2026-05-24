@@ -20,28 +20,21 @@
         .recetas-list {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 14px;
             margin-top: 24px;
         }
         .receta-card {
             background: var(--bg-card, #1e293b);
             border: 1px solid var(--border, rgba(148,163,184,.15));
-            border-radius: 16px;
-            overflow: hidden;
-        }
-        .receta-header {
+            border-radius: 14px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 18px 22px;
-            cursor: pointer;
-            user-select: none;
-            transition: background .15s;
+            gap: 18px;
         }
-        .receta-header:hover { background: rgba(148,163,184,.06); }
-        .receta-header-icon {
-            width: 44px;
-            height: 44px;
+        .receta-icon {
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
             background: rgba(37,99,235,.15);
             color: #60a5fa;
@@ -49,109 +42,44 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            font-size: 22px;
         }
-        .receta-header-info { flex: 1; min-width: 0; }
-        .receta-titulo {
+        .receta-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .receta-nombre {
             font-weight: 600;
             font-size: .97rem;
             color: var(--text-primary, #f1f5f9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .receta-meta {
             font-size: .82rem;
             color: var(--text-muted, #94a3b8);
             margin-top: 3px;
         }
-        .receta-toggle {
-            color: #94a3b8;
-            transition: transform .25s;
+        .receta-actions {
+            display: flex;
+            gap: 8px;
             flex-shrink: 0;
         }
-        .receta-card.open .receta-toggle { transform: rotate(180deg); }
-        .receta-body {
-            display: none;
-            padding: 0 22px 20px;
-            border-top: 1px solid rgba(148,163,184,.1);
-        }
-        .receta-card.open .receta-body { display: block; }
-        .receta-diagnostico {
-            padding: 14px 0 10px;
-            font-size: .9rem;
-            color: var(--text-secondary, #cbd5e1);
-        }
-        .receta-diagnostico strong { color: var(--text-primary, #f1f5f9); }
-        .medicamentos-titulo {
-            font-size: .78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: #94a3b8;
-            margin: 12px 0 8px;
-        }
-        .medicamentos-lista {
+        .btn-download {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .medicamento-item {
-            background: rgba(148,163,184,.07);
-            border-radius: 10px;
-            padding: 12px 16px;
-        }
-        .med-nombre {
-            font-weight: 600;
-            font-size: .93rem;
-            color: var(--text-primary, #f1f5f9);
-        }
-        .med-presentacion {
-            font-size: .8rem;
-            color: #94a3b8;
-            margin-left: 6px;
-        }
-        .med-detalles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 18px;
-            margin-top: 7px;
-        }
-        .med-detalle {
-            font-size: .82rem;
-            color: var(--text-secondary, #cbd5e1);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .med-detalle .material-symbols-outlined { font-size: 15px; color: #64748b; }
-        .med-indicaciones {
-            font-size: .82rem;
-            color: #94a3b8;
-            margin-top: 6px;
-            font-style: italic;
-        }
-        .receta-indicaciones-gen {
-            font-size: .87rem;
-            color: var(--text-secondary, #cbd5e1);
-            background: rgba(37,99,235,.08);
-            border-left: 3px solid #3b82f6;
-            border-radius: 0 8px 8px 0;
-            padding: 10px 14px;
-            margin-top: 12px;
-        }
-        .btn-imprimir {
-            display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-top: 14px;
             padding: 8px 16px;
             border-radius: 8px;
             font-size: .85rem;
             font-weight: 500;
-            background: transparent;
-            border: 1px solid rgba(148,163,184,.3);
-            color: #94a3b8;
-            cursor: pointer;
-            transition: border-color .2s, color .2s;
+            background: var(--accent, #2563eb);
+            color: #fff;
+            text-decoration: none;
+            transition: background .2s;
         }
-        .btn-imprimir:hover { border-color: #60a5fa; color: #60a5fa; }
+        .btn-download:hover { background: #1d4ed8; }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -163,15 +91,10 @@
             margin-bottom: 16px;
             opacity: .4;
         }
-
-        @media print {
-            body * { visibility: hidden; }
-            .receta-imprimir, .receta-imprimir * { visibility: visible; }
-            .receta-imprimir {
-                position: fixed; top: 0; left: 0;
-                width: 100%; padding: 30px;
-                background: white; color: black;
-            }
+        @media (max-width: 600px) {
+            .receta-card { flex-wrap: wrap; }
+            .receta-actions { width: 100%; }
+            .btn-download { flex: 1; justify-content: center; }
         }
     </style>
 </head>
@@ -182,16 +105,13 @@
     <main class="contenido-pagina">
         <div class="section-header" style="text-align:left; margin-bottom:30px;">
             <h1>Mis Recetas</h1>
-            <p>Historial de recetas médicas emitidas durante tus consultas.</p>
+            <p>Recetas médicas en PDF emitidas durante tus consultas.</p>
         </div>
 
         <div id="lista-recetas">
             <p style="color:#94a3b8;">Cargando...</p>
         </div>
     </main>
-
-    <!-- Contenedor oculto para impresión -->
-    <div class="receta-imprimir" id="zona-impresion" style="display:none;"></div>
 
     <script>
         fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
@@ -209,112 +129,45 @@
             return `${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
         }
 
-        function toggleReceta(id) {
-            document.getElementById('receta-' + id).classList.toggle('open');
-        }
-
-        function imprimirReceta(id, titulo, medico, generoMedico, fecha, diagnostico, indGen, meds) {
-            const zona = document.getElementById('zona-impresion');
-            const medsHtml = meds.map(m => `
-                <div style="border:1px solid #ccc;border-radius:6px;padding:10px 14px;margin-bottom:8px;">
-                    <strong>${m.nombre_medicamento}</strong>${m.presentacion ? ' — ' + m.presentacion : ''}<br>
-                    Dosis: ${m.dosis} &nbsp;|&nbsp; Frecuencia: ${m.frecuencia}
-                    ${m.duracion ? '&nbsp;|&nbsp; Duración: ' + m.duracion : ''}
-                    ${m.indicaciones ? '<br><em>' + m.indicaciones + '</em>' : ''}
-                </div>`).join('');
-
-            zona.innerHTML = `
-                <h2 style="margin:0 0 4px;">Receta Médica — MediCitas SSL</h2>
-                <p style="color:#555;margin:0 0 16px;">${fecha} · ${drLabel(generoMedico)} ${medico}</p>
-                ${diagnostico ? `<p><strong>Diagnóstico:</strong> ${diagnostico}</p>` : ''}
-                <h4 style="margin:14px 0 8px;">Medicamentos</h4>
-                ${medsHtml}
-                ${indGen ? `<div style="border-left:3px solid #2563eb;padding:8px 12px;margin-top:12px;background:#eff6ff;"><strong>Indicaciones generales:</strong> ${indGen}</div>` : ''}
-            `;
-            zona.style.display = 'block';
-            window.print();
-            zona.style.display = 'none';
-        }
-
         (async function () {
-            const datos = await fetch('/api/recetas.php').then(r => r.json());
+            const datos = await fetch('/api/resultados.php').then(r => r.json());
             const el    = document.getElementById('lista-recetas');
 
-            if (!Array.isArray(datos) || datos.length === 0) {
+            const recetas = Array.isArray(datos) ? datos.filter(a => a.categoria === 'receta') : [];
+
+            if (!recetas.length) {
                 el.innerHTML = `
                     <div class="empty-state">
                         <span class="material-symbols-outlined">medication</span>
-                        <p>No tienes recetas médicas registradas todavía.</p>
+                        <p>No tienes recetas médicas disponibles todavía.</p>
                         <p style="font-size:.85rem;margin-top:6px;">Aparecerán aquí después de tus consultas.</p>
                     </div>`;
                 return;
             }
 
             el.innerHTML = `<div class="recetas-list">` +
-                datos.map(r => {
-                    const meds = r.medicamentos ?? [];
-                    const fecha = formatFecha(r.fecha_emision);
-                    const medsHtml = meds.map(m => `
-                        <div class="medicamento-item">
-                            <div>
-                                <span class="med-nombre">${m.nombre_medicamento}</span>
-                                ${m.presentacion ? `<span class="med-presentacion">${m.presentacion}</span>` : ''}
-                            </div>
-                            <div class="med-detalles">
-                                <span class="med-detalle">
-                                    <span class="material-symbols-outlined">vaccines</span>
-                                    ${m.dosis}
-                                </span>
-                                <span class="med-detalle">
-                                    <span class="material-symbols-outlined">schedule</span>
-                                    ${m.frecuencia}
-                                </span>
-                                ${m.duracion ? `<span class="med-detalle">
-                                    <span class="material-symbols-outlined">event_available</span>
-                                    ${m.duracion}
-                                </span>` : ''}
-                            </div>
-                            ${m.indicaciones ? `<div class="med-indicaciones">${m.indicaciones}</div>` : ''}
-                        </div>`).join('');
-
-                    const medsData = JSON.stringify(meds).replace(/'/g, '&#39;');
+                recetas.map(r => {
+                    const meta = [
+                        r.fecha_subida ? formatFecha(r.fecha_subida) : null,
+                        r.nombre_medico ? drLabel(r.genero_medico) + ' ' + r.nombre_medico : null,
+                        r.fecha_cita    ? 'Cita: ' + formatFecha(r.fecha_cita) : null,
+                    ].filter(Boolean).join(' · ');
 
                     return `
-                    <div class="receta-card" id="receta-${r.id_receta}">
-                        <div class="receta-header" onclick="toggleReceta(${r.id_receta})">
-                            <div class="receta-header-icon">
-                                <span class="material-symbols-outlined">medication</span>
-                            </div>
-                            <div class="receta-header-info">
-                                <div class="receta-titulo">
-                                    ${r.diagnostico ? r.diagnostico : 'Receta del ' + fecha}
-                                </div>
-                                <div class="receta-meta">
-                                    ${drLabel(r.genero_medico)} ${r.nombre_medico}
-                                    ${r.nombre_especialidad ? ' · ' + r.nombre_especialidad : ''}
-                                    &nbsp;·&nbsp; ${fecha}
-                                    &nbsp;·&nbsp; ${meds.length} medicamento${meds.length !== 1 ? 's' : ''}
-                                </div>
-                            </div>
-                            <span class="material-symbols-outlined receta-toggle">expand_more</span>
+                    <div class="receta-card">
+                        <div class="receta-icon">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
                         </div>
-                        <div class="receta-body">
-                            ${r.diagnostico ? `<div class="receta-diagnostico"><strong>Diagnóstico:</strong> ${r.diagnostico}</div>` : ''}
-                            ${meds.length ? `<div class="medicamentos-titulo">Medicamentos</div><div class="medicamentos-lista">${medsHtml}</div>` : '<p style="color:#94a3b8;font-size:.87rem;padding-top:12px;">Sin medicamentos registrados.</p>'}
-                            ${r.indicaciones_generales ? `<div class="receta-indicaciones-gen"><strong>Indicaciones generales:</strong> ${r.indicaciones_generales}</div>` : ''}
-                            <button class="btn-imprimir" onclick='imprimirReceta(
-                                ${r.id_receta},
-                                ${JSON.stringify(r.diagnostico ?? '')},
-                                ${JSON.stringify(r.nombre_medico)},
-                                ${JSON.stringify(r.genero_medico ?? null)},
-                                ${JSON.stringify(fecha)},
-                                ${JSON.stringify(r.diagnostico ?? '')},
-                                ${JSON.stringify(r.indicaciones_generales ?? '')},
-                                ${medsData}
-                            )'>
-                                <span class="material-symbols-outlined" style="font-size:17px;">print</span>
-                                Imprimir receta
-                            </button>
+                        <div class="receta-info">
+                            <div class="receta-nombre">${r.nombre_archivo}</div>
+                            <div class="receta-meta">${meta}</div>
+                        </div>
+                        <div class="receta-actions">
+                            <a href="/api/descargar-resultado.php?id=${r.id_archivo}"
+                               target="_blank" class="btn-download">
+                                <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                                Ver / Descargar
+                            </a>
                         </div>
                     </div>`;
                 }).join('') +

@@ -57,51 +57,11 @@
             font-size: .77rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: .06em; color: #94a3b8; margin: 14px 0 8px;
         }
-        .f-group { margin-bottom: 10px; }
-        .f-group label {
-            display: block; font-size: .82rem; font-weight: 600;
-            color: #475569; margin-bottom: 3px;
-        }
-        .f-ctrl {
-            width: 100%; padding: 8px 10px;
-            border: 1px solid #d1d5db; border-radius: 7px;
-            font-size: .87rem; color: #1e293b; background: #fff;
-            box-sizing: border-box; font-family: inherit;
-        }
-        .f-ctrl:focus { outline: none; border-color: #3b82f6; }
-        textarea.f-ctrl { resize: vertical; min-height: 62px; }
-
-        /* Medicamentos */
-        .meds-list { display: flex; flex-direction: column; gap: 8px; }
-        .med-row {
-            background: #f8fafc; border: 1px solid #e2e8f0;
-            border-radius: 8px; padding: 10px 12px;
-        }
-        .med-row-hdr {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 7px;
-        }
-        .med-row-lbl { font-size: .8rem; font-weight: 600; color: #64748b; }
-        .btn-rm-med {
-            background: none; border: none; color: #ef4444;
-            cursor: pointer; padding: 0; display: flex; align-items: center;
-        }
-        .med-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .med-grid .full { grid-column: 1 / -1; }
-        .btn-add-med {
-            display: flex; align-items: center; gap: 6px;
-            background: none; border: 1px dashed #94a3b8;
-            color: #64748b; padding: 7px 14px; border-radius: 7px;
-            cursor: pointer; font-size: .84rem; font-weight: 500;
-            width: 100%; justify-content: center; margin-top: 6px;
-            transition: border-color .2s, color .2s;
-        }
-        .btn-add-med:hover { border-color: #3b82f6; color: #3b82f6; }
 
         /* Upload */
         .upload-zone {
             border: 1px dashed #94a3b8; border-radius: 8px;
-            padding: 14px 16px; background: #f8fafc;
+            padding: 14px 16px; background: #f8fafc; margin-bottom: 6px;
         }
         .upload-zone input[type=file] { display: none; }
         .btn-pick-file {
@@ -112,7 +72,7 @@
             font-weight: 500; transition: border-color .2s;
         }
         .btn-pick-file:hover { border-color: #3b82f6; color: #3b82f6; }
-        .file-queue { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+        .file-queue { display: flex; flex-direction: column; gap: 5px; }
         .file-tag {
             display: flex; align-items: center; gap: 8px;
             padding: 6px 10px; border-radius: 6px;
@@ -137,11 +97,26 @@
         .btn-concluir:hover { background: #059669; }
         .btn-concluir:disabled { opacity: .55; cursor: not-allowed; }
 
-        /* Vista sólo lectura (Concluida) */
+        /* Botón subir (post-conclusión) */
+        .btn-subir {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 9px; margin-top: 10px;
+            background: #2563eb; color: #fff; border: none;
+            border-radius: 8px; font-size: .9rem; font-weight: 600;
+            cursor: pointer; transition: background .15s;
+        }
+        .btn-subir:hover { background: #1d4ed8; }
+        .btn-subir:disabled { opacity: .55; cursor: not-allowed; }
+
+        /* Vista sólo lectura (archivos) */
         .ro-card {
             background: rgba(37,99,235,.05);
             border: 1px solid rgba(37,99,235,.14);
-            border-radius: 10px; padding: 14px 16px; margin-top: 4px;
+            border-radius: 10px; padding: 14px 16px; margin-top: 6px;
+        }
+        .ro-card.verde {
+            background: rgba(16,185,129,.04);
+            border-color: rgba(16,185,129,.2);
         }
         .ro-card-title {
             font-weight: 600; font-size: .88rem;
@@ -150,24 +125,6 @@
         }
         .ro-card-title.verde { color: #065f46; }
         .ro-card-title.azul  { color: #1e40af; }
-        .ro-field { margin-bottom: 7px; font-size: .87rem; }
-        .ro-field .lbl {
-            font-size: .75rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .05em; color: #64748b;
-        }
-        .ro-field .val { color: #1e293b; margin-top: 2px; }
-        .med-ro {
-            background: #f8fafc; border: 1px solid #e2e8f0;
-            border-radius: 7px; padding: 8px 11px; margin-bottom: 5px; font-size: .85rem;
-        }
-        .med-ro-nm { font-weight: 600; color: #1e293b; }
-        .med-ro-dt { color: #64748b; margin-top: 2px; font-size: .82rem; }
-        .ind-gen {
-            padding: 8px 12px; margin-top: 8px;
-            background: rgba(37,99,235,.07);
-            border-left: 3px solid #3b82f6; border-radius: 0 6px 6px 0;
-            font-size: .85rem; color: #1e293b;
-        }
         .res-ro {
             display: flex; align-items: center; gap: 8px;
             padding: 7px 10px; background: #f8fafc;
@@ -175,7 +132,10 @@
             margin-bottom: 5px; font-size: .84rem;
         }
         .res-ro .material-symbols-outlined { font-size: 17px; color: #94a3b8; flex-shrink: 0; }
-        .res-ro a { color: #2563eb; text-decoration: none; font-weight: 500; margin-left: auto; }
+        .res-ro a {
+            color: #2563eb; text-decoration: none; font-weight: 500;
+            margin-left: auto; display: flex; align-items: center; gap: 4px;
+        }
         .res-ro a:hover { text-decoration: underline; }
         .empty-ro { font-size: .84rem; color: #94a3b8; padding: 4px 0; }
     </style>
@@ -226,10 +186,10 @@
         const mesesC = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
         const mesesL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
                         'septiembre','octubre','noviembre','diciembre'];
-        let todasCitas  = [];
-        let citaActual  = null;
-        let archivosQ   = [];   // cola de archivos pendientes de subir
-        let medCounter  = 0;
+        let todasCitas = [];
+        let citaActual = null;
+        // archivosQ: [{ file, desc, categoria }] — null = eliminado
+        let archivosQ  = [];
 
         function horaLabel(h) {
             if (!h) return '—';
@@ -302,11 +262,10 @@
             if (!c) return;
             citaActual = c;
             archivosQ  = [];
-            medCounter = 0;
 
-            const f      = c.fecha_cita.split('T')[0].split('-');
-            const fecha  = `${parseInt(f[2])} de ${mesesL[parseInt(f[1])-1]} de ${f[0]}`;
-            const col    = c.color || '#94a3b8';
+            const f     = c.fecha_cita.split('T')[0].split('-');
+            const fecha = `${parseInt(f[2])} de ${mesesL[parseInt(f[1])-1]} de ${f[0]}`;
+            const col   = c.color || '#94a3b8';
 
             let html = `
                 <div class="modal-pac-row">
@@ -340,8 +299,8 @@
                 html += htmlFormConcluir();
             } else if (c.nombre_estado === 'Concluida') {
                 html += '<hr class="modal-sep">';
-                html += await htmlRecetaRO(idCita);
-                html += await htmlResultadosRO(idCita);
+                html += await htmlArchivosRO(idCita);
+                html += htmlFormSubirResultados();
             } else {
                 html += `<hr class="modal-sep"><p style="font-size:.87rem;color:#94a3b8;">
                     Estado actual: <strong>${c.nombre_estado}</strong>. No hay acciones disponibles.</p>`;
@@ -357,41 +316,37 @@
             archivosQ  = [];
         }
 
-        // ── Formulario concluir ─────────────────────────────────────────────
+        // ── Formulario concluir (cita Confirmada) ───────────────────────────
         function htmlFormConcluir() {
             return `
             <hr class="modal-sep">
-            <div class="sec-title">Diagnóstico y Receta
-                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;font-size:.73rem;"> — opcional</span>
-            </div>
-            <div class="f-group">
-                <label for="f-diag">Diagnóstico</label>
-                <textarea id="f-diag" class="f-ctrl" rows="2" placeholder="Ej. Hipertensión arterial leve..."></textarea>
-            </div>
-            <div class="f-group">
-                <label for="f-ind">Indicaciones generales</label>
-                <textarea id="f-ind" class="f-ctrl" rows="2" placeholder="Ej. Reposar, tomar abundante agua..."></textarea>
-            </div>
 
-            <div class="sec-title">Medicamentos</div>
-            <div id="meds-list" class="meds-list"></div>
-            <button type="button" class="btn-add-med" onclick="agregarMed()">
-                <span class="material-symbols-outlined" style="font-size:17px;">add</span>
-                Agregar medicamento
-            </button>
-
-            <div class="sec-title" style="margin-top:14px;">Resultados de Laboratorio
+            <div class="sec-title">Receta Médica (PDF)
                 <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;font-size:.73rem;"> — opcional</span>
             </div>
             <div class="upload-zone">
                 <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
-                    <span class="material-symbols-outlined" style="font-size:28px;color:#94a3b8;display:block;margin-bottom:4px;">upload_file</span>
-                    PDF, imágenes, Word, Excel — máx. 10 MB por archivo
+                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">upload_file</span>
+                    Solo archivos PDF — máx. 10 MB
                 </div>
-                <div class="f-group" style="margin-bottom:8px;">
-                    <input type="text" id="f-arc-desc" class="f-ctrl"
-                           placeholder="Descripción del archivo (opcional)"
-                           style="max-width:340px;display:block;margin:0 auto;">
+                <div style="text-align:center;">
+                    <label class="btn-pick-file">
+                        <span class="material-symbols-outlined" style="font-size:16px;">picture_as_pdf</span>
+                        Seleccionar receta (PDF)
+                        <input type="file" id="f-receta" accept=".pdf"
+                               onchange="archivoSeleccionado(this,'receta','rec-queue')">
+                    </label>
+                </div>
+            </div>
+            <div id="rec-queue" class="file-queue" style="margin-bottom:6px;"></div>
+
+            <div class="sec-title" style="margin-top:10px;">Resultados de Laboratorio
+                <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;font-size:.73rem;"> — opcional</span>
+            </div>
+            <div class="upload-zone">
+                <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
+                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">lab_panel</span>
+                    PDF, imágenes, Word, Excel — máx. 10 MB por archivo
                 </div>
                 <div style="text-align:center;">
                     <label class="btn-pick-file">
@@ -399,11 +354,11 @@
                         Seleccionar archivo
                         <input type="file" id="f-archivo"
                                accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx"
-                               onchange="archivoSeleccionado(this)">
+                               onchange="archivoSeleccionado(this,'resultado','file-queue')">
                     </label>
                 </div>
             </div>
-            <div id="file-queue" class="file-queue"></div>
+            <div id="file-queue" class="file-queue" style="margin-bottom:6px;"></div>
 
             <button class="btn-concluir" id="btn-concluir" onclick="guardarYConcluir()">
                 <span class="material-symbols-outlined" style="font-size:18px;">task_alt</span>
@@ -411,134 +366,91 @@
             </button>`;
         }
 
-        function agregarMed() {
-            medCounter++;
-            const id  = medCounter;
-            const row = document.createElement('div');
-            row.className = 'med-row';
-            row.id = 'med-' + id;
-            row.innerHTML = `
-                <div class="med-row-hdr">
-                    <span class="med-row-lbl">Medicamento ${id}</span>
-                    <button type="button" class="btn-rm-med" onclick="quitarMed(${id})">
-                        <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-                    </button>
+        // ── Formulario subir resultados (cita ya Concluida) ─────────────────
+        function htmlFormSubirResultados() {
+            return `
+            <hr class="modal-sep">
+            <div class="sec-title">Subir resultados adicionales</div>
+            <div class="upload-zone">
+                <div style="font-size:.82rem;color:#64748b;margin-bottom:8px;text-align:center;">
+                    <span class="material-symbols-outlined" style="font-size:26px;color:#94a3b8;display:block;margin-bottom:4px;">lab_panel</span>
+                    PDF, imágenes, Word, Excel — máx. 10 MB por archivo
                 </div>
-                <div class="med-grid">
-                    <div class="full">
-                        <label>Nombre <span style="color:#ef4444">*</span></label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="nombre" placeholder="Ej. Paracetamol">
-                    </div>
-                    <div>
-                        <label>Presentación</label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="presentacion" placeholder="Ej. 500 mg">
-                    </div>
-                    <div>
-                        <label>Dosis <span style="color:#ef4444">*</span></label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="dosis" placeholder="Ej. 1 tableta">
-                    </div>
-                    <div>
-                        <label>Frecuencia <span style="color:#ef4444">*</span></label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="frecuencia" placeholder="Ej. Cada 8 h">
-                    </div>
-                    <div>
-                        <label>Duración</label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="duracion" placeholder="Ej. 7 días">
-                    </div>
-                    <div class="full">
-                        <label>Indicaciones adicionales</label>
-                        <input type="text" class="f-ctrl" data-med="${id}" data-f="indicaciones" placeholder="Ej. Tomar con alimentos">
-                    </div>
-                </div>`;
-            document.getElementById('meds-list').appendChild(row);
+                <div style="text-align:center;">
+                    <label class="btn-pick-file">
+                        <span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>
+                        Seleccionar archivo
+                        <input type="file" id="f-archivo-post"
+                               accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx"
+                               onchange="archivoSeleccionado(this,'resultado','post-queue')">
+                    </label>
+                </div>
+            </div>
+            <div id="post-queue" class="file-queue" style="margin-bottom:6px;"></div>
+            <button class="btn-subir" id="btn-subir-post" onclick="subirResultadosPost()">
+                <span class="material-symbols-outlined" style="font-size:17px;">cloud_upload</span>
+                Subir resultados
+            </button>`;
         }
 
-        function quitarMed(id) {
-            const el = document.getElementById('med-' + id);
-            if (el) el.remove();
-        }
-
-        function archivoSeleccionado(input) {
+        // ── Agregar archivo a la cola ────────────────────────────────────────
+        function archivoSeleccionado(input, categoria, queueId) {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
-            const desc = document.getElementById('f-arc-desc').value.trim();
 
             const idx = archivosQ.length;
-            archivosQ.push({ file, desc });
+            archivosQ.push({ file, categoria });
 
             const tag = document.createElement('div');
             tag.className = 'file-tag';
             tag.id = 'ftag-' + idx;
             tag.innerHTML = `
-                <span class="material-symbols-outlined">attach_file</span>
+                <span class="material-symbols-outlined">${categoria === 'receta' ? 'picture_as_pdf' : 'attach_file'}</span>
                 <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${file.name}</span>
-                ${desc ? `<span style="font-style:italic;opacity:.75;">${desc}</span>` : ''}
-                <button type="button" onclick="quitarArchivo(${idx})">
+                <button type="button" onclick="quitarArchivo(${idx},'${queueId}')">
                     <span class="material-symbols-outlined" style="font-size:15px;">close</span>
                 </button>`;
-            document.getElementById('file-queue').appendChild(tag);
-
+            document.getElementById(queueId).appendChild(tag);
             input.value = '';
-            document.getElementById('f-arc-desc').value = '';
         }
 
-        function quitarArchivo(idx) {
+        function quitarArchivo(idx, queueId) {
             archivosQ[idx] = null;
             const el = document.getElementById('ftag-' + idx);
             if (el) el.remove();
         }
 
-        function getMeds() {
-            const meds = [];
-            document.querySelectorAll('.med-row').forEach(row => {
-                const id  = row.id.replace('med-', '');
-                const get = f => (row.querySelector(`[data-med="${id}"][data-f="${f}"]`)?.value.trim() || '');
-                if (!get('nombre')) return;
-                meds.push({
-                    nombre_medicamento: get('nombre'),
-                    presentacion:       get('presentacion') || null,
-                    dosis:              get('dosis')        || '—',
-                    frecuencia:         get('frecuencia')   || '—',
-                    duracion:           get('duracion')     || null,
-                    indicaciones:       get('indicaciones') || null,
-                });
-            });
-            return meds;
+        // ── Subir archivos en cola (helper) ──────────────────────────────────
+        async function subirArchivos(filtroCategoria) {
+            for (const entry of archivosQ) {
+                if (!entry) continue;
+                if (filtroCategoria && entry.categoria !== filtroCategoria) continue;
+                const fd = new FormData();
+                fd.append('id_cita',   citaActual.id_cita);
+                fd.append('categoria', entry.categoria);
+                fd.append('archivo',   entry.file);
+                const r = await fetch('/api/resultados.php', { method: 'POST', body: fd });
+                if (!r.ok) {
+                    const e = await r.json().catch(() => ({}));
+                    throw new Error(e.error ?? 'Error al subir ' + entry.file.name);
+                }
+            }
         }
 
+        // ── Guardar y concluir (cita Confirmada) ─────────────────────────────
         async function guardarYConcluir() {
             const btn = document.getElementById('btn-concluir');
             btn.disabled = true;
             btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_top</span> Guardando...';
 
             try {
-                // 1. Subir archivos primero
-                for (const entry of archivosQ) {
-                    if (!entry) continue;
-                    const fd = new FormData();
-                    fd.append('id_cita',     citaActual.id_cita);
-                    fd.append('descripcion', entry.desc || '');
-                    fd.append('archivo',     entry.file);
-                    const r = await fetch('/api/resultados.php', { method: 'POST', body: fd });
-                    if (!r.ok) {
-                        const e = await r.json().catch(() => ({}));
-                        throw new Error(e.error ?? 'Error al subir ' + entry.file.name);
-                    }
-                }
-
-                // 2. Concluir cita + receta
-                const payload = {
-                    diagnostico:            document.getElementById('f-diag')?.value.trim() || null,
-                    indicaciones_generales: document.getElementById('f-ind')?.value.trim()  || null,
-                    medicamentos:           getMeds(),
-                };
+                await subirArchivos();   // sube receta y resultados
 
                 const r2 = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=concluir`, {
-                    method:  'PUT',
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify(payload),
+                    body: '{}',
                 });
-
                 if (!r2.ok) {
                     const e = await r2.json().catch(() => ({}));
                     throw new Error(e.error ?? 'No se pudo concluir la cita');
@@ -554,66 +466,71 @@
             }
         }
 
-        // ── Vista de sólo lectura ──────────────────────────────────────────
-        async function htmlRecetaRO(idCita) {
+        // ── Subir resultados adicionales (cita ya Concluida) ─────────────────
+        async function subirResultadosPost() {
+            const btn = document.getElementById('btn-subir-post');
+            const pendientes = archivosQ.filter(e => e !== null);
+            if (!pendientes.length) {
+                alert('Selecciona al menos un archivo.');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:17px;">hourglass_top</span> Subiendo...';
+
             try {
-                const receta = await fetch(`/api/recetas.php?id_cita=${idCita}`).then(r => r.json());
-                if (!receta) {
-                    return `<div class="ro-card">
-                        <div class="ro-card-title azul">
-                            <span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta
-                        </div>
-                        <p class="empty-ro">Sin receta registrada para esta consulta.</p>
-                    </div>`;
+                await subirArchivos('resultado');
+                // Refrescar sección de archivos
+                archivosQ = [];
+                document.getElementById('post-queue').innerHTML = '';
+                const secArchivos = document.getElementById('sec-archivos-ro');
+                if (secArchivos) {
+                    secArchivos.innerHTML = '<p style="color:#94a3b8;font-size:.83rem;">Actualizando...</p>';
+                    secArchivos.innerHTML = await htmlArchivosRO(citaActual.id_cita);
                 }
-
-                const meds = receta.medicamentos ?? [];
-                const medsHtml = meds.map(m => `
-                    <div class="med-ro">
-                        <div class="med-ro-nm">${m.nombre_medicamento}${m.presentacion ? ` <span style="font-weight:400;color:#64748b;font-size:.8rem;">${m.presentacion}</span>` : ''}</div>
-                        <div class="med-ro-dt">${m.dosis} · ${m.frecuencia}${m.duracion ? ' · ' + m.duracion : ''}</div>
-                        ${m.indicaciones ? `<div style="font-style:italic;color:#94a3b8;font-size:.8rem;margin-top:2px;">${m.indicaciones}</div>` : ''}
-                    </div>`).join('');
-
-                return `<div class="ro-card">
-                    <div class="ro-card-title azul">
-                        <span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta
-                    </div>
-                    ${receta.diagnostico ? `<div class="ro-field"><div class="lbl">Diagnóstico</div><div class="val">${receta.diagnostico}</div></div>` : ''}
-                    ${meds.length ? medsHtml : '<p class="empty-ro">Sin medicamentos.</p>'}
-                    ${receta.indicaciones_generales ? `<div class="ind-gen"><strong>Indicaciones generales:</strong> ${receta.indicaciones_generales}</div>` : ''}
-                </div>`;
-            } catch { return ''; }
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:17px;">cloud_upload</span> Subir resultados';
+            }
         }
 
-        async function htmlResultadosRO(idCita) {
+        // ── Vista de archivos (sólo lectura) ─────────────────────────────────
+        async function htmlArchivosRO(idCita) {
             try {
                 const archivos = await fetch(`/api/resultados.php?id_cita=${idCita}`).then(r => r.json());
-                if (!Array.isArray(archivos) || !archivos.length) {
-                    return `<div class="ro-card" style="margin-top:10px;">
-                        <div class="ro-card-title verde">
-                            <span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio
-                        </div>
-                        <p class="empty-ro">Sin resultados subidos para esta consulta.</p>
-                    </div>`;
-                }
+                if (!Array.isArray(archivos)) return '';
 
-                const items = archivos.map(a => `
+                const recetas    = archivos.filter(a => a.categoria === 'receta');
+                const resultados = archivos.filter(a => a.categoria !== 'receta');
+
+                const fileRow = a => `
                     <div class="res-ro">
-                        <span class="material-symbols-outlined">description</span>
+                        <span class="material-symbols-outlined">${a.tipo_archivo === 'pdf' ? 'picture_as_pdf' : 'description'}</span>
                         <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre_archivo}</span>
-                        ${a.descripcion ? `<span style="color:#64748b;font-style:italic;font-size:.8rem;">${a.descripcion}</span>` : ''}
                         <a href="/api/descargar-resultado.php?id=${a.id_archivo}" target="_blank">
-                            <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                            <span class="material-symbols-outlined" style="font-size:17px;">download</span>Ver
                         </a>
-                    </div>`).join('');
+                    </div>`;
 
-                return `<div class="ro-card" style="margin-top:10px;">
+                let html = '<div id="sec-archivos-ro">';
+
+                html += `<div class="ro-card">
+                    <div class="ro-card-title azul">
+                        <span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta Médica
+                    </div>
+                    ${recetas.length ? recetas.map(fileRow).join('') : '<p class="empty-ro">Sin receta subida para esta consulta.</p>'}
+                </div>`;
+
+                html += `<div class="ro-card verde" style="margin-top:10px;">
                     <div class="ro-card-title verde">
                         <span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio
                     </div>
-                    ${items}
+                    ${resultados.length ? resultados.map(fileRow).join('') : '<p class="empty-ro">Sin resultados subidos para esta consulta.</p>'}
                 </div>`;
+
+                html += '</div>';
+                return html;
             } catch { return ''; }
         }
 

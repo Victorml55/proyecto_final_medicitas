@@ -157,10 +157,11 @@
         }
 
         (async function () {
-            const datos = await fetch('/api/resultados.php').then(r => r.json());
-            const el    = document.getElementById('lista-resultados');
+            const todos  = await fetch('/api/resultados.php').then(r => r.json());
+            const datos  = Array.isArray(todos) ? todos.filter(a => a.categoria !== 'receta') : [];
+            const el     = document.getElementById('lista-resultados');
 
-            if (!Array.isArray(datos) || datos.length === 0) {
+            if (!datos.length) {
                 el.innerHTML = `
                     <div class="empty-state">
                         <span class="material-symbols-outlined">lab_panel</span>
