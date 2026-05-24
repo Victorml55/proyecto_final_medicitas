@@ -5,8 +5,8 @@ require_once __DIR__ . '/auth.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Si ya está logueado, redirigir al panel
-if (estaAutenticado()) {
+// Si ya está logueado como administrador, redirigir al panel
+if (estaAutenticado() && esAdministrador()) {
     header('Location: dashboard.php');
     exit;
 }

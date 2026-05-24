@@ -15,8 +15,12 @@ function estaAutenticado(): bool {
     return isset($_SESSION['id_usuario'], $_SESSION['email']);
 }
 
+function esAdministrador(): bool {
+    return in_array('Administrador', $_SESSION['roles'] ?? [], true);
+}
+
 function requerirLogin(): void {
-    if (!estaAutenticado()) {
+    if (!estaAutenticado() || !esAdministrador()) {
         header('Location: login.php');
         exit;
     }
