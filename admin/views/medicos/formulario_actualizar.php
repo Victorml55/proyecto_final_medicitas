@@ -8,7 +8,7 @@
 <?php if (!empty($error)): ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 <div class="card shadow-sm" style="max-width:720px;">
     <div class="card-body">
-        <form method="POST" action="medico.php?accion=actualizar&id=<?= $medico['id_medico'] ?>" novalidate id="frm">
+        <form method="POST" action="medico.php?accion=actualizar&id=<?= $medico['id_medico'] ?>" enctype="multipart/form-data" novalidate id="frm">
             <div class="row g-3">
 
                 <div class="col-md-6">
@@ -73,6 +73,20 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Biografía</label>
                     <textarea name="biografia" class="form-control" rows="3"><?= htmlspecialchars($medico['biografia'] ?? '') ?></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Foto de perfil</label>
+                    <?php if (!empty($fotoActual)): ?>
+                    <div class="mb-2">
+                        <img src="<?= htmlspecialchars($fotoActual) ?>" alt="Foto actual"
+                             style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid #dee2e6;">
+                        <small class="text-muted ms-2">Foto actual</small>
+                    </div>
+                    <?php endif; ?>
+                    <input type="file" name="foto_perfil" class="form-control"
+                           accept="image/jpeg,image/png,image/gif,image/webp">
+                    <div class="form-text">JPG, PNG, GIF o WebP. Máximo 5 MB.</div>
                 </div>
 
                 <div class="col-12">

@@ -5,7 +5,7 @@
 <?php if (!empty($error)): ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 <div class="card shadow-sm" style="max-width:720px;">
     <div class="card-body">
-        <form method="POST" action="medico.php?accion=crear" novalidate id="frm">
+        <form method="POST" action="medico.php?accion=crear" enctype="multipart/form-data" novalidate id="frm">
             <div class="row g-3">
 
                 <div class="col-md-6">
@@ -70,6 +70,13 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Biografía</label>
                     <textarea name="biografia" class="form-control" rows="3"><?= htmlspecialchars($_POST['biografia'] ?? '') ?></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Foto de perfil</label>
+                    <input type="file" name="foto_perfil" class="form-control"
+                           accept="image/jpeg,image/png,image/gif,image/webp">
+                    <div class="form-text">JPG, PNG, GIF o WebP. Máximo 5 MB. Opcional.</div>
                 </div>
 
                 <div class="col-12">

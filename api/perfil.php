@@ -17,6 +17,7 @@ try {
     $stmt = $db->prepare(
         "SELECT u.id_usuario, u.nombre, u.apellido_paterno, u.apellido_materno,
                 u.email, u.telefono, u.fecha_nacimiento, u.genero, u.fecha_registro,
+                u.foto_perfil,
                 p.id_paciente, p.numero_expediente, p.tipo_sangre,
                 p.alergias, p.enfermedades_cronicas,
                 p.contacto_emergencia_nombre, p.contacto_emergencia_telefono,
