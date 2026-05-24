@@ -24,8 +24,8 @@ function cargarEnv(): void {
 cargarEnv();
 
 $id_paciente = null;
-$id_medico   = $_SESSION['id_medico'] ?? null;
-$rol         = $_SESSION['rol'] ?? 'paciente';
+$id_medico   = null;
+$rol         = 'paciente';
 
 try {
     $host = $_ENV['DB_HOST'] ?? 'postgres';
@@ -36,22 +36,24 @@ try {
     $db   = new PDO("pgsql:host=$host;port=$port;dbname=$name", $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
+
     $stmt = $db->prepare('SELECT id_paciente FROM pacientes WHERE id_usuario = ? LIMIT 1');
     $stmt->execute([$_SESSION['id_usuario']]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $id_paciente = $row['id_paciente'] ?? null;
 
-    if (!$id_medico) {
-        $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
-        $stmtM->execute([$_SESSION['id_usuario']]);
-        $rowM = $stmtM->fetch(PDO::FETCH_ASSOC);
-        if ($rowM) {
-            $id_medico = $rowM['id_medico'];
-        }
+    $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
+    $stmtM->execute([$_SESSION['id_usuario']]);
+    $rowM = $stmtM->fetch(PDO::FETCH_ASSOC);
+    if ($rowM) {
+        $id_medico = $rowM['id_medico'];
+        $rol       = 'medico';
     }
-    // rol siempre derivado de id_medico, no de la sesión (más confiable)
-    if ($id_medico) $rol = 'medico';
-} catch (Exception $e) {}
+} catch (Exception $e) {
+    // fallback a sesión si la BD no responde
+    $id_medico = $_SESSION['id_medico'] ?? null;
+    $rol       = $_SESSION['rol']       ?? 'paciente';
+}
 
 echo json_encode([
     'loggedIn'    => true,

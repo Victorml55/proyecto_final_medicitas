@@ -126,7 +126,7 @@
 
     <script>
         fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
-            const nav = auth.rol === 'medico' ? 'nav-medico.html' : 'nav-user.html';
+            const nav = auth.id_medico ? 'nav-medico.html' : 'nav-user.html';
             fetch(nav).then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
         });
 
