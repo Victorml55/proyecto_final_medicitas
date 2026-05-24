@@ -34,8 +34,9 @@
                     grid.innerHTML = '<p>No hay especialidades disponibles.</p>';
                     return;
                 }
-                grid.innerHTML = activas.map(e => `
+                grid.innerHTML = activas.map((e, i) => `
                     <div class="specialty-item">
+                        <span class="specialty-item-num">${String(i + 1).padStart(2, '0')}</span>
                         <h2>${e.nombre_especialidad}</h2>
                         <p>${e.descripcion ?? ''}</p>
                     </div>`).join('');
