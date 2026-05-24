@@ -35,7 +35,7 @@
                     return;
                 }
                 grid.innerHTML = activas.map(e => `
-                    <div class="specialty-card">
+                    <div class="specialty-item">
                         <h2>${e.nombre_especialidad}</h2>
                         <p>${e.descripcion ?? ''}</p>
                     </div>`).join('');

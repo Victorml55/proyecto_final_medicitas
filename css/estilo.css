@@ -920,33 +920,28 @@ body {
     11. ESPECIALIDADES
    */
 .specialties-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-.specialty-card {
-    background-color: #ffffff;
-    padding: 40px 30px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-top: 4px solid transparent;
-    transition: all 0.3s ease;
+.specialty-item {
+    padding: 20px 0;
+    border-bottom: 1px solid #e5e7eb;
 }
-.specialty-card:hover {
-    box-shadow: 0 10px 25px rgba(0, 95, 153, 0.15);
-    border-top-color: #005f99;
+.specialty-item:first-child {
+    border-top: 1px solid #e5e7eb;
 }
-.specialty-card h2 {
+.specialty-item h2 {
     color: #333;
-    font-size: 1.4rem;
-    margin-bottom: 15px;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
 }
-.specialty-card p {
+.specialty-item p {
     color: #666;
     line-height: 1.6;
     font-size: 0.95rem;
+    margin: 0;
 }
 
 /* Círculo del ícono */
@@ -981,17 +976,13 @@ body {
 }
 
 .service-item {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border-left: 6px solid #005f99;
-    transition: box-shadow 0.3s ease;
+    padding: 20px 0;
+    border-bottom: 1px solid #e5e7eb;
 }
-.service-item:hover { box-shadow: 0 10px 25px rgba(0, 95, 153, 0.15); }
+.service-item:first-child { border-top: 1px solid #e5e7eb; }
 
 .service-icon {
     width: 70px;
