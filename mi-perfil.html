@@ -42,8 +42,8 @@
                 <p class="profile-id" id="p-expediente">Cargando...</p>
                 
                 <div class="profile-quick-actions">
-                    <button class="btn-outline" style="width: 100%;">Editar Perfil</button>
-                    <button class="btn-outline" style="width: 100%; margin-top: 10px;">Cambiar Contraseña</button>
+                    <button class="btn-outline" style="width: 100%;" onclick="abrirModalEditar()">Editar Perfil</button>
+                    <button class="btn-outline" style="width: 100%; margin-top: 10px;" onclick="abrirModalPassword()">Cambiar Contraseña</button>
                 </div>
             </aside>
 
@@ -124,6 +124,114 @@
         </div>
     </main>
 
+    <!-- Modal: Editar Perfil -->
+    <div class="modal-backdrop" id="modal-editar">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Editar Perfil</h3>
+                <button class="modal-close" onclick="cerrarModal('modal-editar')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="alerta-editar" class="alert-msg"></div>
+                <div class="modal-grid">
+                    <span class="modal-section-title">Datos Personales</span>
+                    <div class="modal-field">
+                        <label>Nombre</label>
+                        <input type="text" id="e-nombre" placeholder="Nombre">
+                    </div>
+                    <div class="modal-field">
+                        <label>Apellido Paterno</label>
+                        <input type="text" id="e-apellido-paterno" placeholder="Apellido paterno">
+                    </div>
+                    <div class="modal-field">
+                        <label>Apellido Materno</label>
+                        <input type="text" id="e-apellido-materno" placeholder="Apellido materno">
+                    </div>
+                    <div class="modal-field">
+                        <label>Teléfono</label>
+                        <input type="tel" id="e-telefono" placeholder="10 dígitos">
+                    </div>
+                    <div class="modal-field">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="e-nacimiento">
+                    </div>
+                    <div class="modal-field">
+                        <label>Género</label>
+                        <select id="e-genero">
+                            <option value="">— Seleccionar —</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <span class="modal-section-title" id="seccion-medica">Datos Médicos</span>
+                    <div class="modal-field" id="campo-sangre">
+                        <label>Tipo de Sangre</label>
+                        <select id="e-sangre">
+                            <option value="">— Desconocido —</option>
+                            <option>A+</option><option>A-</option>
+                            <option>B+</option><option>B-</option>
+                            <option>AB+</option><option>AB-</option>
+                            <option>O+</option><option>O-</option>
+                        </select>
+                    </div>
+                    <div class="modal-field full-width" id="campo-alergias">
+                        <label>Alergias Conocidas</label>
+                        <textarea id="e-alergias" placeholder="Ej. Penicilina, látex..."></textarea>
+                    </div>
+                    <div class="modal-field full-width" id="campo-cronicas">
+                        <label>Enfermedades Crónicas</label>
+                        <textarea id="e-cronicas" placeholder="Ej. Diabetes tipo 2, hipertensión..."></textarea>
+                    </div>
+                    <div class="modal-field" id="campo-emerg-nombre">
+                        <label>Contacto de Emergencia</label>
+                        <input type="text" id="e-emergencia-nombre" placeholder="Nombre completo">
+                    </div>
+                    <div class="modal-field" id="campo-emerg-tel">
+                        <label>Teléfono de Emergencia</label>
+                        <input type="tel" id="e-emergencia-tel" placeholder="10 dígitos">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="cerrarModal('modal-editar')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarPerfil()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cambiar Contraseña -->
+    <div class="modal-backdrop" id="modal-password">
+        <div class="modal" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3>Cambiar Contraseña</h3>
+                <button class="modal-close" onclick="cerrarModal('modal-password')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="alerta-password" class="alert-msg"></div>
+                <div style="display:flex;flex-direction:column;gap:16px;">
+                    <div class="modal-field">
+                        <label>Contraseña Actual</label>
+                        <input type="password" id="p-actual" autocomplete="current-password">
+                    </div>
+                    <div class="modal-field">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="p-nuevo" autocomplete="new-password">
+                    </div>
+                    <div class="modal-field">
+                        <label>Confirmar Nueva Contraseña</label>
+                        <input type="password" id="p-confirmar" autocomplete="new-password">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" onclick="cerrarModal('modal-password')">Cancelar</button>
+                <button class="btn-primary" onclick="guardarPassword()">Cambiar Contraseña</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         fetch('/api/auth-status.php').then(r=>r.json()).then(auth=>{
             const nav = auth.id_medico ? 'nav-medico.html' : 'nav-user.html';
@@ -147,9 +255,12 @@
             return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${y}`;
         }
 
-        (async function () {
+        let perfilActual = {};
+
+        (async function cargarPerfil() {
             const p = await fetch('/api/perfil.php').then(r => r.json());
             if (p.error) return;
+            perfilActual = p;
 
             const nombre = [p.nombre, p.apellido_paterno, p.apellido_materno].filter(Boolean).join(' ');
             document.getElementById('p-nombre').textContent         = nombre;
@@ -165,7 +276,107 @@
             document.getElementById('p-cronicas').textContent       = p.enfermedades_cronicas ?? '—';
             document.getElementById('p-emergencia-nombre').textContent = p.contacto_emergencia_nombre ?? '—';
             document.getElementById('p-emergencia-tel').textContent    = p.contacto_emergencia_telefono ?? '—';
+
+            const esMedico = !p.id_paciente;
+            ['campo-sangre','campo-alergias','campo-cronicas','campo-emerg-nombre','campo-emerg-tel','seccion-medica']
+                .forEach(id => { document.getElementById(id).style.display = esMedico ? 'none' : ''; });
         })();
+
+        function abrirModalEditar() {
+            const p = perfilActual;
+            document.getElementById('e-nombre').value            = p.nombre ?? '';
+            document.getElementById('e-apellido-paterno').value  = p.apellido_paterno ?? '';
+            document.getElementById('e-apellido-materno').value  = p.apellido_materno ?? '';
+            document.getElementById('e-telefono').value          = p.telefono ?? '';
+            document.getElementById('e-nacimiento').value        = p.fecha_nacimiento ?? '';
+            document.getElementById('e-genero').value            = p.genero ?? '';
+            document.getElementById('e-sangre').value            = p.tipo_sangre ?? '';
+            document.getElementById('e-alergias').value          = p.alergias ?? '';
+            document.getElementById('e-cronicas').value          = p.enfermedades_cronicas ?? '';
+            document.getElementById('e-emergencia-nombre').value = p.contacto_emergencia_nombre ?? '';
+            document.getElementById('e-emergencia-tel').value    = p.contacto_emergencia_telefono ?? '';
+            setAlerta('alerta-editar', '', '');
+            document.getElementById('modal-editar').classList.add('active');
+        }
+
+        function abrirModalPassword() {
+            document.getElementById('p-actual').value    = '';
+            document.getElementById('p-nuevo').value     = '';
+            document.getElementById('p-confirmar').value = '';
+            setAlerta('alerta-password', '', '');
+            document.getElementById('modal-password').classList.add('active');
+        }
+
+        function cerrarModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('modal-backdrop')) cerrarModal(e.target.id);
+        });
+
+        function setAlerta(id, tipo, msg) {
+            const el = document.getElementById(id);
+            el.className = 'alert-msg' + (tipo ? ' ' + tipo : '');
+            el.textContent = msg;
+        }
+
+        async function guardarPerfil() {
+            const body = {
+                nombre:                       document.getElementById('e-nombre').value.trim(),
+                apellido_paterno:             document.getElementById('e-apellido-paterno').value.trim(),
+                apellido_materno:             document.getElementById('e-apellido-materno').value.trim(),
+                telefono:                     document.getElementById('e-telefono').value.trim(),
+                fecha_nacimiento:             document.getElementById('e-nacimiento').value,
+                genero:                       document.getElementById('e-genero').value,
+                tipo_sangre:                  document.getElementById('e-sangre').value,
+                alergias:                     document.getElementById('e-alergias').value.trim(),
+                enfermedades_cronicas:        document.getElementById('e-cronicas').value.trim(),
+                contacto_emergencia_nombre:   document.getElementById('e-emergencia-nombre').value.trim(),
+                contacto_emergencia_telefono: document.getElementById('e-emergencia-tel').value.trim(),
+            };
+
+            setAlerta('alerta-editar', '', '');
+            const res = await fetch('/api/actualizar-perfil.php', {
+                method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+            }).then(r => r.json());
+
+            if (res.error) { setAlerta('alerta-editar', 'error', res.error); return; }
+
+            perfilActual = { ...perfilActual, ...body };
+            const nombre = [body.nombre, body.apellido_paterno, body.apellido_materno].filter(Boolean).join(' ');
+            document.getElementById('p-nombre').textContent          = nombre;
+            document.getElementById('p-nombre-completo').textContent = nombre;
+            document.getElementById('p-telefono').textContent        = body.telefono || '—';
+            document.getElementById('p-genero').textContent          = generoMap[body.genero] ?? body.genero ?? '—';
+            document.getElementById('p-nacimiento').textContent      = body.fecha_nacimiento ? formatFecha(body.fecha_nacimiento) + ' (' + edad(body.fecha_nacimiento) + ')' : '—';
+            document.getElementById('p-sangre').textContent          = body.tipo_sangre || '—';
+            document.getElementById('p-alergias').textContent        = body.alergias || '—';
+            document.getElementById('p-cronicas').textContent        = body.enfermedades_cronicas || '—';
+            document.getElementById('p-emergencia-nombre').textContent = body.contacto_emergencia_nombre || '—';
+            document.getElementById('p-emergencia-tel').textContent    = body.contacto_emergencia_telefono || '—';
+
+            setAlerta('alerta-editar', 'success', 'Perfil actualizado correctamente.');
+            setTimeout(() => cerrarModal('modal-editar'), 1200);
+        }
+
+        async function guardarPassword() {
+            const body = {
+                password_actual:    document.getElementById('p-actual').value,
+                password_nuevo:     document.getElementById('p-nuevo').value,
+                password_confirmar: document.getElementById('p-confirmar').value,
+            };
+
+            setAlerta('alerta-password', '', '');
+            const res = await fetch('/api/cambiar-password.php', {
+                method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+            }).then(r => r.json());
+
+            if (res.error) { setAlerta('alerta-password', 'error', res.error); return; }
+
+            setAlerta('alerta-password', 'success', 'Contraseña cambiada correctamente.');
+            setTimeout(() => cerrarModal('modal-password'), 1200);
+        }
     </script>
 </body>
 </html>

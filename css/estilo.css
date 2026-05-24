@@ -813,7 +813,111 @@ body {
 
 
 /*
-    10. ESPECIALIDADES
+    10. MODALES DE PERFIL
+   */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-backdrop.active { display: flex; }
+
+.modal {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px;
+    border-bottom: 1px solid #e8ecf0;
+}
+.modal-header h3 { font-size: 1.2rem; color: #0f172a; margin: 0; }
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.modal-close:hover { background: #f1f5f9; color: #0f172a; }
+
+.modal-body { padding: 28px; }
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+.modal-grid .full-width { grid-column: 1 / -1; }
+
+.modal-field { display: flex; flex-direction: column; gap: 6px; }
+.modal-field label { font-size: 0.88rem; font-weight: 500; color: #334155; }
+.modal-field input,
+.modal-field select,
+.modal-field textarea {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+}
+.modal-field input:focus,
+.modal-field select:focus,
+.modal-field textarea:focus {
+    border-color: #005f99;
+    box-shadow: 0 0 0 3px rgba(0, 95, 153, 0.1);
+}
+.modal-field textarea { resize: vertical; min-height: 70px; }
+
+.modal-section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-top: 8px;
+    grid-column: 1 / -1;
+}
+
+.modal-footer {
+    padding: 18px 28px;
+    border-top: 1px solid #e8ecf0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.alert-msg {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    display: none;
+}
+.alert-msg.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+.alert-msg.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
+
+/*
+    11. ESPECIALIDADES
    */
 .specialties-grid {
     display: grid;
@@ -995,5 +1099,6 @@ body {
     /* Mi Perfil */
     .profile-layout  { flex-direction: column; }
     .profile-sidebar { width: 100%; }
+    .modal-grid      { grid-template-columns: 1fr; }
     .info-grid       { grid-template-columns: 1fr; }
 }
