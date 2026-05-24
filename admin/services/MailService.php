@@ -590,11 +590,11 @@ class MailService {
             $mail = self::crearMailer();
             $mail->addAddress($destinatario, $nombre);
             $mail->isHTML(true);
-            $mail->Subject = 'MediCitas – Resumen de tu consulta y encuesta de satisfacción';
+            $mail->Subject = 'MediCitas – Resumen de tu consulta';
             $mail->Body    = self::templateCitaConcluida($nombre, $cita);
             $gm  = $cita['genero_medico'] ?? null;
             $tit = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
-            $mail->AltBody = "Hola $nombre,\n\nTu consulta del {$cita['fecha']} a las {$cita['hora']} con {$tit} {$cita['medico']} ha concluido.\n\nCalifica tu experiencia en: {$cita['base_url']}/calificar-cita.html?cita={$cita['id_cita']}\n\nMediCitas";
+            $mail->AltBody = "Hola $nombre,\n\nTu consulta del {$cita['fecha']} a las {$cita['hora']} con {$tit} {$cita['medico']} ha concluido.\n\nPuedes ver el resumen en tu portal MediCitas.\n\nMediCitas";
             $mail->send();
             return true;
         } catch (Exception $e) {
@@ -608,22 +608,8 @@ class MailService {
         $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
         $medico       = htmlspecialchars($cita['medico']       ?? 'N/A');
         $especialidad = htmlspecialchars($cita['especialidad'] ?? '');
-        $idCita       = (int)($cita['id_cita'] ?? 0);
-        $baseUrl      = rtrim($cita['base_url'] ?? '', '/');
         $gm           = $cita['genero_medico'] ?? null;
         $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
-
-        $urlBase = "{$baseUrl}/calificar-cita.html?cita={$idCita}";
-        $stars   = '';
-        $labels  = ['', 'Muy malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
-        for ($i = 1; $i <= 5; $i++) {
-            $url    = $urlBase . "&cal={$i}";
-            $filled = str_repeat('★', $i) . str_repeat('☆', 5 - $i);
-            $stars .= "<a href=\"{$url}\" style=\"display:inline-block;text-align:center;text-decoration:none;margin:0 4px;\">"
-                    . "<div style=\"font-size:28px;color:#f59e0b;line-height:1;\">{$filled}</div>"
-                    . "<div style=\"font-size:11px;color:#64748b;margin-top:3px;\">{$labels[$i]}</div>"
-                    . "</a>";
-        }
 
         return <<<HTML
         <!DOCTYPE html>
@@ -657,32 +643,6 @@ class MailService {
                         <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
                       </td></tr>
                     </table>
-
-                    <!-- Encuesta de satisfacción -->
-                    <table width="100%" style="background:#fffbeb;border-radius:8px;margin:28px 0;border:1px solid #fde68a;">
-                      <tr>
-                        <td style="padding:24px 20px;text-align:center;">
-                          <p style="margin:0 0 6px;color:#92400e;font-weight:bold;font-size:16px;">
-                            ⭐ ¿Cómo fue tu experiencia?
-                          </p>
-                          <p style="margin:0 0 18px;color:#78350f;font-size:13px;">
-                            Tu opinión ayuda a otros pacientes. Toma solo 30 segundos.
-                          </p>
-                          <div style="margin-bottom:18px;">
-                            {$stars}
-                          </div>
-                          <a href="{$urlBase}"
-                             style="display:inline-block;background:#f59e0b;color:#ffffff;padding:12px 28px;
-                                    border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;">
-                            Dejar mi calificación →
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style="color:#64748b;font-size:13px;text-align:center;margin:0;">
-                      Si no deseas dejar una reseña, puedes ignorar esta sección.
-                    </p>
                   </td>
                 </tr>
 
