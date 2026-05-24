@@ -10,7 +10,9 @@ $diasValidos = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domi
         <select name="id_medico" class="form-select" required id="selMedico">
             <option value="">— Selecciona médico —</option>
             <?php foreach ($medicos as $m): ?>
-            <option value="<?= $m['id_medico'] ?>" <?= (int)($vals['id_medico'] ?? 0) === (int)$m['id_medico'] ? 'selected' : '' ?>>
+            <option value="<?= $m['id_medico'] ?>"
+                    data-consultorio="<?= (int)($m['id_consultorio'] ?? 0) ?>"
+                    <?= (int)($vals['id_medico'] ?? 0) === (int)$m['id_medico'] ? 'selected' : '' ?>>
                 <?= htmlspecialchars($m['nombre_medico']) ?> — <?= htmlspecialchars($m['nombre_especialidad']) ?>
             </option>
             <?php endforeach; ?>
@@ -68,6 +70,18 @@ $diasValidos = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domi
 (function() {
     const frm = document.getElementById('frm');
     if (!frm) return;
+
+    // Auto-rellenar consultorio al elegir médico (solo si el campo está vacío)
+    const selMedico = document.getElementById('selMedico');
+    const selCon    = frm.querySelector('[name=id_consultorio]');
+    if (selMedico && selCon) {
+        selMedico.addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            const idCon = opt ? opt.dataset.consultorio : '0';
+            if (idCon && idCon !== '0') selCon.value = idCon;
+        });
+    }
+
     frm.addEventListener('submit', function(e) {
         let ok = true;
         ['selMedico','selDia'].forEach(function(id) {

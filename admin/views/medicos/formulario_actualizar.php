@@ -57,6 +57,19 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label class="form-label fw-semibold">Consultorio asignado</label>
+                    <select name="id_consultorio" class="form-select">
+                        <option value="">— Sin asignar —</option>
+                        <?php foreach ($consultorios as $c): ?>
+                        <option value="<?= $c['id_consultorio'] ?>" <?= (int)($medico['id_consultorio'] ?? 0) === (int)$c['id_consultorio'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($c['numero_consultorio']) ?><?= $c['piso'] ? ' (Piso '.$c['piso'].')' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="form-text">Se usará por defecto al crear horarios.</div>
+                </div>
+
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Costo consulta ($) <span class="text-danger">*</span></label>
                     <input type="number" name="costo_consulta" class="form-control" min="0" step="0.01" required
                            value="<?= htmlspecialchars($medico['costo_consulta']) ?>">

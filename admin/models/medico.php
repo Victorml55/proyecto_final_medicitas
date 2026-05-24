@@ -22,9 +22,11 @@ class Medico extends Sistema {
 
     function leerUno(int $id) {
         $stmt = $this->db->prepare(
-            "SELECT m.*, u.nombre, u.apellido_paterno, u.apellido_materno, u.email, u.telefono
+            "SELECT m.*, u.nombre, u.apellido_paterno, u.apellido_materno, u.email, u.telefono,
+                    co.numero_consultorio
              FROM medicos m
              JOIN usuarios u ON u.id_usuario = m.id_usuario
+             LEFT JOIN consultorios co ON co.id_consultorio = m.id_consultorio
              WHERE m.id_medico = ?"
         );
         $stmt->execute([$id]);
@@ -35,8 +37,8 @@ class Medico extends Sistema {
         $stmt = $this->db->prepare(
             "INSERT INTO medicos
                 (id_usuario, id_especialidad, cedula_profesional, universidad,
-                 fecha_inicio, biografia, costo_consulta, duracion_consulta, activo)
-             VALUES (?,?,?,?,?,?,?,?,?) RETURNING id_medico"
+                 fecha_inicio, biografia, costo_consulta, duracion_consulta, activo, id_consultorio)
+             VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id_medico"
         );
         $stmt->execute([
             (int)$d['id_usuario'],
@@ -48,6 +50,7 @@ class Medico extends Sistema {
             (float)$d['costo_consulta'],
             (int)($d['duracion_consulta'] ?: 30),
             isset($d['activo']) ? 'true' : 'false',
+            !empty($d['id_consultorio']) ? (int)$d['id_consultorio'] : null,
         ]);
         return (int)$stmt->fetchColumn();
     }
@@ -56,7 +59,8 @@ class Medico extends Sistema {
         $stmt = $this->db->prepare(
             "UPDATE medicos SET
                 id_usuario=?, id_especialidad=?, cedula_profesional=?, universidad=?,
-                fecha_inicio=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?
+                fecha_inicio=?, biografia=?, costo_consulta=?, duracion_consulta=?, activo=?,
+                id_consultorio=?
              WHERE id_medico=?"
         );
         $stmt->execute([
@@ -69,6 +73,7 @@ class Medico extends Sistema {
             (float)$d['costo_consulta'],
             (int)($d['duracion_consulta'] ?: 30),
             isset($d['activo']) ? 'true' : 'false',
+            !empty($d['id_consultorio']) ? (int)$d['id_consultorio'] : null,
             (int)$d['id_medico'],
         ]);
     }
@@ -98,6 +103,14 @@ class Medico extends Sistema {
         $stmt = $this->db->prepare(
             "SELECT id_usuario, nombre || ' ' || apellido_paterno || ' ' || COALESCE(apellido_materno,'') AS nombre_completo, email
              FROM usuarios WHERE activo = true ORDER BY apellido_paterno, nombre"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    function todosConsultorios(): array {
+        $stmt = $this->db->prepare(
+            'SELECT id_consultorio, numero_consultorio, piso FROM consultorios WHERE activo = true ORDER BY numero_consultorio'
         );
         $stmt->execute();
         return $stmt->fetchAll();

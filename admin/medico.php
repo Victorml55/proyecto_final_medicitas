@@ -83,14 +83,16 @@ require(__DIR__ . '/views/header.php');
 
 switch ($accion) {
     case 'crear':
-        $usuarios      = $app->todosUsuarios();
+        $usuarios       = $app->todosUsuarios();
         $especialidades = $app->todasEspecialidades();
+        $consultorios   = $app->todosConsultorios();
         require(__DIR__ . '/views/medicos/formulario_crear.php');
         break;
     case 'actualizar':
         $medico         = $id ? $app->leerUno($id) : null;
         $usuarios       = $app->todosUsuarios();
         $especialidades = $app->todasEspecialidades();
+        $consultorios   = $app->todosConsultorios();
         $fotoActual     = null;
         if ($medico) {
             $stmtFoto = $app->db->prepare('SELECT foto_perfil FROM usuarios WHERE id_usuario = ?');

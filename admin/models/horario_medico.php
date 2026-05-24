@@ -71,7 +71,8 @@ class HorarioMedico extends Sistema {
 
     function todosMedicos(): array {
         $stmt = $this->db->prepare(
-            "SELECT m.id_medico, u.nombre || ' ' || u.apellido_paterno AS nombre_medico, e.nombre_especialidad
+            "SELECT m.id_medico, m.id_consultorio,
+                    u.nombre || ' ' || u.apellido_paterno AS nombre_medico, e.nombre_especialidad
              FROM medicos m
              JOIN usuarios     u ON u.id_usuario      = m.id_usuario
              JOIN especialidades e ON e.id_especialidad = m.id_especialidad
