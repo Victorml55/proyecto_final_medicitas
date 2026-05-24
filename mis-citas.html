@@ -16,6 +16,121 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link rel="stylesheet" href="css/estilo.css">
+    <style>
+        .appointment-card {
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.15s;
+        }
+        .appointment-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .modal-doctor-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .modal-doctor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #b3d9f2;
+        }
+        .modal-doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal-doctor-avatar .material-symbols-outlined {
+            font-size: 32px;
+            color: #94a3b8;
+        }
+        .modal-doctor-info { flex: 1; }
+        .modal-doctor-info .nombre { font-weight: 600; font-size: 1.05rem; color: #0f172a; }
+        .modal-doctor-info .spec   { color: #64748b; font-size: 0.9rem; }
+        .modal-detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #475569;
+            font-size: 0.95rem;
+            padding: 6px 0;
+        }
+        .modal-detail-row .material-symbols-outlined {
+            font-size: 18px;
+            color: #94a3b8;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .modal-section-sep {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 18px 0;
+        }
+        .modal-action-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+        .modal-date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .modal-action-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .modal-action-btn:hover { opacity: 0.85; }
+        .modal-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-save-date {
+            background: #005f99;
+            color: #fff;
+            border: none;
+        }
+        .btn-cancel-direct {
+            background: transparent;
+            color: #dc2626;
+            border: 2px solid #dc2626;
+            margin-top: 10px;
+        }
+        .btn-request-cancel {
+            background: transparent;
+            color: #b45309;
+            border: 2px solid #f59e0b;
+        }
+        .info-box-warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 600px) {
+            .modal-date-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body class="cuerpo-pagina">
 
@@ -38,10 +153,106 @@
         </div>
     </main>
 
+    <!-- Modal detalle de cita -->
+    <div id="modal-backdrop-cita" class="modal-backdrop" onclick="if(event.target===this)cerrarModalCita()">
+        <div class="modal" style="max-width:560px;">
+            <div class="modal-header">
+                <h3>Detalle de la cita</h3>
+                <button class="modal-close" onclick="cerrarModalCita()">×</button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Médico -->
+                <div class="modal-doctor-row">
+                    <div class="modal-doctor-avatar" id="modal-avatar">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div class="modal-doctor-info">
+                        <div class="nombre" id="modal-nombre-medico"></div>
+                        <div class="spec"   id="modal-especialidad"></div>
+                    </div>
+                    <div id="modal-estado-badge" style="margin-left:auto;"></div>
+                </div>
+
+                <!-- Detalles -->
+                <div id="modal-detalles">
+                    <div class="modal-detail-row">
+                        <span class="material-symbols-outlined">calendar_today</span>
+                        <span id="modal-fecha"></span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <span id="modal-hora"></span>
+                    </div>
+                    <div class="modal-detail-row" id="modal-consultorio-row">
+                        <span class="material-symbols-outlined">meeting_room</span>
+                        <span id="modal-consultorio"></span>
+                    </div>
+                    <div class="modal-detail-row" id="modal-motivo-row">
+                        <span class="material-symbols-outlined">description</span>
+                        <span id="modal-motivo"></span>
+                    </div>
+                </div>
+
+                <!-- Acciones: Pendiente -->
+                <div id="actions-pendiente" style="display:none;">
+                    <hr class="modal-section-sep">
+                    <p class="modal-action-label">Cambiar fecha y hora</p>
+                    <form id="form-cambiar-fecha" onsubmit="cambiarFecha(event)">
+                        <div class="modal-date-grid">
+                            <div class="modal-field">
+                                <label>Nueva fecha</label>
+                                <input type="date" id="input-fecha" required>
+                            </div>
+                            <div class="modal-field">
+                                <label>Nueva hora</label>
+                                <input type="time" id="input-hora" required>
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-cambiar-fecha" class="modal-action-btn btn-save-date">
+                            Guardar cambios de fecha
+                        </button>
+                    </form>
+                    <hr class="modal-section-sep">
+                    <button class="modal-action-btn btn-cancel-direct" onclick="cancelarCitaDirecta()">
+                        Cancelar esta cita
+                    </button>
+                </div>
+
+                <!-- Acciones: Confirmada -->
+                <div id="actions-confirmada" style="display:none;">
+                    <hr class="modal-section-sep">
+                    <p style="color:#64748b;font-size:0.9rem;margin-bottom:14px;">
+                        Tu cita está confirmada. Si necesitas cancelarla, se enviará una solicitud al médico para su aprobación.
+                    </p>
+                    <button id="btn-solicitar-cancelacion" class="modal-action-btn btn-request-cancel" onclick="solicitarCancelacion()">
+                        Solicitar cancelación al médico
+                    </button>
+                </div>
+
+                <!-- Acciones: Solicitud de cancelación enviada -->
+                <div id="actions-solicitud" style="display:none;">
+                    <hr class="modal-section-sep">
+                    <div class="info-box-warning">
+                        Enviaste una solicitud de cancelación. El médico la revisará pronto y recibirás una notificación por correo.
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button onclick="cerrarModalCita()" style="padding:8px 22px;border-radius:8px;border:2px solid #005f99;background:white;color:#005f99;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         fetch('nav-user.html').then(r=>r.text()).then(d=>{document.getElementById('nav-container').innerHTML=d;});
 
-        const mesesCorto = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const mesesCorto  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const mesesLargo  = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        let   citaActual  = null;
 
         function drLabel(g) { return g === 'M' ? 'Dr.' : g === 'F' ? 'Dra.' : 'Dr(a).'; }
 
@@ -53,13 +264,12 @@
         }
 
         function tarjetaCita(c, futura) {
-            const f    = c.fecha_cita.split('T')[0].split('-');
-            const mes  = mesesCorto[parseInt(f[1])-1].toUpperCase();
+            const f   = c.fecha_cita.split('T')[0].split('-');
+            const mes = mesesCorto[parseInt(f[1])-1].toUpperCase();
             const color = c.color || '#94a3b8';
-            const acciones = futura ? `
-                <button class="btn-outline btn-danger" onclick="cancelarCita(${c.id_cita})">Cancelar</button>` : '';
             return `
-            <div class="appointment-card ${futura ? '' : 'past-appointment'}">
+            <div class="appointment-card ${futura ? '' : 'past-appointment'}"
+                 onclick="abrirModalCita(${c.id_cita})">
                 <div class="date-block">
                     <span class="date-month">${mes}</span>
                     <span class="date-day">${parseInt(f[2])}</span>
@@ -77,20 +287,13 @@
                         ${c.motivo_consulta ? `<span><span class="material-symbols-outlined">description</span> ${c.motivo_consulta}</span>` : ''}
                     </div>
                 </div>
-                <div class="appointment-actions">${acciones}</div>
+                <div class="appointment-actions" style="min-width:auto;">
+                    <span class="material-symbols-outlined" style="color:#94a3b8;font-size:20px;">chevron_right</span>
+                </div>
             </div>`;
         }
 
-        async function cancelarCita(id) {
-            if (!confirm('¿Seguro que deseas cancelar esta cita?')) return;
-            const res = await fetch(`/api/citas.php?id=${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_estado: 3 })
-            });
-            if (res.ok) { alert('Cita cancelada.'); cargarCitas(); }
-            else alert('No se pudo cancelar la cita.');
-        }
+        let todasCitas = [];
 
         async function cargarCitas() {
             const auth = await fetch('/api/auth-status.php').then(r=>r.json());
@@ -102,11 +305,12 @@
             }
 
             const citas = await fetch(`/api/citas.php?paciente=${auth.id_paciente}`).then(r=>r.json());
+            todasCitas  = citas;
             const hoy   = new Date().toISOString().split('T')[0];
 
-            const terminada  = c => ['Cancelada', 'Rechazada'].includes(c.nombre_estado);
-            const proximas   = citas.filter(c => c.fecha_cita >= hoy && !terminada(c));
-            const historial  = citas.filter(c => c.fecha_cita < hoy  || terminada(c));
+            const terminada = c => ['Cancelada', 'Rechazada'].includes(c.nombre_estado);
+            const proximas  = citas.filter(c => c.fecha_cita >= hoy && !terminada(c));
+            const historial = citas.filter(c => c.fecha_cita <  hoy || terminada(c));
 
             const elP = document.getElementById('lista-proximas');
             const elH = document.getElementById('lista-historial');
@@ -118,6 +322,150 @@
             elH.innerHTML = historial.length
                 ? historial.map(c => tarjetaCita(c, false)).join('')
                 : '<p style="color:#94a3b8;padding:20px 0;">Sin historial de consultas.</p>';
+        }
+
+        // ── Modal ────────────────────────────────────────────────────────────
+
+        function abrirModalCita(idCita) {
+            const c = todasCitas.find(x => x.id_cita === idCita);
+            if (!c) return;
+            citaActual = c;
+
+            // Médico
+            document.getElementById('modal-nombre-medico').textContent = drLabel(c.genero_medico) + ' ' + c.nombre_medico;
+            document.getElementById('modal-especialidad').textContent  = c.nombre_especialidad ?? '';
+
+            // Foto del médico
+            const avatarEl = document.getElementById('modal-avatar');
+            if (c.foto_medico) {
+                avatarEl.innerHTML = `<img src="${c.foto_medico}" alt="Foto">`;
+            } else {
+                avatarEl.innerHTML = '<span class="material-symbols-outlined">person</span>';
+            }
+
+            // Badge de estado
+            const color = c.color || '#94a3b8';
+            document.getElementById('modal-estado-badge').innerHTML =
+                `<span class="status-badge" style="background:${color}22;color:${color};">${c.nombre_estado}</span>`;
+
+            // Fecha y hora
+            const f = c.fecha_cita.split('T')[0].split('-');
+            document.getElementById('modal-fecha').textContent =
+                `${parseInt(f[2])} de ${mesesLargo[parseInt(f[1])-1]} de ${f[0]}`;
+            document.getElementById('modal-hora').textContent = horaLabel(c.hora_inicio);
+
+            // Consultorio
+            const conRow = document.getElementById('modal-consultorio-row');
+            if (c.numero_consultorio) {
+                document.getElementById('modal-consultorio').textContent = 'Consultorio ' + c.numero_consultorio;
+                conRow.style.display = '';
+            } else {
+                conRow.style.display = 'none';
+            }
+
+            // Motivo
+            const motRow = document.getElementById('modal-motivo-row');
+            if (c.motivo_consulta) {
+                document.getElementById('modal-motivo').textContent = c.motivo_consulta;
+                motRow.style.display = '';
+            } else {
+                motRow.style.display = 'none';
+            }
+
+            // Secciones de acción
+            document.getElementById('actions-pendiente').style.display   = 'none';
+            document.getElementById('actions-confirmada').style.display  = 'none';
+            document.getElementById('actions-solicitud').style.display   = 'none';
+
+            if (c.nombre_estado === 'Pendiente') {
+                document.getElementById('actions-pendiente').style.display = '';
+                const fechaISO = c.fecha_cita.split('T')[0];
+                const manana   = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+                const inputF   = document.getElementById('input-fecha');
+                const inputH   = document.getElementById('input-hora');
+                inputF.value = fechaISO;
+                inputF.min   = manana;
+                inputH.value = c.hora_inicio.substring(0, 5);
+                // Reset button state
+                const btnF = document.getElementById('btn-cambiar-fecha');
+                btnF.disabled    = false;
+                btnF.textContent = 'Guardar cambios de fecha';
+            } else if (c.nombre_estado === 'Confirmada') {
+                document.getElementById('actions-confirmada').style.display = '';
+                const btnS = document.getElementById('btn-solicitar-cancelacion');
+                btnS.disabled    = false;
+                btnS.textContent = 'Solicitar cancelación al médico';
+            } else if (c.nombre_estado === 'Solicitud de cancelación') {
+                document.getElementById('actions-solicitud').style.display = '';
+            }
+
+            document.getElementById('modal-backdrop-cita').classList.add('active');
+        }
+
+        function cerrarModalCita() {
+            document.getElementById('modal-backdrop-cita').classList.remove('active');
+            citaActual = null;
+        }
+
+        async function cambiarFecha(event) {
+            event.preventDefault();
+            const btn       = document.getElementById('btn-cambiar-fecha');
+            const nuevaFecha = document.getElementById('input-fecha').value;
+            const nuevaHora  = document.getElementById('input-hora').value;
+            btn.disabled    = true;
+            btn.textContent = 'Guardando...';
+
+            const res = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=cambiar-fecha`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ fecha_cita: nuevaFecha, hora_inicio: nuevaHora + ':00' })
+            });
+
+            if (res.ok) {
+                cerrarModalCita();
+                cargarCitas();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error ?? 'No se pudo actualizar la cita.');
+                btn.disabled    = false;
+                btn.textContent = 'Guardar cambios de fecha';
+            }
+        }
+
+        async function cancelarCitaDirecta() {
+            if (!confirm('¿Seguro que deseas cancelar esta cita?')) return;
+            const res = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=cancelar`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                cerrarModalCita();
+                cargarCitas();
+            } else {
+                alert('No se pudo cancelar la cita.');
+            }
+        }
+
+        async function solicitarCancelacion() {
+            if (!confirm('¿Deseas enviar una solicitud de cancelación al médico?\nSi el médico la aprueba, la cita quedará cancelada.')) return;
+            const btn = document.getElementById('btn-solicitar-cancelacion');
+            btn.disabled    = true;
+            btn.textContent = 'Enviando solicitud...';
+
+            const res = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=solicitar-cancelacion`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (res.ok) {
+                cerrarModalCita();
+                cargarCitas();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error ?? 'No se pudo enviar la solicitud.');
+                btn.disabled    = false;
+                btn.textContent = 'Solicitar cancelación al médico';
+            }
         }
 
         cargarCitas();

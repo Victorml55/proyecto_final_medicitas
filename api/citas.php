@@ -27,8 +27,10 @@ switch ($metodo) {
                 "SELECT c.*, e.nombre_estado, e.color,
                         um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
                         um.genero AS genero_medico,
+                        um.foto_perfil AS foto_medico,
                         esp.nombre_especialidad,
-                        co.numero_consultorio
+                        co.numero_consultorio,
+                        m.duracion_consulta
                  FROM citas c
                  JOIN estados_cita e   ON e.id_estado    = c.id_estado
                  JOIN medicos      m   ON m.id_medico    = c.id_medico
@@ -58,9 +60,11 @@ switch ($metodo) {
                         up.nombre || ' ' || up.apellido_paterno AS nombre_paciente,
                         um.nombre || ' ' || um.apellido_paterno AS nombre_medico,
                         um.genero AS genero_medico,
+                        um.foto_perfil AS foto_medico,
                         esp.nombre_especialidad,
                         co.numero_consultorio,
-                        e.nombre_estado, e.color
+                        e.nombre_estado, e.color,
+                        m.duracion_consulta
                  FROM citas c
                  JOIN pacientes    p   ON p.id_paciente  = c.id_paciente
                  JOIN usuarios     up  ON up.id_usuario  = p.id_usuario
@@ -187,6 +191,131 @@ switch ($metodo) {
 
     case 'PUT':
         if (!$id) responder(400, ['error' => 'Se requiere el parámetro ?id=']);
+        $accionPut = isset($_GET['accion']) ? trim($_GET['accion']) : null;
+
+        // ── Cancelar cita Pendiente directamente ─────────────────────────────
+        if ($accionPut === 'cancelar') {
+            $stmt = $db->prepare(
+                "UPDATE citas SET id_estado = 3
+                 WHERE id_cita = ? AND id_estado = 1 RETURNING id_cita"
+            );
+            $stmt->execute([$id]);
+            $stmt->fetch()
+                ? responder(200, ['mensaje' => 'Cita cancelada'])
+                : responder(409, ['error' => 'La cita no puede cancelarse en su estado actual']);
+        }
+
+        // ── Cambiar fecha/hora de una cita Pendiente ─────────────────────────
+        if ($accionPut === 'cambiar-fecha') {
+            $d = leerBody();
+            if (empty($d['fecha_cita']) || empty($d['hora_inicio'])) {
+                responder(422, ['error' => 'Se requieren fecha_cita y hora_inicio']);
+            }
+            $qDur = $db->prepare(
+                "SELECT m.duracion_consulta FROM citas c
+                 JOIN medicos m ON m.id_medico = c.id_medico WHERE c.id_cita = ?"
+            );
+            $qDur->execute([$id]);
+            $durRow   = $qDur->fetch();
+            $duracion = (int)($durRow['duracion_consulta'] ?? 30);
+            $tsInicio = strtotime($d['fecha_cita'] . ' ' . $d['hora_inicio']);
+            $horaFin  = date('H:i:s', $tsInicio + $duracion * 60);
+
+            $stmt = $db->prepare(
+                "UPDATE citas SET fecha_cita = ?, hora_inicio = ?, hora_fin = ?
+                 WHERE id_cita = ? AND id_estado = 1 RETURNING id_cita"
+            );
+            $stmt->execute([$d['fecha_cita'], $d['hora_inicio'], $horaFin, $id]);
+            $stmt->fetch()
+                ? responder(200, ['mensaje' => 'Fecha actualizada'])
+                : responder(409, ['error' => 'No se pudo actualizar. La cita debe estar en estado Pendiente.']);
+        }
+
+        // ── Solicitar cancelación de una cita Confirmada ─────────────────────
+        if ($accionPut === 'solicitar-cancelacion') {
+            $stmtSol = $db->query(
+                "SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1"
+            );
+            $recSol = $stmtSol->fetch();
+            if (!$recSol) {
+                $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color)
+                           VALUES ('Solicitud de cancelación', 'El paciente solicitó cancelar la cita confirmada', '#f59e0b')");
+                $stmtSol = $db->query(
+                    "SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1"
+                );
+                $recSol = $stmtSol->fetch();
+            }
+            $idSolicitud = $recSol['id_estado'];
+
+            $stmt = $db->prepare(
+                "UPDATE citas SET id_estado = ?
+                 WHERE id_cita = ? AND id_estado = 2
+                 RETURNING id_cita, id_paciente, id_medico, fecha_cita, hora_inicio, motivo_consulta, token_accion"
+            );
+            $stmt->execute([$idSolicitud, $id]);
+            $cita = $stmt->fetch();
+            if (!$cita) {
+                responder(409, ['error' => 'La cita no está en estado Confirmada']);
+            }
+
+            try {
+                require_once __DIR__ . '/../admin/services/MailService.php';
+
+                $qPac = $db->prepare(
+                    "SELECT up.email, up.nombre || ' ' || up.apellido_paterno AS nombre
+                     FROM pacientes p JOIN usuarios up ON up.id_usuario = p.id_usuario
+                     WHERE p.id_paciente = ?"
+                );
+                $qPac->execute([$cita['id_paciente']]);
+                $infoPac = $qPac->fetch();
+
+                $qMed = $db->prepare(
+                    "SELECT um.email, um.nombre || ' ' || um.apellido_paterno AS nombre,
+                            um.genero, esp.nombre_especialidad
+                     FROM medicos m
+                     JOIN usuarios um ON um.id_usuario = m.id_usuario
+                     JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
+                     WHERE m.id_medico = ?"
+                );
+                $qMed->execute([$cita['id_medico']]);
+                $infoMed = $qMed->fetch();
+
+                $meses = ['enero','febrero','marzo','abril','mayo','junio',
+                          'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+                [$y, $m, $dia] = explode('-', $cita['fecha_cita']);
+                $fechaLeg = (int)$dia . ' de ' . $meses[(int)$m - 1] . ' de ' . $y;
+
+                [$hh, $mm] = explode(':', $cita['hora_inicio']);
+                $h12  = (int)$hh % 12 ?: 12;
+                $ampm = (int)$hh >= 12 ? 'PM' : 'AM';
+                $horaLeg = sprintf('%d:%s %s', $h12, $mm, $ampm);
+
+                $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+                $datosCita = [
+                    'fecha'         => $fechaLeg,
+                    'hora'          => $horaLeg,
+                    'medico'        => $infoMed['nombre']              ?? '',
+                    'genero_medico' => $infoMed['genero']              ?? null,
+                    'paciente'      => $infoPac['nombre']              ?? '',
+                    'especialidad'  => $infoMed['nombre_especialidad'] ?? '',
+                    'motivo'        => $cita['motivo_consulta']        ?? 'No especificado',
+                    'token'         => $cita['token_accion']           ?? '',
+                    'base_url'      => $baseUrl,
+                ];
+
+                if ($infoMed) {
+                    MailService::solicitudCancelacionMedico($infoMed['email'], $infoMed['nombre'], $datosCita);
+                }
+            } catch (Throwable $e) {
+                error_log('[citas.php] Error email solicitar-cancelacion: ' . $e->getMessage());
+            }
+
+            responder(200, ['mensaje' => 'Solicitud de cancelación enviada al médico']);
+        }
+
+        // ── Actualización completa (comportamiento original) ──────────────────
         $d = leerBody();
         $faltantes = [];
         if (empty($d['id_paciente']))  $faltantes[] = 'id_paciente';

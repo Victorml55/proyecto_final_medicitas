@@ -68,7 +68,8 @@ function resultPage(string $tipo, string $titulo, string $msg): never {
 $token  = trim($_REQUEST['token']  ?? '');
 $accion = trim($_REQUEST['accion'] ?? '');
 
-if (!$token || !in_array($accion, ['confirmar', 'rechazar', 'reprogramar'])) {
+$accionesValidas = ['confirmar', 'rechazar', 'reprogramar', 'aprobar-cancelacion', 'rechazar-cancelacion'];
+if (!$token || !in_array($accion, $accionesValidas)) {
     resultPage('error', 'Enlace inválido', 'El enlace que recibiste no es válido o ha expirado.');
 }
 
@@ -101,9 +102,21 @@ if (!$cita) {
     resultPage('error', 'Enlace inválido', 'No se encontró ninguna cita asociada a este enlace. Es posible que ya haya sido procesada o eliminada.');
 }
 
-if ($cita['id_estado'] != 1) {
+// Acciones de confirmación inicial: solo cuando la cita está Pendiente (id_estado=1)
+if (in_array($accion, ['confirmar', 'rechazar', 'reprogramar']) && $cita['id_estado'] != 1) {
     $estadoActual = htmlspecialchars($cita['nombre_estado']);
     resultPage('info', 'Acción ya procesada', "Esta cita ya fue procesada. Estado actual: <strong>{$estadoActual}</strong>.<br><br>Si necesitas realizar cambios, contáctanos directamente.");
+}
+
+// Acciones de cancelación: solo cuando hay una solicitud activa de cancelación
+if (in_array($accion, ['aprobar-cancelacion', 'rechazar-cancelacion'])) {
+    $stmtSol = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1");
+    $recSol  = $stmtSol->fetch();
+    $idSolicitud = $recSol ? (int)$recSol['id_estado'] : -1;
+    if ((int)$cita['id_estado'] !== $idSolicitud) {
+        $estadoActual = htmlspecialchars($cita['nombre_estado']);
+        resultPage('info', 'Solicitud no activa', "No hay una solicitud de cancelación pendiente para esta cita. Estado actual: <strong>{$estadoActual}</strong>.");
+    }
 }
 
 // ── POST: procesar acción ────────────────────────────────────────────────────
@@ -202,6 +215,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nuevaFechaLeg = htmlspecialchars(fechaLegible($nuevaFecha));
             $nuevaHoraLeg  = htmlspecialchars(horaLegible($nuevaHoraDB));
             resultPage('exito', 'Cita reprogramada', "La cita fue reprogramada para el <strong>{$nuevaFechaLeg}</strong> a las <strong>{$nuevaHoraLeg}</strong> y confirmada. El paciente fue notificado.");
+
+        case 'aprobar-cancelacion':
+            $db->prepare("UPDATE citas SET id_estado = 3 WHERE id_cita = ?")
+               ->execute([$cita['id_cita']]);
+
+            try {
+                require_once __DIR__ . '/../admin/services/MailService.php';
+                $datos = [
+                    'fecha'         => fechaLegible($cita['fecha_cita']),
+                    'hora'          => horaLegible($cita['hora_inicio']),
+                    'medico'        => $cita['nombre_medico'],
+                    'genero_medico' => $cita['genero_medico'],
+                    'especialidad'  => $cita['nombre_especialidad'],
+                ];
+                MailService::cancelacionAprobada($pacienteEmail, $pacienteNombre, $datos);
+            } catch (Throwable $e) {
+                error_log('[accion-cita] Email error aprobar-cancelacion: ' . $e->getMessage());
+            }
+
+            resultPage('exito', 'Cancelación aprobada', 'La cita de <strong>' . htmlspecialchars($pacienteNombre) . '</strong> ha sido cancelada. El paciente fue notificado por correo electrónico.');
+
+        case 'rechazar-cancelacion':
+            $db->prepare("UPDATE citas SET id_estado = 2 WHERE id_cita = ?")
+               ->execute([$cita['id_cita']]);
+
+            try {
+                require_once __DIR__ . '/../admin/services/MailService.php';
+                $datos = [
+                    'fecha'         => fechaLegible($cita['fecha_cita']),
+                    'hora'          => horaLegible($cita['hora_inicio']),
+                    'medico'        => $cita['nombre_medico'],
+                    'genero_medico' => $cita['genero_medico'],
+                    'especialidad'  => $cita['nombre_especialidad'],
+                ];
+                MailService::cancelacionRechazada($pacienteEmail, $pacienteNombre, $datos);
+            } catch (Throwable $e) {
+                error_log('[accion-cita] Email error rechazar-cancelacion: ' . $e->getMessage());
+            }
+
+            resultPage('exito', 'Solicitud rechazada', 'Rechazaste la cancelación de la cita de <strong>' . htmlspecialchars($pacienteNombre) . '</strong>. La cita sigue confirmada y el paciente fue notificado.');
     }
 }
 
@@ -219,19 +272,25 @@ $tokenHtml = htmlspecialchars($token);
 $minFecha  = date('Y-m-d', strtotime('+1 day'));
 
 $titulos = [
-    'confirmar'   => 'Confirmar cita',
-    'rechazar'    => 'Rechazar cita',
-    'reprogramar' => 'Reprogramar cita',
+    'confirmar'             => 'Confirmar cita',
+    'rechazar'              => 'Rechazar cita',
+    'reprogramar'           => 'Reprogramar cita',
+    'aprobar-cancelacion'   => 'Aprobar cancelación',
+    'rechazar-cancelacion'  => 'Rechazar solicitud de cancelación',
 ];
 $colores = [
-    'confirmar'   => '#16a34a',
-    'rechazar'    => '#dc2626',
-    'reprogramar' => '#f59e0b',
+    'confirmar'             => '#16a34a',
+    'rechazar'              => '#dc2626',
+    'reprogramar'           => '#f59e0b',
+    'aprobar-cancelacion'   => '#dc2626',
+    'rechazar-cancelacion'  => '#16a34a',
 ];
 $btnTextos = [
-    'confirmar'   => '✅ Confirmar cita',
-    'rechazar'    => '❌ Rechazar cita',
-    'reprogramar' => '📅 Reprogramar y confirmar',
+    'confirmar'             => '✅ Confirmar cita',
+    'rechazar'              => '❌ Rechazar cita',
+    'reprogramar'           => '📅 Reprogramar y confirmar',
+    'aprobar-cancelacion'   => '✅ Aprobar cancelación',
+    'rechazar-cancelacion'  => '❌ Rechazar solicitud, mantener cita',
 ];
 
 $tituloAccion = $titulos[$accion];
@@ -311,6 +370,12 @@ $textoBtn     = $btnTextos[$accion];
 
       <?php elseif ($accion === 'confirmar'): ?>
         <p style="color:#444;font-size:14px;margin:0 0 4px;">Al confirmar, se notificará al paciente por correo electrónico.</p>
+
+      <?php elseif ($accion === 'aprobar-cancelacion'): ?>
+        <p style="color:#444;font-size:14px;margin:0 0 4px;">Al aprobar, la cita quedará cancelada y el paciente será notificado por correo electrónico.</p>
+
+      <?php elseif ($accion === 'rechazar-cancelacion'): ?>
+        <p style="color:#444;font-size:14px;margin:0 0 4px;">Al rechazar la solicitud, la cita seguirá <strong>confirmada</strong> y el paciente será notificado.</p>
       <?php endif; ?>
 
       <button type="submit" class="btn-submit"><?= htmlspecialchars($textoBtn) ?></button>

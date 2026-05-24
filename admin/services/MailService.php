@@ -582,6 +582,229 @@ class MailService {
         HTML;
     }
 
+    // ----------------------------------------------------------
+    // 9. Solicitud de cancelación (al médico)
+    // ----------------------------------------------------------
+    public static function solicitudCancelacionMedico(string $destinatario, string $nombre, array $cita): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Solicitud de cancelación de cita';
+            $mail->Body    = self::templateSolicitudCancelacionMedico($nombre, $cita);
+            $g = $cita['genero_medico'] ?? null;
+            $tit = $g === 'M' ? 'Dr.' : ($g === 'F' ? 'Dra.' : 'Dr(a).');
+            $mail->AltBody = "Hola $tit $nombre,\n\nEl paciente {$cita['paciente']} ha solicitado cancelar su cita del {$cita['fecha']} a las {$cita['hora']}.\n\nRevisa el enlace en el correo HTML para aprobar o rechazar.\n\nMediCitas";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar solicitud cancelación al médico: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 10. Cancelación aprobada por el médico (al paciente)
+    // ----------------------------------------------------------
+    public static function cancelacionAprobada(string $destinatario, string $nombre, array $cita): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Tu cita ha sido cancelada';
+            $mail->Body    = self::templateCancelacionAprobada($nombre, $cita);
+            $gm  = $cita['genero_medico'] ?? null;
+            $tit = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+            $mail->AltBody = "Hola $nombre,\n\nTu solicitud de cancelación de la cita del {$cita['fecha']} a las {$cita['hora']} con {$tit} {$cita['medico']} fue aprobada. La cita ha sido cancelada.\n\nMediCitas";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar cancelación aprobada: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 11. Cancelación rechazada por el médico (al paciente)
+    // ----------------------------------------------------------
+    public static function cancelacionRechazada(string $destinatario, string $nombre, array $cita): bool {
+        try {
+            $mail = self::crearMailer();
+            $mail->addAddress($destinatario, $nombre);
+            $mail->isHTML(true);
+            $mail->Subject = 'MediCitas – Tu solicitud de cancelación no fue aprobada';
+            $mail->Body    = self::templateCancelacionRechazada($nombre, $cita);
+            $gm  = $cita['genero_medico'] ?? null;
+            $tit = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+            $mail->AltBody = "Hola $nombre,\n\nEl médico no aprobó tu solicitud de cancelación. Tu cita del {$cita['fecha']} a las {$cita['hora']} con {$tit} {$cita['medico']} sigue confirmada.\n\nMediCitas";
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('[MailService] Error al enviar cancelación rechazada: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // TEMPLATES – cancelación de cita
+    // ----------------------------------------------------------
+
+    private static function templateSolicitudCancelacionMedico(string $nombre, array $cita): string {
+        $paciente     = htmlspecialchars($cita['paciente']     ?? 'N/A');
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $motivo       = htmlspecialchars($cita['motivo']       ?? 'No especificado');
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+        $baseUrl      = $cita['base_url'] ?? 'http://localhost';
+        $tkn          = urlencode($cita['token'] ?? '');
+        $linkAprobar  = $baseUrl . '/api/accion-cita.php?token=' . $tkn . '&accion=aprobar-cancelacion';
+        $linkRechazar = $baseUrl . '/api/accion-cita.php?token=' . $tkn . '&accion=rechazar-cancelacion';
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Solicitud de Cancelación</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#f59e0b;margin-top:0;">Solicitud de cancelación 🔔</h2>
+                    <p style="color:#444;line-height:1.7;">Hola <strong>{$titMedico} {$nombre}</strong>, el paciente ha solicitado cancelar la siguiente cita confirmada:</p>
+                    <table width="100%" style="background:#fffbeb;border-radius:8px;margin:20px 0;border-left:4px solid #f59e0b;">
+                      <tr><td style="padding:20px;">
+                        <p style="margin:8px 0;color:#333;"><strong>👤 Paciente:</strong> {$paciente}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>📋 Motivo original:</strong> {$motivo}</p>
+                      </td></tr>
+                    </table>
+                    <p style="color:#444;font-size:14px;margin-bottom:8px;">Responde a esta solicitud:</p>
+                    <div style="text-align:center;margin:16px 0;">
+                      <a href="{$linkAprobar}"  style="display:inline-block;background:#dc2626;color:#ffffff;padding:11px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;margin:4px 6px;">✅ Aprobar cancelación</a>
+                      <a href="{$linkRechazar}" style="display:inline-block;background:#16a34a;color:#ffffff;padding:11px 22px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px;margin:4px 6px;">❌ Rechazar, mantener cita</a>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
+
+    private static function templateCancelacionAprobada(string $nombre, array $cita): string {
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $medico       = htmlspecialchars($cita['medico']       ?? 'N/A');
+        $especialidad = htmlspecialchars($cita['especialidad'] ?? '');
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Cancelación de Cita</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#64748b;margin-top:0;">Tu cita ha sido cancelada</h2>
+                    <p style="color:#444;line-height:1.7;">Hola <strong>{$nombre}</strong>, el médico aprobó tu solicitud de cancelación. La siguiente cita ha sido cancelada:</p>
+                    <table width="100%" style="background:#f8fafc;border-radius:8px;margin:20px 0;border:1px solid #e2e8f0;">
+                      <tr><td style="padding:20px;">
+                        <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> {$titMedico} {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
+                      </td></tr>
+                    </table>
+                    <p style="color:#444;font-size:14px;">Si necesitas reagendar, puedes solicitar una nueva cita desde tu portal MediCitas.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
+
+    private static function templateCancelacionRechazada(string $nombre, array $cita): string {
+        $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
+        $hora         = htmlspecialchars($cita['hora']         ?? 'N/A');
+        $medico       = htmlspecialchars($cita['medico']       ?? 'N/A');
+        $especialidad = htmlspecialchars($cita['especialidad'] ?? '');
+        $gm           = $cita['genero_medico'] ?? null;
+        $titMedico    = $gm === 'M' ? 'Dr.' : ($gm === 'F' ? 'Dra.' : 'Dr(a).');
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head><meta charset="UTF-8"></head>
+        <body style="margin:0;padding:0;background:#f0f4f8;font-family:Arial,sans-serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 0;">
+            <tr><td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background:#005f99;padding:30px 40px;text-align:center;">
+                    <h1 style="color:#ffffff;margin:0;font-size:26px;">🏥 MediCitas</h1>
+                    <p style="color:#b3d9f2;margin:8px 0 0;">Actualización de Solicitud</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="color:#16a34a;margin-top:0;">Tu cita sigue confirmada ✅</h2>
+                    <p style="color:#444;line-height:1.7;">Hola <strong>{$nombre}</strong>, el médico no aprobó tu solicitud de cancelación. Tu cita sigue confirmada:</p>
+                    <table width="100%" style="background:#f0fdf4;border-radius:8px;margin:20px 0;border-left:4px solid #16a34a;">
+                      <tr><td style="padding:20px;">
+                        <p style="margin:8px 0;color:#333;"><strong>📅 Fecha:</strong> {$fecha}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🕐 Hora:</strong> {$hora}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>👨‍⚕️ Médico:</strong> {$titMedico} {$medico}</p>
+                        <p style="margin:8px 0;color:#333;"><strong>🩺 Especialidad:</strong> {$especialidad}</p>
+                      </td></tr>
+                    </table>
+                    <p style="color:#444;font-size:14px;">Te pedimos llegar 10 minutos antes de tu cita. Si tienes alguna duda, comunícate con nosotros.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f7fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
+                    <p style="color:#999;font-size:12px;margin:0;">Este correo fue generado automáticamente por MediCitas.</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        HTML;
+    }
+
     private static function templateNuevaCitaMedico(string $nombre, array $cita): string {
         $paciente     = htmlspecialchars($cita['paciente']     ?? 'N/A');
         $fecha        = htmlspecialchars($cita['fecha']        ?? 'N/A');
