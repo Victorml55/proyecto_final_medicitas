@@ -88,18 +88,20 @@ switch ($metodo) {
         if ($faltantes) {
             responder(422, ['error' => 'Campos requeridos faltantes', 'campos' => $faltantes]);
         }
+        $token = bin2hex(random_bytes(32));
+
         $stmt = $db->prepare(
             "INSERT INTO citas
                 (id_paciente, id_medico, id_consultorio, id_estado,
                  fecha_cita, hora_inicio, hora_fin, motivo_consulta,
-                 notas_paciente, costo, codigo_confirmacion)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?) RETURNING *"
+                 notas_paciente, costo, codigo_confirmacion, token_accion)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *"
         );
         $stmt->execute([
             (int)$d['id_paciente'],
             (int)$d['id_medico'],
             !empty($d['id_consultorio']) ? (int)$d['id_consultorio'] : null,
-            (int)$d['id_estado'],
+            1,
             $d['fecha_cita'],
             $d['hora_inicio'],
             $d['hora_fin'],
@@ -107,6 +109,7 @@ switch ($metodo) {
             trim($d['notas_paciente']      ?? '') ?: null,
             $d['costo'] !== '' ? (float)($d['costo'] ?? 0) : null,
             trim($d['codigo_confirmacion'] ?? '') ?: null,
+            $token,
         ]);
         $nueva = $stmt->fetch();
 
@@ -152,6 +155,9 @@ switch ($metodo) {
             $ampm = (int)$hh >= 12 ? 'PM' : 'AM';
             $horaLegible = sprintf('%d:%s %s', $h12, $mm, $ampm);
 
+            $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $baseUrl = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
             $datosCita = [
                 'fecha'          => $fechaLegible,
                 'hora'           => $horaLegible,
@@ -162,6 +168,8 @@ switch ($metodo) {
                 'consultorio'    => $consultorio,
                 'motivo'         => $nueva['motivo_consulta']       ?? 'No especificado',
                 'codigo'         => $nueva['codigo_confirmacion']   ?? '',
+                'token'          => $nueva['token_accion']          ?? '',
+                'base_url'       => $baseUrl,
             ];
 
             if ($infoPac) {

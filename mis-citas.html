@@ -104,8 +104,9 @@
             const citas = await fetch(`/api/citas.php?paciente=${auth.id_paciente}`).then(r=>r.json());
             const hoy   = new Date().toISOString().split('T')[0];
 
-            const proximas  = citas.filter(c => c.fecha_cita >= hoy && c.id_estado != 3);
-            const historial = citas.filter(c => c.fecha_cita < hoy  || c.id_estado == 3);
+            const terminada  = c => ['Cancelada', 'Rechazada'].includes(c.nombre_estado);
+            const proximas   = citas.filter(c => c.fecha_cita >= hoy && !terminada(c));
+            const historial  = citas.filter(c => c.fecha_cita < hoy  || terminada(c));
 
             const elP = document.getElementById('lista-proximas');
             const elH = document.getElementById('lista-historial');
