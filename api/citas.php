@@ -196,6 +196,31 @@ switch ($metodo) {
         if (!$id) responder(400, ['error' => 'Se requiere el parámetro ?id=']);
         $accionPut = isset($_GET['accion']) ? trim($_GET['accion']) : null;
 
+        // ── Confirmar cita Pendiente (médico) ────────────────────────────────
+        if ($accionPut === 'confirmar') {
+            if (!isset($_SESSION['id_usuario'])) {
+                responder(401, ['error' => 'No autenticado']);
+            }
+            $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
+            $stmtM->execute([$_SESSION['id_usuario']]);
+            $medico = $stmtM->fetch();
+            if (!$medico) {
+                responder(403, ['error' => 'Solo médicos pueden confirmar citas']);
+            }
+
+            $stmt = $db->prepare(
+                "UPDATE citas SET id_estado = 2
+                 WHERE id_cita = ? AND id_medico = ? AND id_estado = 1
+                 RETURNING id_cita"
+            );
+            $stmt->execute([$id, $medico['id_medico']]);
+            if (!$stmt->fetch()) {
+                responder(409, ['error' => 'No se puede confirmar (debe estar Pendiente y pertenecer a este médico)']);
+            }
+
+            responder(200, ['mensaje' => 'Cita confirmada']);
+        }
+
         // ── Cancelar cita Pendiente directamente ─────────────────────────────
         if ($accionPut === 'cancelar') {
             $stmt = $db->prepare(

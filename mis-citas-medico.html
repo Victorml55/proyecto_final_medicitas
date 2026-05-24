@@ -86,6 +86,17 @@
             display: flex; align-items: center;
         }
 
+        /* Botón confirmar */
+        .btn-confirmar {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 11px; margin-top: 14px;
+            background: #2563eb; color: #fff; border: none;
+            border-radius: 8px; font-size: .94rem; font-weight: 600;
+            cursor: pointer; transition: background .15s;
+        }
+        .btn-confirmar:hover { background: #1d4ed8; }
+        .btn-confirmar:disabled { opacity: .55; cursor: not-allowed; }
+
         /* Botón concluir */
         .btn-concluir {
             display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -295,7 +306,9 @@
                     <span>${c.motivo_consulta}</span>
                 </div>` : ''}`;
 
-            if (c.nombre_estado === 'Confirmada') {
+            if (c.nombre_estado === 'Pendiente') {
+                html += htmlFormConfirmar();
+            } else if (c.nombre_estado === 'Confirmada') {
                 html += htmlFormConcluir();
             } else if (c.nombre_estado === 'Concluida') {
                 html += '<hr class="modal-sep">';
@@ -314,6 +327,43 @@
             document.getElementById('modal-backdrop').classList.remove('active');
             citaActual = null;
             archivosQ  = [];
+        }
+
+        // ── Formulario confirmar (cita Pendiente) ───────────────────────────
+        function htmlFormConfirmar() {
+            return `
+            <hr class="modal-sep">
+            <div class="sec-title">Acción requerida</div>
+            <p style="font-size:.87rem;color:#64748b;margin-bottom:14px;">
+                Esta cita está pendiente de confirmación.
+            </p>
+            <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarCita()">
+                <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>
+                Confirmar cita
+            </button>`;
+        }
+
+        async function confirmarCita() {
+            const btn = document.getElementById('btn-confirmar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">hourglass_top</span> Confirmando...';
+            try {
+                const r = await fetch(`/api/citas.php?id=${citaActual.id_cita}&accion=confirmar`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}',
+                });
+                if (!r.ok) {
+                    const e = await r.json().catch(() => ({}));
+                    throw new Error(e.error ?? 'No se pudo confirmar la cita');
+                }
+                cerrarModal();
+                cargarCitas();
+            } catch (err) {
+                alert(err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Confirmar cita';
+            }
         }
 
         // ── Formulario concluir (cita Confirmada) ───────────────────────────
