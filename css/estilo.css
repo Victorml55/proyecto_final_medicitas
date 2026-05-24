@@ -920,17 +920,16 @@ body {
     11. ESPECIALIDADES
    */
 .specialties-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
 }
 
 .specialty-item {
-    padding: 20px 0;
-    border-bottom: 1px solid #e5e7eb;
-}
-.specialty-item:first-child {
-    border-top: 1px solid #e5e7eb;
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
 }
 .specialty-item h2 {
     color: #333;
