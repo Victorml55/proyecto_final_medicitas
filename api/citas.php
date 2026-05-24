@@ -114,7 +114,7 @@ switch ($metodo) {
             $d['hora_fin'],
             trim($d['motivo_consulta']     ?? '') ?: null,
             trim($d['notas_paciente']      ?? '') ?: null,
-            $d['costo'] !== '' ? (float)($d['costo'] ?? 0) : null,
+            isset($d['costo']) && $d['costo'] !== '' ? (float)$d['costo'] : null,
             trim($d['codigo_confirmacion'] ?? '') ?: null,
             $token,
         ]);
@@ -368,7 +368,7 @@ switch ($metodo) {
             $stmt = $db->prepare(
                 "UPDATE citas
                  SET id_estado = ?,
-                     costo = COALESCE(costo, (SELECT costo_consulta FROM medicos WHERE id_medico = citas.id_medico))
+                     costo = COALESCE(NULLIF(costo, 0), (SELECT costo_consulta FROM medicos WHERE id_medico = citas.id_medico))
                  WHERE id_cita = ? AND id_medico = ? AND id_estado = 2
                  RETURNING id_cita"
             );

@@ -29,7 +29,7 @@ $stmt = $app->db->prepare(
         c.hora_fin,
         c.motivo_consulta,
         c.notas_paciente,
-        c.costo,
+        COALESCE(NULLIF(c.costo, 0), m.costo_consulta) AS costo,
         c.codigo_confirmacion,
         up.nombre || ' ' || up.apellido_paterno  AS nombre_paciente,
         up.telefono                               AS telefono_paciente,
