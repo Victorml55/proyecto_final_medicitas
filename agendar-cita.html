@@ -233,6 +233,13 @@
                                 <div class="val" id="sum-time">—</div>
                             </div>
                         </div>
+                        <div class="summary-row" id="sum-consultorio-row" style="display:none;">
+                            <div class="summary-icon"><span class="material-symbols-outlined">meeting_room</span></div>
+                            <div class="summary-row-info">
+                                <div class="lbl">Consultorio</div>
+                                <div class="val" id="sum-consultorio">—</div>
+                            </div>
+                        </div>
                         <div class="summary-row" id="sum-motivo-row" style="display:none;">
                             <div class="summary-icon"><span class="material-symbols-outlined">description</span></div>
                             <div class="summary-row-info">
@@ -473,10 +480,12 @@
         }
 
         /* ── Paso 3: Fecha y hora ───────────────────────── */
-        function selectTime(btn, time) {
+        function selectTime(btn, time, idConsultorio, consultorioLabel) {
             document.querySelectorAll('.time-slot:not(.ocupado)').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            booking.time = time;
+            booking.time             = time;
+            booking.consultorioId    = idConsultorio || null;
+            booking.consultorioLabel = consultorioLabel || null;
             document.getElementById('btn-next-3').disabled = false;
         }
 
@@ -502,7 +511,9 @@
 
             grid.innerHTML = slots.map(s => {
                 if (s.ocupado) return `<button class="time-slot ocupado" disabled>${s.label}</button>`;
-                return `<button class="time-slot" onclick="selectTime(this,'${s.hora}')">${s.label}</button>`;
+                const idCon  = s.id_consultorio ?? 'null';
+                const labCon = s.consultorio ? s.consultorio.replace(/'/g, "\\'") : '';
+                return `<button class="time-slot" onclick="selectTime(this,'${s.hora}',${idCon},'${labCon}')">${s.label}</button>`;
             }).join('');
         }
 
@@ -517,6 +528,14 @@
                 const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                 document.getElementById('sum-date').textContent = `${d} ${meses[parseInt(m,10)-1]} ${y}`;
             }
+            const consultorioRow = document.getElementById('sum-consultorio-row');
+            if (booking.consultorioLabel) {
+                document.getElementById('sum-consultorio').textContent = 'Consultorio ' + booking.consultorioLabel;
+                consultorioRow.style.display = 'flex';
+            } else {
+                consultorioRow.style.display = 'none';
+            }
+
             const motivo = document.getElementById('motivo').value.trim();
             booking.motivo = motivo;
             const motivoRow = document.getElementById('sum-motivo-row');
@@ -564,6 +583,7 @@
                     body: JSON.stringify({
                         id_paciente:     sesionUsuario.id_paciente,
                         id_medico:       booking.doctorId,
+                        id_consultorio:  booking.consultorioId || null,
                         id_estado:       1,
                         fecha_cita:      booking.date,
                         hora_inicio:     inicio,

@@ -86,10 +86,11 @@ try {
             $ocupado    = in_array($horaStr, $ocupados) || ($esHoy && $inicio <= $ahoraTs);
 
             $slots[] = [
-                'hora'         => $horaStr,
-                'label'        => $horaLabel,
-                'ocupado'      => $ocupado,
-                'consultorio'  => $consultorio,
+                'hora'           => $horaStr,
+                'label'          => $horaLabel,
+                'ocupado'        => $ocupado,
+                'consultorio'    => $consultorio,
+                'id_consultorio' => $h['id_consultorio'] ?? null,
             ];
             $inicio += 30 * 60;
         }
