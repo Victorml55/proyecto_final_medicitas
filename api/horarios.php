@@ -71,6 +71,9 @@ try {
     $ocupados = array_column($stmt2->fetchAll(), 'hora_inicio');
 
     // Generar slots de 30 minutos dentro de cada bloque horario
+    $esHoy      = ($fecha === date('Y-m-d'));
+    $ahoraTs    = $esHoy ? time() : 0;
+
     $slots = [];
     foreach ($horarios as $h) {
         $inicio = strtotime($h['hora_inicio']);
@@ -80,7 +83,7 @@ try {
         while ($inicio < $fin) {
             $horaStr    = date('H:i:s', $inicio);
             $horaLabel  = date('h:i A', $inicio);
-            $ocupado    = in_array($horaStr, $ocupados);
+            $ocupado    = in_array($horaStr, $ocupados) || ($esHoy && $inicio <= $ahoraTs);
 
             $slots[] = [
                 'hora'         => $horaStr,
