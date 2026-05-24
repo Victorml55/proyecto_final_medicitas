@@ -4,6 +4,7 @@ require_once(__DIR__ . '/sistema.class.php');
 require_once(__DIR__ . '/auth.php');
 requerirLogin();
 require_once(__DIR__ . '/models/usuario.php');
+require_once(__DIR__ . '/helpers/subir_foto.php');
 require_once(__DIR__ . '/models/usuario_rol.php');
 require_once(__DIR__ . '/models/medico.php');
 require_once(__DIR__ . '/models/horario_medico.php');
@@ -133,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || $accion === 'borrar') {
             $data = $_POST;
             $data['id_usuario'] = $id;
             $app->actualizar($data);
+            procesarFotoPerfil($id, $app->db);
             header('Location: usuario.php?accion=leer&ok=actualizado');
             exit;
 
@@ -155,7 +157,8 @@ switch ($accion) {
         require(__DIR__ . '/views/usuarios/formulario_crear.php');
         break;
     case 'actualizar':
-        $usuario = $id ? $app->leerUno($id) : null;
+        $usuario    = $id ? $app->leerUno($id) : null;
+        $fotoActual = $usuario['foto_perfil'] ?? null;
         require(__DIR__ . '/views/usuarios/formulario_actualizar.php');
         break;
     case 'leer':

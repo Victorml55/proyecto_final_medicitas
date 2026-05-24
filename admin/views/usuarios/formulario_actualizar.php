@@ -8,7 +8,7 @@
 <?php else: ?>
 <div class="card shadow-sm" style="max-width:660px;">
     <div class="card-body">
-        <form method="POST" action="usuario.php?accion=actualizar&id=<?= $usuario['id_usuario'] ?>" novalidate id="frm">
+        <form method="POST" action="usuario.php?accion=actualizar&id=<?= $usuario['id_usuario'] ?>" enctype="multipart/form-data" novalidate id="frm">
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
@@ -62,6 +62,20 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Foto de perfil</label>
+                    <?php if (!empty($fotoActual)): ?>
+                    <div class="mb-2 d-flex align-items-center gap-2">
+                        <img src="<?= htmlspecialchars($fotoActual) ?>" alt=""
+                             style="width:56px;height:56px;object-fit:cover;border-radius:50%;border:2px solid #dee2e6;">
+                        <small class="text-muted">Foto actual</small>
+                    </div>
+                    <?php endif; ?>
+                    <input type="file" name="foto_perfil" class="form-control"
+                           accept="image/jpeg,image/png,image/gif,image/webp">
+                    <div class="form-text">JPG, PNG, GIF o WebP. Máximo 5 MB. Deja vacío para no cambiarla.</div>
+                </div>
+
                 <div class="col-12">
                     <div class="form-check">
                         <input type="checkbox" name="activo" id="activo" class="form-check-input" value="1" <?= $usuario['activo'] ? 'checked' : '' ?>>

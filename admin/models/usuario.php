@@ -11,7 +11,7 @@ class Usuario extends Sistema {
     }
 
     function leerUno(int $id) {
-        $stmt = $this->db->prepare('SELECT id_usuario, nombre, apellido_paterno, apellido_materno, email, telefono, fecha_nacimiento, genero, activo FROM usuarios WHERE id_usuario = ?');
+        $stmt = $this->db->prepare('SELECT id_usuario, nombre, apellido_paterno, apellido_materno, email, telefono, fecha_nacimiento, genero, activo, foto_perfil FROM usuarios WHERE id_usuario = ?');
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
