@@ -366,7 +366,9 @@ switch ($metodo) {
             $idConcluida = $rec['id_estado'];
 
             $stmt = $db->prepare(
-                "UPDATE citas SET id_estado = ?
+                "UPDATE citas
+                 SET id_estado = ?,
+                     costo = COALESCE(costo, (SELECT costo_consulta FROM medicos WHERE id_medico = citas.id_medico))
                  WHERE id_cita = ? AND id_medico = ? AND id_estado = 2
                  RETURNING id_cita"
             );

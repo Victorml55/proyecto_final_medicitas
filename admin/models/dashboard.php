@@ -25,9 +25,10 @@ class Dashboard extends Sistema {
 
     function ingresoTotal(): float {
         return (float) $this->db->query(
-            "SELECT COALESCE(SUM(c.costo), 0)
+            "SELECT COALESCE(SUM(COALESCE(c.costo, m.costo_consulta)), 0)
              FROM citas c
-             JOIN estados_cita e ON e.id_estado = c.id_estado
+             JOIN estados_cita e ON e.id_estado  = c.id_estado
+             JOIN medicos      m ON m.id_medico   = c.id_medico
              WHERE e.nombre_estado = 'Concluida'"
         )->fetchColumn();
     }
@@ -98,9 +99,10 @@ class Dashboard extends Sistema {
             "SELECT TO_CHAR(c.fecha_cita, 'Mon YYYY') AS mes,
                     EXTRACT(YEAR  FROM c.fecha_cita)  AS anio,
                     EXTRACT(MONTH FROM c.fecha_cita)  AS num_mes,
-                    COALESCE(SUM(c.costo), 0)         AS total
+                    COALESCE(SUM(COALESCE(c.costo, m.costo_consulta)), 0) AS total
              FROM citas c
              JOIN estados_cita e ON e.id_estado = c.id_estado
+             JOIN medicos      m ON m.id_medico  = c.id_medico
              WHERE e.nombre_estado = 'Concluida'
                AND c.fecha_cita >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months'
              GROUP BY mes, anio, num_mes
