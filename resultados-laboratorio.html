@@ -157,34 +157,32 @@
         }
 
         (async function () {
-            const todos  = await fetch('/api/resultados.php').then(r => r.json());
-            const datos  = Array.isArray(todos) ? todos.filter(a => a.categoria !== 'receta') : [];
-            const el     = document.getElementById('lista-resultados');
+            const datos = await fetch('/api/resultados-lab.php').then(r => r.json()).catch(() => []);
+            const el    = document.getElementById('lista-resultados');
 
-            if (!datos.length) {
+            if (!Array.isArray(datos) || !datos.length) {
                 el.innerHTML = `
                     <div class="empty-state">
                         <span class="material-symbols-outlined">lab_panel</span>
                         <p>No tienes resultados de laboratorio disponibles todavía.</p>
-                        <p style="font-size:.85rem;margin-top:6px;">Cuando tu médico suba un archivo, aparecerá aquí.</p>
+                        <p style="font-size:.85rem;margin-top:6px;">Cuando el laboratorio suba tus resultados, aparecerán aquí.</p>
                     </div>`;
                 return;
             }
 
             el.innerHTML = `<div class="resultados-list">` +
                 datos.map(a => {
-                    const { clase, icono } = iconoTipo(a.tipo_archivo);
                     const meta = [
-                        a.fecha_subida ? formatFecha(a.fecha_subida) : null,
-                        a.nombre_medico ? drLabel(a.genero_medico) + ' ' + a.nombre_medico : null,
+                        a.fecha_subida  ? formatFecha(a.fecha_subida)  : null,
+                        a.tipo_analisis ? a.tipo_analisis               : null,
                         a.fecha_cita    ? 'Cita: ' + formatFecha(a.fecha_cita) : null,
                         formatTamaño(a.tamaño_kb),
                     ].filter(Boolean).join(' · ');
 
                     return `
                     <div class="resultado-card">
-                        <div class="resultado-icon ${clase}">
-                            <span class="material-symbols-outlined">${icono}</span>
+                        <div class="resultado-icon pdf">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
                         </div>
                         <div class="resultado-info">
                             <div class="resultado-nombre">${a.nombre_archivo}</div>

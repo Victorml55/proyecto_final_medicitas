@@ -72,6 +72,7 @@
 
             <?php _sec('Operaciones'); ?>
             <?php _nav('pago.php',              'payments',       'Pagos'); ?>
+            <?php _nav('resultado_lab.php',     'biotech',        'Resultados Lab.'); ?>
             <?php _nav('receta.php',            'medication',     'Recetas'); ?>
             <?php _nav('valoracion.php',        'star',           'Valoraciones'); ?>
             <?php _nav('comentario_interno.php','comment',        'Comentarios internos'); ?>

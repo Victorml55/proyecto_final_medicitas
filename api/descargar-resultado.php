@@ -22,14 +22,15 @@ if (!$id) {
 try {
     $db = conectarDB();
 
-    // Verificar si el usuario es el paciente o el médico del archivo
+    // Verificar acceso: paciente propietario, médico de la cita, o resultado de lab del paciente
     $stmtAccess = $db->prepare("
         SELECT a.nombre_archivo, a.ruta_archivo, a.tipo_archivo
         FROM archivos_adjuntos a
-        LEFT JOIN citas    c  ON c.id_cita    = a.id_cita
-        LEFT JOIN pacientes p ON p.id_paciente = a.id_paciente
-        LEFT JOIN medicos  m  ON m.id_medico  = c.id_medico
-        WHERE a.id_archivo = ? AND (p.id_usuario = ? OR m.id_usuario = ?)
+        LEFT JOIN citas     c  ON c.id_cita     = a.id_cita
+        LEFT JOIN pacientes p  ON p.id_paciente = a.id_paciente
+        LEFT JOIN medicos   m  ON m.id_medico   = c.id_medico
+        WHERE a.id_archivo = ?
+          AND (p.id_usuario = ? OR m.id_usuario = ?)
         LIMIT 1
     ");
     $stmtAccess->execute([$id, $_SESSION['id_usuario'], $_SESSION['id_usuario']]);
