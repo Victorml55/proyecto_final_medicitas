@@ -22,21 +22,18 @@ if (!$id) {
 try {
     $db = conectarDB();
 
-    $stmtP = $db->prepare('SELECT id_paciente FROM pacientes WHERE id_usuario = ? LIMIT 1');
-    $stmtP->execute([$_SESSION['id_usuario']]);
-    $paciente = $stmtP->fetch();
-
-    if (!$paciente) {
-        http_response_code(403);
-        exit('Acceso denegado');
-    }
-
-    $stmt = $db->prepare(
-        'SELECT nombre_archivo, ruta_archivo, tipo_archivo FROM archivos_adjuntos
-          WHERE id_archivo = ? AND id_paciente = ?'
-    );
-    $stmt->execute([$id, $paciente['id_paciente']]);
-    $archivo = $stmt->fetch();
+    // Verificar si el usuario es el paciente o el médico del archivo
+    $stmtAccess = $db->prepare("
+        SELECT a.nombre_archivo, a.ruta_archivo, a.tipo_archivo
+        FROM archivos_adjuntos a
+        LEFT JOIN citas    c  ON c.id_cita    = a.id_cita
+        LEFT JOIN pacientes p ON p.id_paciente = a.id_paciente
+        LEFT JOIN medicos  m  ON m.id_medico  = c.id_medico
+        WHERE a.id_archivo = ? AND (p.id_usuario = ? OR m.id_usuario = ?)
+        LIMIT 1
+    ");
+    $stmtAccess->execute([$id, $_SESSION['id_usuario'], $_SESSION['id_usuario']]);
+    $archivo = $stmtAccess->fetch();
 
     if (!$archivo) {
         http_response_code(404);

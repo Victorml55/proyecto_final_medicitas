@@ -13,6 +13,7 @@
  *   id_consultorio, motivo_consulta, notas_paciente, costo, codigo_confirmacion
  */
 
+if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/config.php';
 
 $db     = conectarDB();
@@ -315,6 +316,93 @@ switch ($metodo) {
             }
 
             responder(200, ['mensaje' => 'Solicitud de cancelación enviada al médico']);
+        }
+
+        // ── Concluir cita (médico) ────────────────────────────────────────────
+        if ($accionPut === 'concluir') {
+            if (!isset($_SESSION['id_usuario'])) {
+                responder(401, ['error' => 'No autenticado']);
+            }
+            $stmtM = $db->prepare('SELECT id_medico FROM medicos WHERE id_usuario = ? LIMIT 1');
+            $stmtM->execute([$_SESSION['id_usuario']]);
+            $medico = $stmtM->fetch();
+            if (!$medico) {
+                responder(403, ['error' => 'Solo médicos pueden concluir citas']);
+            }
+
+            $d = leerBody();
+
+            // Obtener o crear estado "Concluida"
+            $stmtC = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Concluida' LIMIT 1");
+            $rec   = $stmtC->fetch();
+            if (!$rec) {
+                $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color) VALUES ('Concluida', 'Consulta finalizada por el médico', '#10b981')");
+                $stmtC = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Concluida' LIMIT 1");
+                $rec   = $stmtC->fetch();
+            }
+            $idConcluida = $rec['id_estado'];
+
+            $stmt = $db->prepare(
+                "UPDATE citas SET id_estado = ?
+                 WHERE id_cita = ? AND id_medico = ? AND id_estado = 2
+                 RETURNING id_cita, id_paciente"
+            );
+            $stmt->execute([$idConcluida, $id, $medico['id_medico']]);
+            $cita = $stmt->fetch();
+            if (!$cita) {
+                responder(409, ['error' => 'No se puede concluir (debe estar Confirmada y pertenecer a este médico)']);
+            }
+
+            // Guardar receta si hay datos
+            if (!empty($d['diagnostico']) || !empty($d['indicaciones_generales']) || !empty($d['medicamentos'])) {
+                $stmtEx = $db->prepare('SELECT id_receta FROM recetas WHERE id_cita = ? LIMIT 1');
+                $stmtEx->execute([$id]);
+                $exReceta = $stmtEx->fetch();
+
+                if ($exReceta) {
+                    $db->prepare('UPDATE recetas SET diagnostico=?, indicaciones_generales=? WHERE id_receta=?')
+                       ->execute([
+                           trim($d['diagnostico'] ?? '') ?: null,
+                           trim($d['indicaciones_generales'] ?? '') ?: null,
+                           $exReceta['id_receta'],
+                       ]);
+                    $idReceta = $exReceta['id_receta'];
+                    $db->prepare('DELETE FROM medicamentos_receta WHERE id_receta = ?')->execute([$idReceta]);
+                } else {
+                    $stmtI = $db->prepare(
+                        'INSERT INTO recetas (id_cita, diagnostico, indicaciones_generales) VALUES (?,?,?) RETURNING id_receta'
+                    );
+                    $stmtI->execute([
+                        $id,
+                        trim($d['diagnostico'] ?? '') ?: null,
+                        trim($d['indicaciones_generales'] ?? '') ?: null,
+                    ]);
+                    $idReceta = $stmtI->fetchColumn();
+                }
+
+                $meds = $d['medicamentos'] ?? [];
+                if (is_array($meds)) {
+                    $stmtMed = $db->prepare(
+                        'INSERT INTO medicamentos_receta
+                             (id_receta, nombre_medicamento, presentacion, dosis, frecuencia, duracion, indicaciones)
+                         VALUES (?,?,?,?,?,?,?)'
+                    );
+                    foreach ($meds as $med) {
+                        if (empty(trim($med['nombre_medicamento'] ?? ''))) continue;
+                        $stmtMed->execute([
+                            $idReceta,
+                            trim($med['nombre_medicamento']),
+                            trim($med['presentacion'] ?? '') ?: null,
+                            trim($med['dosis']        ?? '') ?: '—',
+                            trim($med['frecuencia']   ?? '') ?: '—',
+                            trim($med['duracion']     ?? '') ?: null,
+                            trim($med['indicaciones'] ?? '') ?: null,
+                        ]);
+                    }
+                }
+            }
+
+            responder(200, ['mensaje' => 'Cita concluida']);
         }
 
         // ── Actualización completa (comportamiento original) ──────────────────

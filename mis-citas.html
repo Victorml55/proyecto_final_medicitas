@@ -130,6 +130,49 @@
         @media (max-width: 600px) {
             .modal-date-grid { grid-template-columns: 1fr; }
         }
+
+        /* Receta en detalle de cita (Concluida) */
+        .receta-pac-card {
+            background: rgba(37,99,235,.05);
+            border: 1px solid rgba(37,99,235,.14);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 4px;
+        }
+        .receta-pac-title {
+            font-weight: 600; font-size: .88rem; color: #1e40af;
+            display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+        }
+        .receta-pac-field { margin-bottom: 7px; font-size: .87rem; }
+        .receta-pac-field .lbl {
+            font-size: .74rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .05em; color: #64748b;
+        }
+        .receta-pac-field .val { color: #1e293b; margin-top: 2px; }
+        .med-pac-item {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 7px; padding: 8px 11px; margin-bottom: 5px; font-size: .85rem;
+        }
+        .med-pac-nm { font-weight: 600; color: #1e293b; }
+        .med-pac-dt { color: #64748b; margin-top: 2px; font-size: .82rem; }
+        .ind-gen-pac {
+            padding: 8px 12px; margin-top: 8px;
+            background: rgba(37,99,235,.07);
+            border-left: 3px solid #3b82f6; border-radius: 0 6px 6px 0;
+            font-size: .85rem; color: #1e293b;
+        }
+        .res-pac-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px; background: #f8fafc;
+            border: 1px solid #e2e8f0; border-radius: 7px;
+            margin-bottom: 5px; font-size: .84rem;
+        }
+        .res-pac-item .material-symbols-outlined { font-size: 17px; color: #94a3b8; }
+        .res-pac-item a {
+            color: #2563eb; text-decoration: none;
+            font-weight: 500; margin-left: auto;
+        }
+        .res-pac-item a:hover { text-decoration: underline; }
     </style>
 </head>
 <body class="cuerpo-pagina">
@@ -193,6 +236,9 @@
                         <span id="modal-motivo"></span>
                     </div>
                 </div>
+
+                <!-- Receta (visible cuando Concluida) -->
+                <div id="section-concluida" style="display:none;"></div>
 
                 <!-- Acciones: Pendiente -->
                 <div id="actions-pendiente" style="display:none;">
@@ -308,7 +354,7 @@
             todasCitas  = citas;
             const hoy   = new Date().toISOString().split('T')[0];
 
-            const terminada = c => ['Cancelada', 'Rechazada'].includes(c.nombre_estado);
+            const terminada = c => ['Cancelada', 'Rechazada', 'Concluida'].includes(c.nombre_estado);
             const proximas  = citas.filter(c => c.fecha_cita >= hoy && !terminada(c));
             const historial = citas.filter(c => c.fecha_cita <  hoy || terminada(c));
 
@@ -326,7 +372,7 @@
 
         // ── Modal ────────────────────────────────────────────────────────────
 
-        function abrirModalCita(idCita) {
+        async function abrirModalCita(idCita) {
             const c = todasCitas.find(x => x.id_cita === idCita);
             if (!c) return;
             citaActual = c;
@@ -376,8 +422,66 @@
             document.getElementById('actions-pendiente').style.display   = 'none';
             document.getElementById('actions-confirmada').style.display  = 'none';
             document.getElementById('actions-solicitud').style.display   = 'none';
+            document.getElementById('section-concluida').style.display   = 'none';
+            document.getElementById('section-concluida').innerHTML       = '';
 
-            if (c.nombre_estado === 'Pendiente') {
+            if (c.nombre_estado === 'Concluida') {
+                document.getElementById('section-concluida').style.display = '';
+                document.getElementById('section-concluida').innerHTML =
+                    '<hr class="modal-section-sep"><p style="color:#94a3b8;font-size:.83rem;">Cargando receta...</p>';
+                // Cargar receta y resultados de forma asíncrona
+                Promise.all([
+                    fetch(`/api/recetas.php?id_cita=${idCita}`).then(r => r.json()).catch(() => null),
+                    fetch(`/api/resultados.php?id_cita=${idCita}`).then(r => r.json()).catch(() => []),
+                ]).then(([receta, archivos]) => {
+                    let html = '<hr class="modal-section-sep">';
+
+                    // Receta
+                    html += '<div class="receta-pac-card">';
+                    html += '<div class="receta-pac-title"><span class="material-symbols-outlined" style="font-size:18px;">medication</span>Receta médica</div>';
+                    if (receta) {
+                        if (receta.diagnostico) {
+                            html += `<div class="receta-pac-field"><div class="lbl">Diagnóstico</div><div class="val">${receta.diagnostico}</div></div>`;
+                        }
+                        const meds = receta.medicamentos ?? [];
+                        if (meds.length) {
+                            html += meds.map(m => `
+                                <div class="med-pac-item">
+                                    <div class="med-pac-nm">${m.nombre_medicamento}${m.presentacion ? ` <span style="font-weight:400;color:#64748b;font-size:.8rem;">${m.presentacion}</span>` : ''}</div>
+                                    <div class="med-pac-dt">${m.dosis} · ${m.frecuencia}${m.duracion ? ' · ' + m.duracion : ''}</div>
+                                    ${m.indicaciones ? `<div style="font-style:italic;color:#94a3b8;font-size:.8rem;margin-top:2px;">${m.indicaciones}</div>` : ''}
+                                </div>`).join('');
+                        }
+                        if (receta.indicaciones_generales) {
+                            html += `<div class="ind-gen-pac"><strong>Indicaciones generales:</strong> ${receta.indicaciones_generales}</div>`;
+                        }
+                        if (!receta.diagnostico && !(receta.medicamentos?.length) && !receta.indicaciones_generales) {
+                            html += '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Tu médico registró esta consulta sin notas adicionales.</p>';
+                        }
+                    } else {
+                        html += '<p style="color:#94a3b8;font-size:.84rem;margin:0;">Sin receta registrada para esta consulta.</p>';
+                    }
+                    html += '</div>';
+
+                    // Resultados
+                    if (Array.isArray(archivos) && archivos.length) {
+                        html += '<div class="receta-pac-card" style="margin-top:10px;border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.04);">';
+                        html += '<div class="receta-pac-title" style="color:#065f46;"><span class="material-symbols-outlined" style="font-size:18px;">lab_panel</span>Resultados de Laboratorio</div>';
+                        html += archivos.map(a => `
+                            <div class="res-pac-item">
+                                <span class="material-symbols-outlined">description</span>
+                                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.nombre_archivo}</span>
+                                ${a.descripcion ? `<span style="color:#64748b;font-style:italic;font-size:.8rem;">${a.descripcion}</span>` : ''}
+                                <a href="/api/descargar-resultado.php?id=${a.id_archivo}" target="_blank">
+                                    <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                                </a>
+                            </div>`).join('');
+                        html += '</div>';
+                    }
+
+                    document.getElementById('section-concluida').innerHTML = html;
+                });
+            } else if (c.nombre_estado === 'Pendiente') {
                 document.getElementById('actions-pendiente').style.display = '';
                 const fechaISO = c.fecha_cita.split('T')[0];
                 const manana   = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -386,7 +490,6 @@
                 inputF.value = fechaISO;
                 inputF.min   = manana;
                 inputH.value = c.hora_inicio.substring(0, 5);
-                // Reset button state
                 const btnF = document.getElementById('btn-cambiar-fecha');
                 btnF.disabled    = false;
                 btnF.textContent = 'Guardar cambios de fecha';
