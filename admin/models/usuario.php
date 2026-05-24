@@ -5,7 +5,7 @@ class Usuario extends Sistema {
     function __construct() { $this->conectar(); }
 
     function leer() {
-        $stmt = $this->db->prepare('SELECT id_usuario, nombre, apellido_paterno, apellido_materno, email, telefono, genero, activo, fecha_registro FROM usuarios ORDER BY apellido_paterno, nombre');
+        $stmt = $this->db->prepare('SELECT id_usuario, nombre, apellido_paterno, apellido_materno, email, telefono, genero, activo, fecha_registro, foto_perfil FROM usuarios ORDER BY apellido_paterno, nombre');
         $stmt->execute();
         return $stmt->fetchAll();
     }

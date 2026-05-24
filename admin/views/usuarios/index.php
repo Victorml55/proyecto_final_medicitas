@@ -14,7 +14,19 @@
                 <?php else: foreach ($usuarios as $u): ?>
                 <tr>
                     <td><?= $u['id_usuario'] ?></td>
-                    <td><?= htmlspecialchars($u['nombre'] . ' ' . $u['apellido_paterno'] . ' ' . ($u['apellido_materno'] ?? '')) ?></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <?php if (!empty($u['foto_perfil'])): ?>
+                                <img src="<?= htmlspecialchars($u['foto_perfil']) ?>" alt=""
+                                     style="width:36px;height:36px;object-fit:cover;border-radius:50%;flex-shrink:0;">
+                            <?php else: ?>
+                                <span style="width:36px;height:36px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;color:#94a3b8;">
+                                    &#128100;
+                                </span>
+                            <?php endif; ?>
+                            <?= htmlspecialchars(trim($u['nombre'] . ' ' . $u['apellido_paterno'] . ' ' . ($u['apellido_materno'] ?? ''))) ?>
+                        </div>
+                    </td>
                     <td><?= htmlspecialchars($u['email']) ?></td>
                     <td><?= htmlspecialchars($u['telefono'] ?? '—') ?></td>
                     <td><?= htmlspecialchars($u['genero'] ?? '—') ?></td>
