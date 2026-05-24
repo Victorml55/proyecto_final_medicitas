@@ -19,59 +19,64 @@ if ($metodo === 'POST') {
         responder(401, ['error' => 'Debes iniciar sesión para calificar']);
     }
 
-    $d           = leerBody();
-    $idCita      = isset($d['id_cita'])      ? (int)$d['id_cita']      : 0;
+    $d            = leerBody();
+    $idCita       = isset($d['id_cita'])      ? (int)$d['id_cita']      : 0;
     $calificacion = isset($d['calificacion']) ? (int)$d['calificacion'] : 0;
-    $comentario  = trim($d['comentario'] ?? '');
-    $anonimo     = !empty($d['anonimo']);
+    $comentario   = trim($d['comentario'] ?? '');
+    $anonimo      = !empty($d['anonimo']) ? true : false;
 
     if (!$idCita || $calificacion < 1 || $calificacion > 5) {
         responder(422, ['error' => 'Se requiere id_cita y calificacion (1-5)']);
     }
 
-    // Verificar que el usuario logueado es el paciente de esa cita
-    $stmtPac = $db->prepare(
-        "SELECT c.id_cita, c.id_paciente, c.id_medico, est.nombre_estado
-         FROM citas c
-         JOIN estados_cita est ON est.id_estado = c.id_estado
-         JOIN pacientes    p   ON p.id_paciente = c.id_paciente
-         WHERE c.id_cita = ? AND p.id_usuario = ?
-         LIMIT 1"
-    );
-    $stmtPac->execute([$idCita, $_SESSION['id_usuario']]);
-    $cita = $stmtPac->fetch();
+    try {
+        // Verificar que el usuario logueado es el paciente de esa cita
+        $stmtPac = $db->prepare(
+            "SELECT c.id_cita, c.id_paciente, c.id_medico, est.nombre_estado
+             FROM citas c
+             JOIN estados_cita est ON est.id_estado = c.id_estado
+             JOIN pacientes    p   ON p.id_paciente = c.id_paciente
+             WHERE c.id_cita = ? AND p.id_usuario = ?
+             LIMIT 1"
+        );
+        $stmtPac->execute([$idCita, $_SESSION['id_usuario']]);
+        $cita = $stmtPac->fetch();
 
-    if (!$cita) {
-        responder(404, ['error' => 'Cita no encontrada o no pertenece a este usuario']);
-    }
-    if ($cita['nombre_estado'] !== 'Concluida') {
-        responder(409, ['error' => 'Solo puedes calificar citas concluidas']);
-    }
+        if (!$cita) {
+            responder(404, ['error' => 'Cita no encontrada o no pertenece a este usuario']);
+        }
+        if ($cita['nombre_estado'] !== 'Concluida') {
+            responder(409, ['error' => 'Solo puedes calificar citas concluidas']);
+        }
 
-    // Verificar que no haya valoración previa para esta cita
-    $stmtDup = $db->prepare('SELECT id_valoracion FROM valoraciones WHERE id_cita = ? LIMIT 1');
-    $stmtDup->execute([$idCita]);
-    if ($stmtDup->fetch()) {
-        responder(409, ['error' => 'Ya existe una calificación para esta cita']);
-    }
+        // Verificar que no haya valoración previa para esta cita
+        $stmtDup = $db->prepare('SELECT id_valoracion FROM valoraciones WHERE id_cita = ? LIMIT 1');
+        $stmtDup->execute([$idCita]);
+        if ($stmtDup->fetch()) {
+            responder(409, ['error' => 'Ya existe una calificación para esta cita']);
+        }
 
-    $stmtIns = $db->prepare(
-        "INSERT INTO valoraciones (id_cita, id_paciente, id_medico, calificacion, comentario, anonimo)
-         VALUES (?, ?, ?, ?, ?, ?)
-         RETURNING id_valoracion"
-    );
-    $stmtIns->execute([
-        $idCita,
-        $cita['id_paciente'],
-        $cita['id_medico'],
-        $calificacion,
-        $comentario ?: null,
-        $anonimo,
-    ]);
-    $nueva = $stmtIns->fetch();
-    $nueva
-        ? responder(201, ['mensaje' => 'Calificación guardada', 'id_valoracion' => $nueva['id_valoracion']])
-        : responder(500, ['error' => 'No se pudo guardar la calificación']);
+        $stmtIns = $db->prepare(
+            "INSERT INTO valoraciones (id_cita, id_paciente, id_medico, calificacion, comentario, anonimo)
+             VALUES (?, ?, ?, ?, ?, ?)
+             RETURNING id_valoracion"
+        );
+        $stmtIns->execute([
+            $idCita,
+            $cita['id_paciente'],
+            $cita['id_medico'],
+            $calificacion,
+            $comentario ?: null,
+            $anonimo ? 'true' : 'false',
+        ]);
+        $nueva = $stmtIns->fetch();
+        $nueva
+            ? responder(201, ['mensaje' => 'Calificación guardada', 'id_valoracion' => $nueva['id_valoracion']])
+            : responder(500, ['error' => 'No se pudo guardar la calificación']);
+
+    } catch (PDOException $e) {
+        responder(500, ['error' => 'Error de base de datos: ' . $e->getMessage()]);
+    }
 }
 
 if ($metodo !== 'GET') {
