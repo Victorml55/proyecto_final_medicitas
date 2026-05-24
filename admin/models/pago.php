@@ -8,12 +8,21 @@ class Pago extends Sistema {
         $stmt = $this->db->prepare(
             "SELECT pg.id_pago, pg.monto, pg.metodo_pago, pg.referencia_pago,
                     pg.estado_pago, pg.fecha_pago, pg.notas,
-                    c.id_cita, c.fecha_cita,
-                    u.nombre || ' ' || u.apellido_paterno AS nombre_paciente
+                    pg.id_cita, pg.id_cita_lab,
+                    COALESCE(c.fecha_cita, cl.fecha_cita) AS fecha_cita,
+                    CASE
+                        WHEN pg.id_cita IS NOT NULL
+                            THEN uc.nombre || ' ' || uc.apellido_paterno
+                        ELSE ul.nombre || ' ' || ul.apellido_paterno
+                    END AS nombre_paciente,
+                    CASE WHEN pg.id_cita_lab IS NOT NULL THEN 'Lab' ELSE 'Consulta' END AS origen
              FROM pagos pg
-             JOIN citas     c  ON c.id_cita      = pg.id_cita
-             JOIN pacientes p  ON p.id_paciente  = c.id_paciente
-             JOIN usuarios  u  ON u.id_usuario   = p.id_usuario
+             LEFT JOIN citas              c   ON c.id_cita      = pg.id_cita
+             LEFT JOIN pacientes          pc  ON pc.id_paciente = c.id_paciente
+             LEFT JOIN usuarios           uc  ON uc.id_usuario  = pc.id_usuario
+             LEFT JOIN citas_laboratorio  cl  ON cl.id_cita_lab = pg.id_cita_lab
+             LEFT JOIN pacientes          pl  ON pl.id_paciente = cl.id_paciente
+             LEFT JOIN usuarios           ul  ON ul.id_usuario  = pl.id_usuario
              ORDER BY pg.fecha_pago DESC"
         );
         $stmt->execute();

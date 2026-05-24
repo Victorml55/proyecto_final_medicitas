@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['accion'] ?? '') === 'subir'
             $error = 'Solo se permiten archivos PDF.'; break;
         }
 
-        $stmtC = $db->prepare('SELECT id_paciente FROM citas_laboratorio WHERE id_cita_lab = ? LIMIT 1');
+        $stmtC = $db->prepare('SELECT id_paciente, costo, tipo_analisis FROM citas_laboratorio WHERE id_cita_lab = ? LIMIT 1');
         $stmtC->execute([$id_cita_lab]);
         $cita = $stmtC->fetch();
         if (!$cita) { $error = 'Cita no encontrada.'; break; }
@@ -57,6 +57,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['accion'] ?? '') === 'subir'
             (int)ceil($file['size'] / 1024),
             $descripcion,
         ]);
+
+        // Marcar cita como Completada
+        $stmtEst = $db->prepare("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Completada' LIMIT 1");
+        $stmtEst->execute();
+        $idCompletada = $stmtEst->fetchColumn();
+        if ($idCompletada) {
+            $db->prepare("UPDATE citas_laboratorio SET id_estado = ? WHERE id_cita_lab = ?")
+               ->execute([$idCompletada, $id_cita_lab]);
+        }
+
+        // Registrar pago si tiene costo y no existe ya uno
+        $costo = isset($cita['costo']) ? (float)$cita['costo'] : 0;
+        if ($costo > 0) {
+            $stmtPagoEx = $db->prepare('SELECT 1 FROM pagos WHERE id_cita_lab = ? LIMIT 1');
+            $stmtPagoEx->execute([$id_cita_lab]);
+            if (!$stmtPagoEx->fetch()) {
+                $notaPago = 'Estudio de laboratorio' . ($cita['tipo_analisis'] ? ': ' . $cita['tipo_analisis'] : '');
+                $db->prepare("INSERT INTO pagos (id_cita_lab, monto, metodo_pago, estado_pago, notas)
+                              VALUES (?, ?, 'Efectivo', 'Completado', ?)")
+                   ->execute([$id_cita_lab, $costo, $notaPago]);
+            }
+        }
 
         $ok = 'Resultado subido correctamente.';
     } while (false);

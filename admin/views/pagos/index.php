@@ -32,7 +32,11 @@
                 <tr>
                     <td><?= $p['id_pago'] ?></td>
                     <td>
-                        <span class="badge bg-secondary">Cita #<?= $p['id_cita'] ?></span>
+                        <?php if ($p['id_cita_lab']): ?>
+                            <span class="badge bg-info text-dark">Lab #<?= $p['id_cita_lab'] ?></span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary">Cita #<?= $p['id_cita'] ?></span>
+                        <?php endif; ?>
                         <div class="small text-muted"><?= date('d/m/Y', strtotime($p['fecha_cita'])) ?></div>
                     </td>
                     <td><?= htmlspecialchars($p['nombre_paciente']) ?></td>
