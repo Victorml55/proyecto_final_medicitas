@@ -68,37 +68,46 @@ switch ($metodo) {
             }
         }
 
-        // Verificar que el slot no esté ocupado
-        $stmtOk = $db->prepare(
-            "SELECT 1 FROM citas_laboratorio
-             WHERE fecha_cita = ? AND hora_inicio = ? AND id_estado IN (1, 2)
-             LIMIT 1"
-        );
-        $stmtOk->execute([$d['fecha_cita'], $d['hora_inicio']]);
-        if ($stmtOk->fetch()) {
-            responder(409, ['error' => 'Este horario ya está ocupado. Selecciona otro.']);
+        $db->beginTransaction();
+        try {
+            // Verificar que el slot no esté ocupado (dentro de la transacción para evitar race condition)
+            $stmtOk = $db->prepare(
+                "SELECT 1 FROM citas_laboratorio
+                 WHERE fecha_cita = ? AND hora_inicio = ? AND id_estado IN (1, 2)
+                 LIMIT 1"
+            );
+            $stmtOk->execute([$d['fecha_cita'], $d['hora_inicio']]);
+            if ($stmtOk->fetch()) {
+                $db->rollBack();
+                responder(409, ['error' => 'Este horario ya está ocupado. Selecciona otro.']);
+            }
+
+            $codigo = strtoupper(substr(md5(uniqid('lab', true)), 0, 8));
+
+            $stmt = $db->prepare(
+                "INSERT INTO citas_laboratorio
+                    (id_paciente, id_estado, fecha_cita, hora_inicio, hora_fin,
+                     tipo_analisis, notas_paciente, costo, codigo_confirmacion)
+                 VALUES (?, 2, ?, ?, ?, ?, ?, ?, ?)
+                 RETURNING id_cita_lab"
+            );
+            $stmt->execute([
+                $idPac,
+                $d['fecha_cita'],
+                $d['hora_inicio'],
+                $d['hora_fin'],
+                $d['tipo_analisis']  ?? null,
+                $d['notas_paciente'] ?? null,
+                isset($d['costo']) && $d['costo'] !== '' ? (float)$d['costo'] : null,
+                $codigo,
+            ]);
+            $row = $stmt->fetch();
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollBack();
+            responder(500, ['error' => 'Error al registrar la cita de laboratorio.']);
         }
 
-        $codigo = strtoupper(substr(md5(uniqid('lab', true)), 0, 8));
-
-        $stmt = $db->prepare(
-            "INSERT INTO citas_laboratorio
-                (id_paciente, id_estado, fecha_cita, hora_inicio, hora_fin,
-                 tipo_analisis, notas_paciente, costo, codigo_confirmacion)
-             VALUES (?, 2, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id_cita_lab"
-        );
-        $stmt->execute([
-            $idPac,
-            $d['fecha_cita'],
-            $d['hora_inicio'],
-            $d['hora_fin'],
-            $d['tipo_analisis']  ?? null,
-            $d['notas_paciente'] ?? null,
-            isset($d['costo']) && $d['costo'] !== '' ? (float)$d['costo'] : null,
-            $codigo,
-        ]);
-        $row = $stmt->fetch();
         responder(201, [
             'id_cita_lab'         => (int)$row['id_cita_lab'],
             'codigo_confirmacion' => $codigo,

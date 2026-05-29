@@ -29,31 +29,39 @@ try {
         mostrarPagina('error', 'Correo ya registrado', 'Ya existe una cuenta con ese correo. Puedes iniciar sesión.');
     }
 
-    $stmtUser = $db->prepare(
-        'INSERT INTO usuarios
-            (nombre, apellido_paterno, apellido_materno, email, password_hash,
-             telefono, fecha_nacimiento, genero, activo)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, true) RETURNING id_usuario'
-    );
-    $stmtUser->execute([
-        $pendiente['nombre'],
-        $pendiente['apellido_paterno'],
-        $pendiente['apellido_materno'],
-        $pendiente['email'],
-        $pendiente['password_hash'],
-        $pendiente['telefono'],
-        $pendiente['fecha_nacimiento'],
-        $pendiente['genero'],
-    ]);
-    $idUsuario = (int)$stmtUser->fetchColumn();
+    $db->beginTransaction();
+    try {
+        $stmtUser = $db->prepare(
+            'INSERT INTO usuarios
+                (nombre, apellido_paterno, apellido_materno, email, password_hash,
+                 telefono, fecha_nacimiento, genero, activo)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, true) RETURNING id_usuario'
+        );
+        $stmtUser->execute([
+            $pendiente['nombre'],
+            $pendiente['apellido_paterno'],
+            $pendiente['apellido_materno'],
+            $pendiente['email'],
+            $pendiente['password_hash'],
+            $pendiente['telefono'],
+            $pendiente['fecha_nacimiento'],
+            $pendiente['genero'],
+        ]);
+        $idUsuario = (int)$stmtUser->fetchColumn();
 
-    // Crear expediente de paciente automáticamente
-    $expediente = 'EXP-' . date('Y') . '-' . str_pad($idUsuario, 5, '0', STR_PAD_LEFT);
-    $db->prepare(
-        'INSERT INTO pacientes (id_usuario, numero_expediente) VALUES (?, ?)'
-    )->execute([$idUsuario, $expediente]);
+        // Crear expediente de paciente automáticamente
+        $expediente = 'EXP-' . date('Y') . '-' . str_pad($idUsuario, 5, '0', STR_PAD_LEFT);
+        $db->prepare(
+            'INSERT INTO pacientes (id_usuario, numero_expediente) VALUES (?, ?)'
+        )->execute([$idUsuario, $expediente]);
 
-    $db->prepare('DELETE FROM verificaciones_pendientes WHERE token = ?')->execute([$token]);
+        $db->prepare('DELETE FROM verificaciones_pendientes WHERE token = ?')->execute([$token]);
+
+        $db->commit();
+    } catch (PDOException $e) {
+        $db->rollBack();
+        mostrarPagina('error', 'Error del servidor', 'No se pudo activar la cuenta. Intenta de nuevo más tarde.');
+    }
 
     mostrarPagina('ok', '¡Cuenta activada!', 'Tu cuenta ha sido verificada. Ya puedes iniciar sesión.');
 

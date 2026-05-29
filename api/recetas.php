@@ -42,46 +42,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmtEx->execute([$id_cita]);
     $exReceta = $stmtEx->fetch();
 
-    if ($exReceta) {
-        $db->prepare('UPDATE recetas SET diagnostico=?, indicaciones_generales=? WHERE id_receta=?')
-           ->execute([
-               trim($d['diagnostico'] ?? '') ?: null,
-               trim($d['indicaciones_generales'] ?? '') ?: null,
-               $exReceta['id_receta'],
-           ]);
-        $idReceta = $exReceta['id_receta'];
-        $db->prepare('DELETE FROM medicamentos_receta WHERE id_receta = ?')->execute([$idReceta]);
-    } else {
-        $stmtI = $db->prepare(
-            'INSERT INTO recetas (id_cita, diagnostico, indicaciones_generales) VALUES (?,?,?) RETURNING id_receta'
-        );
-        $stmtI->execute([
-            $id_cita,
-            trim($d['diagnostico'] ?? '') ?: null,
-            trim($d['indicaciones_generales'] ?? '') ?: null,
-        ]);
-        $idReceta = $stmtI->fetchColumn();
-    }
-
-    $meds = $d['medicamentos'] ?? [];
-    if (is_array($meds)) {
-        $stmtMed = $db->prepare(
-            'INSERT INTO medicamentos_receta
-                 (id_receta, nombre_medicamento, presentacion, dosis, frecuencia, duracion, indicaciones)
-             VALUES (?,?,?,?,?,?,?)'
-        );
-        foreach ($meds as $med) {
-            if (empty(trim($med['nombre_medicamento'] ?? ''))) continue;
-            $stmtMed->execute([
-                $idReceta,
-                trim($med['nombre_medicamento']),
-                trim($med['presentacion'] ?? '') ?: null,
-                trim($med['dosis']        ?? '') ?: '—',
-                trim($med['frecuencia']   ?? '') ?: '—',
-                trim($med['duracion']     ?? '') ?: null,
-                trim($med['indicaciones'] ?? '') ?: null,
+    $db->beginTransaction();
+    try {
+        if ($exReceta) {
+            $db->prepare('UPDATE recetas SET diagnostico=?, indicaciones_generales=? WHERE id_receta=?')
+               ->execute([
+                   trim($d['diagnostico'] ?? '') ?: null,
+                   trim($d['indicaciones_generales'] ?? '') ?: null,
+                   $exReceta['id_receta'],
+               ]);
+            $idReceta = $exReceta['id_receta'];
+            $db->prepare('DELETE FROM medicamentos_receta WHERE id_receta = ?')->execute([$idReceta]);
+        } else {
+            $stmtI = $db->prepare(
+                'INSERT INTO recetas (id_cita, diagnostico, indicaciones_generales) VALUES (?,?,?) RETURNING id_receta'
+            );
+            $stmtI->execute([
+                $id_cita,
+                trim($d['diagnostico'] ?? '') ?: null,
+                trim($d['indicaciones_generales'] ?? '') ?: null,
             ]);
+            $idReceta = $stmtI->fetchColumn();
         }
+
+        $meds = $d['medicamentos'] ?? [];
+        if (is_array($meds)) {
+            $stmtMed = $db->prepare(
+                'INSERT INTO medicamentos_receta
+                     (id_receta, nombre_medicamento, presentacion, dosis, frecuencia, duracion, indicaciones)
+                 VALUES (?,?,?,?,?,?,?)'
+            );
+            foreach ($meds as $med) {
+                if (empty(trim($med['nombre_medicamento'] ?? ''))) continue;
+                $stmtMed->execute([
+                    $idReceta,
+                    trim($med['nombre_medicamento']),
+                    trim($med['presentacion'] ?? '') ?: null,
+                    trim($med['dosis']        ?? '') ?: '—',
+                    trim($med['frecuencia']   ?? '') ?: '—',
+                    trim($med['duracion']     ?? '') ?: null,
+                    trim($med['indicaciones'] ?? '') ?: null,
+                ]);
+            }
+        }
+
+        $db->commit();
+    } catch (Throwable $e) {
+        $db->rollBack();
+        responder(500, ['error' => 'Error al guardar la receta.']);
     }
 
     responder(201, ['ok' => true, 'id_receta' => $idReceta]);

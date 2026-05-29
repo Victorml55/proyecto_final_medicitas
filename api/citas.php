@@ -261,29 +261,37 @@ switch ($metodo) {
 
         // ── Solicitar cancelación de una cita Confirmada ─────────────────────
         if ($accionPut === 'solicitar-cancelacion') {
-            $stmtSol = $db->query(
-                "SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1"
-            );
-            $recSol = $stmtSol->fetch();
-            if (!$recSol) {
-                $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color)
-                           VALUES ('Solicitud de cancelación', 'El paciente solicitó cancelar la cita confirmada', '#f59e0b')");
+            $db->beginTransaction();
+            try {
                 $stmtSol = $db->query(
                     "SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1"
                 );
                 $recSol = $stmtSol->fetch();
-            }
-            $idSolicitud = $recSol['id_estado'];
+                if (!$recSol) {
+                    $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color)
+                               VALUES ('Solicitud de cancelación', 'El paciente solicitó cancelar la cita confirmada', '#f59e0b')");
+                    $stmtSol = $db->query(
+                        "SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Solicitud de cancelación' LIMIT 1"
+                    );
+                    $recSol = $stmtSol->fetch();
+                }
+                $idSolicitud = $recSol['id_estado'];
 
-            $stmt = $db->prepare(
-                "UPDATE citas SET id_estado = ?
-                 WHERE id_cita = ? AND id_estado = 2
-                 RETURNING id_cita, id_paciente, id_medico, fecha_cita, hora_inicio, motivo_consulta, token_accion"
-            );
-            $stmt->execute([$idSolicitud, $id]);
-            $cita = $stmt->fetch();
-            if (!$cita) {
-                responder(409, ['error' => 'La cita no está en estado Confirmada']);
+                $stmt = $db->prepare(
+                    "UPDATE citas SET id_estado = ?
+                     WHERE id_cita = ? AND id_estado = 2
+                     RETURNING id_cita, id_paciente, id_medico, fecha_cita, hora_inicio, motivo_consulta, token_accion"
+                );
+                $stmt->execute([$idSolicitud, $id]);
+                $cita = $stmt->fetch();
+                if (!$cita) {
+                    $db->rollBack();
+                    responder(409, ['error' => 'La cita no está en estado Confirmada']);
+                }
+                $db->commit();
+            } catch (Throwable $e) {
+                $db->rollBack();
+                responder(500, ['error' => 'Error al procesar la solicitud de cancelación.']);
             }
 
             try {
@@ -355,26 +363,34 @@ switch ($metodo) {
                 responder(403, ['error' => 'Solo médicos pueden concluir citas']);
             }
 
-            // Obtener o crear estado "Concluida"
-            $stmtC = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Concluida' LIMIT 1");
-            $rec   = $stmtC->fetch();
-            if (!$rec) {
-                $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color) VALUES ('Concluida', 'Consulta finalizada por el médico', '#10b981')");
+            $db->beginTransaction();
+            try {
+                // Obtener o crear estado "Concluida"
                 $stmtC = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Concluida' LIMIT 1");
                 $rec   = $stmtC->fetch();
-            }
-            $idConcluida = $rec['id_estado'];
+                if (!$rec) {
+                    $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color) VALUES ('Concluida', 'Consulta finalizada por el médico', '#10b981')");
+                    $stmtC = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Concluida' LIMIT 1");
+                    $rec   = $stmtC->fetch();
+                }
+                $idConcluida = $rec['id_estado'];
 
-            $stmt = $db->prepare(
-                "UPDATE citas
-                 SET id_estado = ?,
-                     costo = COALESCE(NULLIF(costo, 0), (SELECT costo_consulta FROM medicos WHERE id_medico = citas.id_medico))
-                 WHERE id_cita = ? AND id_medico = ? AND id_estado = 2
-                 RETURNING id_cita"
-            );
-            $stmt->execute([$idConcluida, $id, $medico['id_medico']]);
-            if (!$stmt->fetch()) {
-                responder(409, ['error' => 'No se puede concluir (debe estar Confirmada y pertenecer a este médico)']);
+                $stmt = $db->prepare(
+                    "UPDATE citas
+                     SET id_estado = ?,
+                         costo = COALESCE(NULLIF(costo, 0), (SELECT costo_consulta FROM medicos WHERE id_medico = citas.id_medico))
+                     WHERE id_cita = ? AND id_medico = ? AND id_estado = 2
+                     RETURNING id_cita"
+                );
+                $stmt->execute([$idConcluida, $id, $medico['id_medico']]);
+                if (!$stmt->fetch()) {
+                    $db->rollBack();
+                    responder(409, ['error' => 'No se puede concluir (debe estar Confirmada y pertenecer a este médico)']);
+                }
+                $db->commit();
+            } catch (Throwable $e) {
+                $db->rollBack();
+                responder(500, ['error' => 'Error al concluir la cita.']);
             }
 
             // Enviar correo al paciente con resumen y enlace a la encuesta

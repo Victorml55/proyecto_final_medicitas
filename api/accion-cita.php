@@ -151,17 +151,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'rechazar':
             $motivo = trim($_POST['motivo'] ?? '');
 
-            $stmtR = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Rechazada' LIMIT 1");
-            $rec   = $stmtR->fetch();
-            if (!$rec) {
-                $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color) VALUES ('Rechazada', 'Cita rechazada por el médico', '#dc2626')");
+            $db->beginTransaction();
+            try {
                 $stmtR = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Rechazada' LIMIT 1");
                 $rec   = $stmtR->fetch();
-            }
-            $idRechazada = $rec['id_estado'];
+                if (!$rec) {
+                    $db->exec("INSERT INTO estados_cita (nombre_estado, descripcion, color) VALUES ('Rechazada', 'Cita rechazada por el médico', '#dc2626')");
+                    $stmtR = $db->query("SELECT id_estado FROM estados_cita WHERE nombre_estado = 'Rechazada' LIMIT 1");
+                    $rec   = $stmtR->fetch();
+                }
+                $idRechazada = $rec['id_estado'];
 
-            $db->prepare("UPDATE citas SET id_estado = ?, fecha_actualizacion = NOW() WHERE id_cita = ?")
-               ->execute([$idRechazada, $cita['id_cita']]);
+                $db->prepare("UPDATE citas SET id_estado = ?, fecha_actualizacion = NOW() WHERE id_cita = ?")
+                   ->execute([$idRechazada, $cita['id_cita']]);
+
+                $db->commit();
+            } catch (Throwable $e) {
+                $db->rollBack();
+                resultPage('error', 'Error del servidor', 'No se pudo rechazar la cita. Intenta de nuevo.');
+            }
 
             try {
                 require_once __DIR__ . '/../admin/services/MailService.php';
